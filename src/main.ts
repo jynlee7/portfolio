@@ -1,6 +1,6 @@
 import "./style.css";
 
-import { initLock } from "./os/lock";
+import { initLock, mountLockField } from "./os/lock";
 import { initMenubar } from "./os/menubar";
 import { initLaunchers, initDock } from "./os/desktop";
 import { initWindowKeys, openDoc } from "./os/windows";
@@ -14,12 +14,19 @@ initDock();
 initWindowKeys();
 void initWeather();
 
-// The pointer deforms the contour field on both surfaces that show it. The
-// lock screen is the first viewport, so it is the one most likely to be
-// noticed; it mounts into its own slot, which sits behind the lock's text.
+// The pointer deforms the contour field on both surfaces that show it.
 initFlow(document.getElementById("desk"));
+
+// On the lock screen the field arrives one contour level at a time first.
+// Handing it to the pointer only once that has played keeps the two moments
+// sequential — otherwise the first mouse move slams the finished field down
+// on top of an entrance that is still running.
 const lock = document.getElementById("lock");
-if (lock) initFlow(lock, lock.querySelector<HTMLElement>(".lock__field"));
+if (lock) {
+  void mountLockField(lock).then(() => {
+    initFlow(lock, lock.querySelector<HTMLElement>(".lock__field"));
+  });
+}
 
 /**
  * Deep links: /#resume opens that window on load, so the résumé can be linked
