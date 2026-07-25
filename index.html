@@ -1,0 +1,572 @@
+<!doctype html>
+<html lang="en" data-desk="lab">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Jayden Lee · Machine Learning</title>
+    <meta
+      name="description"
+      content="UC Berkeley Data Science and Computer Science student. Machine learning research at Cal Athletics, MatX, and Pacific Northwest National Laboratory."
+    />
+    <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@800,500&f[]=switzer@400,500,600&display=swap"
+    />
+    <!-- The desktop is an enhancement. Without this class the stylesheet
+         renders every document as a plain vertical page, so a script failure
+         costs the visitor the metaphor, never the content. -->
+    <script>
+      document.documentElement.classList.add("js");
+    </script>
+  </head>
+
+  <body>
+    <a class="skip" href="#docs">Skip to content</a>
+
+    <!-- ============================================================
+         ICON SPRITE
+         One grammar: 2px strokes on a 32-unit grid, flat geometric
+         fills, indigo reserved for the one part of each object that
+         identifies it. Drawn here rather than pulled from a set so
+         the folder, the page and the plot look like the same machine.
+         ============================================================ -->
+    <svg class="sprite" aria-hidden="true" focusable="false">
+      <defs>
+        <symbol id="i-folder" viewBox="0 0 40 34">
+          <path
+            d="M1.5 5.5A2 2 0 0 1 3.5 3.5h10.2a2 2 0 0 1 1.6.8l2.1 2.8h21.1"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="0"
+          />
+          <path
+            d="M2 6a2 2 0 0 1 2-2h10.4l3 4H36a2 2 0 0 1 2 2v3H2z"
+            fill="var(--accent-deep)"
+          />
+          <path
+            d="M2 10h36a2 2 0 0 1 2 2v18a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2z"
+            fill="var(--accent)"
+          />
+          <path d="M2 13h36" stroke="rgb(255 255 255 / .28)" stroke-width="1" />
+        </symbol>
+
+        <!-- Page silhouette shared by every document icon. -->
+        <symbol id="i-page" viewBox="0 0 32 40">
+          <path
+            d="M2 3a2 2 0 0 1 2-2h15l11 11v25a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2z"
+            fill="#fbfaf7"
+            stroke="#8d8a80"
+            stroke-width="1.4"
+          />
+          <path
+            d="M19 1v9a2 2 0 0 0 2 2h9"
+            fill="none"
+            stroke="#8d8a80"
+            stroke-width="1.4"
+          />
+        </symbol>
+
+        <symbol id="i-pdf" viewBox="0 0 32 40">
+          <use href="#i-page" />
+          <rect x="2" y="21" width="24" height="10" rx="1.5" fill="var(--accent)" />
+          <text
+            x="14"
+            y="28.4"
+            text-anchor="middle"
+            font-family="ui-monospace, Menlo, monospace"
+            font-size="7"
+            font-weight="700"
+            fill="#fff"
+            letter-spacing="0.4"
+          >
+            PDF
+          </text>
+        </symbol>
+
+        <!-- experience.log: a page carrying a step plot, because the file is
+             a record of things that happened in sequence. -->
+        <symbol id="i-log" viewBox="0 0 32 40">
+          <use href="#i-page" />
+          <path
+            d="M7 30h4v-5h4v-7h4v-4h5"
+            fill="none"
+            stroke="var(--accent)"
+            stroke-width="2"
+            stroke-linejoin="round"
+            stroke-linecap="round"
+          />
+          <circle cx="24" cy="14" r="2" fill="var(--accent)" />
+        </symbol>
+
+        <symbol id="i-txt" viewBox="0 0 32 40">
+          <use href="#i-page" />
+          <g stroke="#9a978d" stroke-width="1.6" stroke-linecap="round">
+            <path d="M7 20h18" />
+            <path d="M7 25h18" />
+            <path d="M7 30h11" />
+          </g>
+          <path d="M7 15h7" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round" />
+        </symbol>
+
+        <symbol id="i-mail" viewBox="0 0 40 32">
+          <rect
+            x="2"
+            y="3"
+            width="36"
+            height="26"
+            rx="2.5"
+            fill="#fbfaf7"
+            stroke="#8d8a80"
+            stroke-width="1.4"
+          />
+          <path
+            d="M3.5 5.5 20 18 36.5 5.5"
+            fill="none"
+            stroke="var(--accent)"
+            stroke-width="2.2"
+            stroke-linejoin="round"
+          />
+        </symbol>
+
+        <!-- The identity mark: one well, read off the same field as the
+             wallpaper. Rings drift and rotate as they climb out, so it reads
+             as a contour plot of something asymmetric rather than a target.
+             Indigo is earned by depth here exactly as it is on the desk. -->
+        <symbol id="i-well" viewBox="0 0 48 48">
+          <g fill="none" stroke-linecap="round">
+            <ellipse
+              cx="21.6"
+              cy="22.4"
+              rx="22"
+              ry="17.4"
+              stroke="currentColor"
+              stroke-width="1"
+              stroke-opacity="0.3"
+              transform="rotate(-14 21.6 22.4)"
+            />
+            <ellipse
+              cx="22.3"
+              cy="23.2"
+              rx="17.2"
+              ry="13.6"
+              stroke="currentColor"
+              stroke-width="1.15"
+              stroke-opacity="0.42"
+              transform="rotate(-11 22.3 23.2)"
+            />
+            <ellipse
+              cx="23"
+              cy="24"
+              rx="12.4"
+              ry="9.9"
+              stroke="var(--accent)"
+              stroke-width="1.35"
+              stroke-opacity="0.6"
+              transform="rotate(-8 23 24)"
+            />
+            <ellipse
+              cx="23.6"
+              cy="24.7"
+              rx="7.6"
+              ry="6.1"
+              stroke="var(--accent)"
+              stroke-width="1.6"
+              stroke-opacity="0.82"
+              transform="rotate(-5 23.6 24.7)"
+            />
+          </g>
+          <ellipse cx="24.1" cy="25.3" rx="3.1" ry="2.5" fill="var(--accent)" />
+        </symbol>
+      </defs>
+    </svg>
+
+    <!-- ============================================================
+         LOCK SCREEN
+         The whole first viewport, and the whole thing is the door —
+         no buttons on it, because a machine you have to be told how
+         to open is not one you want to use.
+
+         It carries only what a stranger needs to know before they
+         decide to look: the time this machine keeps, whose it is,
+         and one line that is worth being curious about. Everything
+         else — résumé, projects, mail — is one wake away in the
+         dock, the menubar and on the desk itself.
+
+         `hidden` by default: only the script that can dismiss it is
+         allowed to show it.
+         ============================================================ -->
+    <div class="lock" id="lock" hidden>
+      <!-- The wallpaper, inlined so its contours can arrive one level at a
+           time. Falls back to the CSS background if the fetch never lands. -->
+      <div class="lock__field" id="lock-field" aria-hidden="true"></div>
+
+      <div class="lock__top">
+        <p class="lock__date" id="lock-date" aria-hidden="true"></p>
+        <p class="lock__clock num" id="lock-clock" aria-hidden="true">--:--</p>
+      </div>
+
+      <div class="lock__id">
+        <span class="lock__mark" aria-hidden="true">
+          <svg viewBox="0 0 48 48"><use href="#i-well" /></svg>
+        </span>
+        <p class="lock__name">Jayden Lee</p>
+        <p class="lock__role">Machine learning · UC Berkeley</p>
+        <p class="lock__idea">
+          That&#8217;s a loss surface behind this. Two minima, one of them wrong.
+        </p>
+      </div>
+
+      <!-- A real button, styled as the quiet line it looks like: clicking the
+           screen anywhere works, but keyboard and screen-reader visitors need
+           something they can land on and press. -->
+      <button class="lock__hint" type="button" id="lock-enter">
+        Click anywhere to enter
+      </button>
+    </div>
+
+    <!-- ============================================================
+         MENUBAR
+         ============================================================ -->
+    <header class="menubar" id="menubar">
+      <div class="menubar__left">
+        <div class="menu" data-menu>
+          <button class="menu__trigger menu__trigger--brand" type="button" aria-expanded="false">
+            <span class="mark" aria-hidden="true">JL</span>
+            Jayden Lee
+          </button>
+          <div class="menu__drop" role="menu">
+            <button type="button" role="menuitem" data-open="about">About this machine</button>
+            <button type="button" role="menuitem" data-open="resume">Résumé…</button>
+            <div class="menu__sep"></div>
+            <a role="menuitem" href="mailto:jeyl@berkeley.edu">Send mail<span class="menu__key">↗</span></a>
+            <div class="menu__sep"></div>
+            <button type="button" role="menuitem" data-action="lock">Lock screen</button>
+          </div>
+        </div>
+
+        <div class="menu" data-menu>
+          <button class="menu__trigger" type="button" aria-expanded="false">Work</button>
+          <div class="menu__drop" role="menu">
+            <button type="button" role="menuitem" data-open="clinical">Clinical Intervention Simulator</button>
+            <button type="button" role="menuitem" data-open="chessblitz">ChessBlitz</button>
+            <div class="menu__sep"></div>
+            <button type="button" role="menuitem" data-open="experience">Experience</button>
+          </div>
+        </div>
+
+        <div class="menu" data-menu>
+          <button class="menu__trigger" type="button" aria-expanded="false">View</button>
+          <div class="menu__drop" role="menu">
+            <button type="button" role="menuitemradio" data-desk="lab">Lab<span class="menu__key">bone</span></button>
+            <button type="button" role="menuitemradio" data-desk="slate">Slate<span class="menu__key">grey</span></button>
+            <button type="button" role="menuitemradio" data-desk="blueprint">Blueprint<span class="menu__key">indigo</span></button>
+            <div class="menu__sep"></div>
+            <button type="button" role="menuitem" data-action="close-all">Close all windows</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="menubar__right">
+        <a class="menubar__link" href="https://github.com/jynlee7" aria-label="GitHub">GitHub</a>
+        <a class="menubar__link" href="https://linkedin.com/in/jynlee7/" aria-label="LinkedIn">LinkedIn</a>
+        <span class="menubar__clock num" id="bar-clock">--:--</span>
+      </div>
+    </header>
+
+    <!-- ============================================================
+         DESKTOP
+         ============================================================ -->
+    <main class="desk" id="desk">
+      <!-- The nameplate and the desktop items share one flow column, so a
+           longer pitch pushes the icons down instead of landing on top of
+           them. -->
+      <div class="deskcol">
+      <div class="nameplate">
+        <p class="nameplate__status">
+          <span class="dot" aria-hidden="true"></span>
+          Open to 2026 internships
+        </p>
+        <h1 class="nameplate__name">Jayden Lee</h1>
+        <p class="nameplate__role">
+          Machine learning · UC Berkeley, Data Science &amp; Computer Science
+        </p>
+        <p class="nameplate__pitch">
+          ML systems for messy, real-world data: fan behavior at Cal Athletics,
+          LLM training efficiency at MatX, proteomics at a national lab.
+        </p>
+      </div>
+
+      <!-- Desktop items. Buttons, so they are focusable and openable with the
+           keyboard; the double-click affordance is an addition, not the only
+           way in. -->
+      <div class="icons" id="icons" role="list">
+        <button class="icon" type="button" role="listitem" data-open="clinical">
+          <span class="icon__art"><svg viewBox="0 0 40 34"><use href="#i-folder" /></svg></span>
+          <span class="icon__label">clinical-sim</span>
+        </button>
+
+        <button class="icon" type="button" role="listitem" data-open="chessblitz">
+          <span class="icon__art"><svg viewBox="0 0 40 34"><use href="#i-folder" /></svg></span>
+          <span class="icon__label">chessblitz</span>
+        </button>
+
+        <button class="icon" type="button" role="listitem" data-open="experience">
+          <span class="icon__art icon__art--page"><svg viewBox="0 0 32 40"><use href="#i-log" /></svg></span>
+          <span class="icon__label">experience.log</span>
+        </button>
+
+        <button class="icon" type="button" role="listitem" data-open="resume">
+          <span class="icon__art icon__art--page"><svg viewBox="0 0 32 40"><use href="#i-pdf" /></svg></span>
+          <span class="icon__label">resume.pdf</span>
+        </button>
+
+        <button class="icon" type="button" role="listitem" data-open="about">
+          <span class="icon__art icon__art--page"><svg viewBox="0 0 32 40"><use href="#i-txt" /></svg></span>
+          <span class="icon__label">about.txt</span>
+        </button>
+      </div>
+      </div>
+
+      <!-- Widget rail. Two widgets, both true: the machine's own clock and
+           the weather where Jayden actually is. -->
+      <aside class="rail" id="rail" aria-label="Desktop widgets">
+        <div class="widget widget--now">
+          <p class="widget__title">Now</p>
+          <ul class="nowlist">
+            <li>
+              <span class="nowlist__what">ML Researcher</span>
+              <span class="nowlist__where">Cal Athletics</span>
+            </li>
+            <li>
+              <span class="nowlist__what">ML Consultant</span>
+              <span class="nowlist__where">MatX</span>
+            </li>
+          </ul>
+          <p class="widget__foot">Both current, both contract.</p>
+        </div>
+
+        <div class="widget widget--wx" id="wx">
+          <p class="widget__title">Berkeley</p>
+          <p class="wx__temp num"><span id="wx-temp">—</span>°<span class="wx__unit">F</span></p>
+          <p class="wx__cond" id="wx-cond">Loading…</p>
+        </div>
+      </aside>
+    </main>
+
+    <!-- ============================================================
+         DOCK
+         ============================================================ -->
+    <nav class="dock" id="dock" aria-label="Open a document">
+      <ul class="dock__list">
+        <li><button class="dockitem" type="button" data-open="about" data-label="about.txt"><svg viewBox="0 0 32 40"><use href="#i-txt" /></svg></button></li>
+        <li><button class="dockitem" type="button" data-open="clinical" data-label="clinical-sim"><svg viewBox="0 0 40 34"><use href="#i-folder" /></svg></button></li>
+        <li><button class="dockitem" type="button" data-open="chessblitz" data-label="chessblitz"><svg viewBox="0 0 40 34"><use href="#i-folder" /></svg></button></li>
+        <li><button class="dockitem" type="button" data-open="experience" data-label="experience.log"><svg viewBox="0 0 32 40"><use href="#i-log" /></svg></button></li>
+        <li><button class="dockitem" type="button" data-open="resume" data-label="resume.pdf"><svg viewBox="0 0 32 40"><use href="#i-pdf" /></svg></button></li>
+        <li class="dock__sep" aria-hidden="true"></li>
+        <li><a class="dockitem" href="mailto:jeyl@berkeley.edu" data-label="jeyl@berkeley.edu"><svg viewBox="0 0 40 32"><use href="#i-mail" /></svg></a></li>
+      </ul>
+    </nav>
+
+    <!-- ============================================================
+         DOCUMENTS
+         The real content. Each <article> is moved into a window frame
+         when opened, so there is exactly one copy of every fact.
+         ============================================================ -->
+    <div class="docs" id="docs">
+      <!-- ---------------- about.txt ---------------- -->
+      <article class="doc" id="doc-about" data-title="about.txt" data-meta="plain text">
+        <h2 class="doc__h1">Jayden Lee</h2>
+        <p class="doc__lede">
+          I'm a Data Science and Computer Science student at UC Berkeley who
+          builds machine learning systems for data that doesn't behave:
+          behavioral logs, mass spectrometry output, clinical time series.
+        </p>
+        <p>
+          Most of my work has been the unglamorous half of ML: getting 300,000
+          files through a pipeline without it falling over, deciding what a
+          false discovery rate should be, arguing with hardware engineers about
+          what "efficiency" means. I like problems where the modeling is only
+          interesting once the data engineering is honest.
+        </p>
+
+        <dl class="spec">
+          <div>
+            <dt>Study</dt>
+            <dd>B.A. Data Science and B.A. Computer Science, UC Berkeley</dd>
+          </div>
+          <div>
+            <dt>GPA</dt>
+            <dd class="num">3.63</dd>
+          </div>
+          <div>
+            <dt>Group</dt>
+            <dd>Open Project · Sports Analytics Group at Berkeley</dd>
+          </div>
+          <div>
+            <dt>Mail</dt>
+            <dd><a href="mailto:jeyl@berkeley.edu">jeyl@berkeley.edu</a></dd>
+          </div>
+          <div>
+            <dt>Code</dt>
+            <dd><a href="https://github.com/jynlee7">github.com/jynlee7</a></dd>
+          </div>
+        </dl>
+      </article>
+
+      <!-- ---------------- clinical-sim ---------------- -->
+      <article class="doc" id="doc-clinical" data-title="clinical-sim" data-meta="project">
+        <p class="award">1st place · 7th Annual Datathon at Berkeley</p>
+        <h2 class="doc__h1">Clinical Intervention Simulator</h2>
+        <p class="doc__lede">
+          A Monte Carlo framework that models 300 patient deterioration
+          scenarios, feeding a Random Forest that optimizes interventions in
+          real time.
+        </p>
+
+        <div class="shot" data-slot="screenshot">
+          <span class="shot__label">Screenshot · 21:9</span>
+        </div>
+
+        <p>
+          The simulation is vectorized with NumPy so a full sweep runs in
+          seconds rather than minutes, which is what made it usable as an
+          interactive tool instead of a batch job. It ships as a Streamlit app
+          over a Pandas ETL pipeline that reconciles multimodal health data into
+          one frame.
+        </p>
+        <p>
+          Built at the 7th Annual Datathon at Berkeley, where it took first
+          place against more than 50 teams and over 200 participants.
+        </p>
+
+        <dl class="spec">
+          <div><dt>Stack</dt><dd>Python · scikit-learn · NumPy · Pandas · Streamlit · Tableau</dd></div>
+          <div><dt>Scale</dt><dd><span class="num">300</span> patient scenarios</dd></div>
+          <div><dt>Source</dt><dd><a href="https://github.com/jynlee7" data-slot="project-repo">github.com/jynlee7</a></dd></div>
+        </dl>
+      </article>
+
+      <!-- ---------------- chessblitz ---------------- -->
+      <article class="doc" id="doc-chessblitz" data-title="chessblitz" data-meta="project">
+        <h2 class="doc__h1">ChessBlitz</h2>
+        <p class="doc__lede">
+          An open-source teaching platform in use at Berkeley Chess School.
+        </p>
+
+        <div class="shot shot--wide" data-slot="screenshot">
+          <span class="shot__label">Screenshot · 16:10</span>
+        </div>
+
+        <p>
+          Flask and Supabase behind the storage layer, OpenRouter generating
+          hints tailored to the position a student is actually stuck on, and a
+          React dashboard where a teacher runs their own classroom: rosters,
+          assignments, and who is struggling with what.
+        </p>
+
+        <dl class="spec">
+          <div><dt>Stack</dt><dd>Flask · Supabase · OpenRouter · React · TypeScript · SQL</dd></div>
+          <div><dt>Status</dt><dd>Open source, in classroom use</dd></div>
+          <div><dt>Source</dt><dd><a href="https://github.com/jynlee7" data-slot="project-repo">github.com/jynlee7</a></dd></div>
+        </dl>
+      </article>
+
+      <!-- ---------------- experience.log ---------------- -->
+      <article class="doc" id="doc-experience" data-title="experience.log" data-meta="5 entries">
+        <h2 class="doc__h1">Experience</h2>
+
+        <ol class="roles">
+          <li class="role">
+            <p class="role__when num">Feb 2026 – now</p>
+            <h3 class="role__title">Machine Learning Researcher</h3>
+            <p class="role__org">Cal Athletics · contract</p>
+            <p>
+              Clustering and supervised models that predict ticket-purchase
+              propensity from behavioral data, plus multivariate regression
+              behind a dynamic fan scoring system. Outputs deploy into CRM
+              workflows for segment-level personalization.
+            </p>
+          </li>
+
+          <li class="role">
+            <p class="role__when num">Dec 2025 – now</p>
+            <h3 class="role__title">Machine Learning Consultant</h3>
+            <p class="role__org">MatX · contract</p>
+            <p>
+              Leading eight engineers building a competitive benchmarking
+              platform for a Series A AI-chip startup, evaluating LLM training
+              efficiency across participant-submitted models. Docker
+              containerization and Kubernetes job scheduling isolate each
+              participant. Defined decode efficiency metrics directly with MatX
+              hardware engineers.
+            </p>
+          </li>
+
+          <li class="role">
+            <p class="role__when num">Sep – Dec 2025</p>
+            <h3 class="role__title">Business Analyst</h3>
+            <p class="role__org">Oakland Roots Sports Club · contract</p>
+            <p>
+              Built a fan-engagement scoring system in Python that folded
+              real-time BART transit data into a marketing dashboard.
+            </p>
+          </li>
+
+          <li class="role">
+            <p class="role__when num">Jun 2024 – May 2025</p>
+            <h3 class="role__title">Modeling &amp; Simulation Intern</h3>
+            <p class="role__org">Pacific Northwest National Laboratory</p>
+            <p>
+              A target-decoy statistical framework modeling false discovery
+              rates for peptide identification, with a precision-recall
+              threshold optimization pipeline. Ran GPU-accelerated proteomics
+              workflows on the Tahoma HPC cluster under Slurm.
+            </p>
+          </li>
+
+          <li class="role">
+            <p class="role__when num">Jun – Aug 2023</p>
+            <h3 class="role__title">Computational Biology Intern</h3>
+            <p class="role__org">Pacific Northwest National Laboratory</p>
+            <p>
+              Pushed <span class="num">300,000+</span> mass-spec files through a
+              GPU-accelerated Casanovo inference pipeline, and benchmarked
+              <span class="num">18</span> bacterial metaproteomics datasets with
+              Pandas and Seaborn.
+            </p>
+          </li>
+        </ol>
+
+        <div class="edu">
+          <p><strong>B.A. Data Science and B.A. Computer Science</strong>, UC Berkeley · GPA <span class="num">3.63</span></p>
+          <p class="edu__note">Open Project · Sports Analytics Group at Berkeley</p>
+        </div>
+      </article>
+
+      <!-- ---------------- resume.pdf ---------------- -->
+      <article class="doc doc--pdf" id="doc-resume" data-title="resume.pdf" data-meta="PDF · 181 KB">
+        <div class="pdf">
+          <object class="pdf__view" data="/resume.pdf#view=FitH" type="application/pdf">
+            <div class="pdf__fallback">
+              <p>Your browser won't preview PDFs inline.</p>
+              <a class="btn btn--primary" href="/resume.pdf" download>Download résumé</a>
+            </div>
+          </object>
+        </div>
+        <div class="pdf__bar">
+          <dl class="pdf__meta">
+            <div><dt>Kind</dt><dd>PDF document</dd></div>
+            <div><dt>Size</dt><dd class="num">181 KB</dd></div>
+            <div><dt>Pages</dt><dd class="num">1</dd></div>
+          </dl>
+          <a class="btn btn--primary" href="/resume.pdf" download>Download</a>
+        </div>
+      </article>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

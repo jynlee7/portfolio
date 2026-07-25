@@ -1,0 +1,182 @@
+/* ============================================================
+   DESIGN TOKENS — see DESIGN.md for the direction contract.
+
+   World: a scientific workstation, not a consumer desktop.
+   Chiseled opaque panels, 1px bevels, one accent, system
+   monospace reserved for measured values.
+
+   The previous world (lovi.care: 40-64px radii, white slabs,
+   four-stop shadow ramps) is gone, not softened. Radii here are
+   3-5px because milled plastic has a small fillet, not a pill.
+   ============================================================ */
+
+:root {
+  /* --- Type families ----------------------------------------
+     Display and body carry over from the previous build; they
+     were chosen for not being on the saturated-default list and
+     that reason still holds.
+
+     Mono is the HOST's monospace on purpose. A workstation uses
+     the machine's own face, and it costs no network request.
+     It appears only on measured values — clock, temperature,
+     file size, dates, GPA — never as a label costume.          */
+  --font-display: "Cabinet Grotesk", system-ui, sans-serif;
+  --font-body: "Switzer", system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas,
+    monospace;
+
+  /* --- Type scale -------------------------------------------
+     Two registers. CHROME is the operating system: small, dense,
+     tight leading, never below 12px. CONTENT is what lives
+     inside a window and is read at length.                     */
+  --step-chrome-sm: 0.6875rem; /* 11px — dock labels, badges     */
+  --step-chrome: 0.75rem; /* 12px — menubar, icon labels   */
+  --step-chrome-lg: 0.8125rem; /* 13px — window titles          */
+
+  --step-body: 0.9375rem;
+  --step-lede: 1.0625rem;
+  --step-h3: 1.0625rem;
+  --step-h2: 1.375rem;
+  --step-h1: 1.75rem;
+
+  /* Lock screen only. The clock is the one place this design is
+     allowed to be loud, because it is the whole top of the first
+     viewport and it is the only thing up there. The name is
+     deliberately NOT loud — it sits low and small, the way a
+     machine labels whose it is.                                */
+  --step-clock: clamp(4rem, 2rem + 11vw, 9rem);
+  --step-lock-name: 1.1875rem;
+
+  --leading-tight: 1.15;
+  --leading-body: 1.55;
+  --tracking-tight: -0.02em;
+  --tracking-chrome: 0.01em;
+  --tracking-caps: 0.14em;
+
+  /* --- Color ------------------------------------------------
+     Strategy: Restrained. Neutrals carry the machine; indigo is
+     the only accent and marks exactly one thing — the active or
+     primary path. Contrast values measured against the surface
+     each colour is actually used on.                           */
+
+  /* Panel faces. Chrome is the machine's plastic; page is the
+     paper inside a window where text is read at length.        */
+  --chrome: #eceae4;
+  --chrome-dim: #dedbd3;
+  --page: #fbfaf7;
+
+  --ink: #1b1a20; /* 16.6:1 on --page */
+  --ink-muted: #55525f; /* 7.3:1  on --page */
+  --ink-faint: #6a6775; /* 5.3:1  on --page — small-text floor */
+
+  --accent: #4338f5;
+  --accent-deep: #2f27ba;
+  --accent-ink: #ffffff; /* 6.7:1 on --accent */
+  --accent-wash: #e9e7fe;
+
+  /* Title bars and the lock screen run inverted. */
+  --bar: #22212a;
+  --bar-ink: #f3f1ec; /* 14.1:1 on --bar */
+  --bar-ink-dim: #a5a1b0; /* 6.3:1  on --bar */
+
+  /* --- Bevels -----------------------------------------------
+     The whole material language is here. A raised panel is lit
+     from the top-left: white highlight on the top and left
+     edges, shadow on the bottom and right. Inset reverses it.
+     1px, never blurred — a bevel is a physical edge, not a glow. */
+  --bevel-light: #ffffff;
+  --bevel-dark: #b6b2a7;
+  --hairline: #c8c4b9;
+
+  --raise:
+    inset 1px 1px 0 var(--bevel-light), inset -1px -1px 0 var(--bevel-dark);
+  --inset:
+    inset 1px 1px 0 var(--bevel-dark), inset -1px -1px 0 var(--bevel-light);
+
+  /* --- Elevation --------------------------------------------
+     Only floating things cast: windows, menus, the dock. Offset
+     and blur, no zero-offset halos. Two stops is enough for a
+     surface this dense; the previous world's four-stop ramps
+     were built for 64px slabs.                                 */
+  --shadow-float:
+    0 1px 2px rgb(28 26 20 / 0.16), 0 8px 20px -4px rgb(28 26 20 / 0.22);
+  --shadow-win:
+    0 2px 4px rgb(28 26 20 / 0.14), 0 18px 44px -8px rgb(28 26 20 / 0.3);
+
+  /* --- Radius -----------------------------------------------
+     Milled, not pilled.                                        */
+  --r-ctl: 3px;
+  --r-win: 5px;
+  --r-icon: 8px;
+
+  /* --- Space ------------------------------------------------ */
+  --gap-1: 0.375rem;
+  --gap-2: 0.625rem;
+  --gap-3: 1rem;
+  --gap-4: 1.5rem;
+  --gap-5: 2.25rem;
+  --gap-6: 3.5rem;
+
+  --measure-text: 68ch;
+
+  /* --- Chrome metrics --------------------------------------- */
+  --menubar-h: 30px;
+  --dock-h: 62px;
+
+  /* --- Motion -----------------------------------------------
+     A machine responds immediately. Chrome moves in ~140ms;
+     only the lock screen lift is allowed to be a moment.       */
+  --ease-out: cubic-bezier(0.16, 0.84, 0.3, 1);
+  --dur-snap: 90ms;
+  --dur-quick: 140ms;
+  --dur-win: 220ms;
+  --dur-wake: 620ms;
+}
+
+/* Wallpapers. Set on <html> so the theme switch is one attribute. */
+:root,
+[data-desk="lab"] {
+  --wallpaper: url("/field-lab.svg");
+}
+[data-desk="slate"] {
+  --wallpaper: url("/field-slate.svg");
+}
+[data-desk="blueprint"] {
+  --wallpaper: url("/field-blueprint.svg");
+}
+
+/* On the two dark wallpapers the chrome stays light — the machine does not
+   change material when you change the desk. Only things that sit DIRECTLY on
+   the wallpaper (icon labels, the menubar, the dock) invert, and those read
+   from these two tokens. */
+:root,
+[data-desk="lab"] {
+  --on-desk: #26242c;
+  /* Two dimmer steps for text sitting directly on the wallpaper. Tinted from
+     the ink rather than greyed, so they stay in the same family as the
+     contours. Measured against the darkest backdrop stop with the glow, the
+     lock scrim and an areal allowance for the hairline contours that cross
+     them: dim 5.20:1, quiet 4.51:1. Both clear AA for small text. Neither may
+     be lightened without re-measuring — the ground under them is not flat. */
+  --on-desk-dim: #524f5c;
+  --on-desk-quiet: #5b5866;
+  --on-desk-shadow: 0 1px 0 rgb(255 255 255 / 0.55);
+  /* Lock-screen edge scrim. Full strength only where the clock and the
+     identity sit; the middle of the screen is left alone. */
+  --desk-scrim: rgb(246 244 238 / 0.55);
+  --veil: rgb(246 244 238 / 0.82);
+  --veil-edge: rgb(255 255 255 / 0.7);
+}
+[data-desk="slate"],
+[data-desk="blueprint"] {
+  --on-desk: #ffffff;
+  /* Tinted from the desk's own hue, never greyed — grey text on a saturated
+     ground reads as dirty. Worst case is blueprint, whose bed is lightest:
+     dim 5.43:1, quiet 4.86:1. */
+  --on-desk-dim: #cfcbe0;
+  --on-desk-quiet: #c4c0d8;
+  --on-desk-shadow: 0 1px 3px rgb(10 10 20 / 0.55);
+  --desk-scrim: rgb(16 15 32 / 0.45);
+  --veil: rgb(30 30 42 / 0.62);
+  --veil-edge: rgb(255 255 255 / 0.18);
+}

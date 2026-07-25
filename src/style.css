@@ -1,0 +1,1299 @@
+@import "./tokens.css";
+
+/* ============================================================
+   DIRECTION CONTRACT
+
+   THESIS — This is a machine you operate, not a page you
+   scroll. It refuses both the portfolio scroll-stack and the
+   frosted-glass consumer-desktop clone.
+
+   OWN-WORLD — Scientific workstation. Opaque bone panels with
+   1px chiseled bevels (white top-left, grey bottom-right),
+   near-black title bars, 3-5px fillets, indigo as the only
+   accent, host monospace on measured values only. Wallpaper is
+   a generated contour map of a two-minimum loss surface.
+
+   STORY — A hiring manager wakes the machine, reads the name,
+   role and pitch on the lock screen, opens resume.pdf or a
+   project folder, and leaves with the PDF.
+
+   FIRST VIEWPORT — Lock screen: oversized clock top, name and
+   one-line pitch beneath it, "Open desktop" and a résumé link
+   side by side. Any key or click wakes it.
+
+   FORM — Desktop OS, pinned by the user's brief. Rendition is
+   the scientific workstation the work was actually done on,
+   not the consumer Mac.
+   ============================================================ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--step-body);
+  line-height: var(--leading-body);
+  color: var(--ink);
+  background: var(--chrome);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+p,
+dl,
+dd,
+figure {
+  margin: 0;
+}
+
+ul,
+ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+a {
+  color: var(--accent-deep);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+}
+
+svg {
+  display: block;
+}
+
+.sprite {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+/* Measured values. The only place monospace appears. */
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.skip {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 999;
+  padding: 0.6rem 1rem;
+  background: var(--page);
+  box-shadow: var(--shadow-float);
+}
+.skip:focus {
+  left: 0.5rem;
+  top: 0.5rem;
+}
+
+/* ============================================================
+   NO-JS FALLBACK
+   Everything that makes this a desktop is chrome. Strip it and
+   what remains is an ordinary, readable document.
+   ============================================================ */
+
+html:not(.js) .menubar,
+html:not(.js) .icons,
+html:not(.js) .rail,
+html:not(.js) .dock,
+html:not(.js) .lock {
+  display: none;
+}
+
+html:not(.js) body {
+  background: var(--page);
+}
+
+html:not(.js) .desk {
+  padding: var(--gap-6) var(--gap-4) var(--gap-4);
+}
+
+html:not(.js) .nameplate,
+html:not(.js) .docs {
+  max-width: 46rem;
+  margin-inline: auto;
+}
+
+html:not(.js) .doc {
+  padding: var(--gap-6) 0;
+  border-top: 1px solid var(--hairline);
+}
+
+/* ============================================================
+   LOCK SCREEN
+
+   Two anchors and nothing between them: the time at the top,
+   the identity at the bottom. The empty middle is the point —
+   it leaves the contour field visible, and the field is half of
+   what the screen is saying.
+
+   No controls. The whole surface is the door, so the only text
+   about entering is the quiet line at the bottom edge.
+   ============================================================ */
+
+.lock {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  justify-items: center;
+  padding: clamp(1.75rem, 7vh, 4.5rem) var(--gap-4)
+    clamp(1.25rem, 3.5vh, 2.25rem);
+  cursor: pointer;
+  /* The fallback wallpaper. When the inlined field mounts it takes over and
+     `.lock--field` drops this, so the contours are never painted twice. */
+  background: var(--wallpaper) center / cover no-repeat, var(--chrome);
+  transition:
+    opacity var(--dur-wake) var(--ease-out),
+    transform var(--dur-wake) var(--ease-out);
+}
+
+.lock--field {
+  background: var(--chrome);
+}
+
+/* The machine wakes by lifting the lock screen out of the frame, the way a
+   real one does. */
+.lock.is-waking {
+  opacity: 0;
+  transform: translateY(-3vh) scale(1.04);
+  pointer-events: none;
+}
+
+/* --- The field ---------------------------------------------
+   The same SVG the desktop uses, inlined so each of its 26
+   contour levels can arrive on its own beat. It fills deepest
+   first: the two wells appear, then the level sets climb out
+   of them. A loss surface resolving, drawn from the surface
+   this site's wallpaper is actually generated from.          */
+
+/* Three layers, bottom to top: the resolving SVG, the live canvas that
+   deforms it under the pointer, then the scrim. All of them sit below the
+   clock and the identity, which are raised out of the way explicitly rather
+   than relying on source order. */
+.lock__field {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.lock__field svg,
+.lock__field .desk__flow {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* The canvas is prepended by the flow module, so DOM order would put it
+   underneath. It is the live state of the same field and belongs on top. */
+.lock__field .desk__flow {
+  z-index: 1;
+}
+
+/* Edge scrim. Settles the field where the two text anchors sit and clears
+   completely across the middle, so the contours stay the subject rather than
+   being dimmed everywhere to make room for six words. */
+.lock::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    var(--desk-scrim) 0%,
+    var(--desk-scrim) 20%,
+    transparent 40%,
+    transparent 56%,
+    var(--desk-scrim) 76%,
+    var(--desk-scrim) 100%
+  );
+}
+
+.lock__top,
+.lock__id,
+.lock__hint {
+  position: relative;
+  z-index: 2;
+}
+
+/* Every contour starts down and is raised by the script. Scoped to the
+   mounted state so a half-finished fetch can never leave the field blank. */
+.lock--field .lock__field path {
+  opacity: 0;
+}
+
+.lock--field .lock__field g {
+  transform-origin: 50% 50%;
+  animation: field-settle 1400ms var(--ease-out) both;
+}
+
+@keyframes field-settle {
+  from {
+    transform: scale(1.03);
+  }
+}
+
+/* --- Time --------------------------------------------------
+   The clock reads Berkeley, not the visitor's timezone, so it
+   is a fact about Jayden rather than a widget.               */
+
+.lock__top {
+  text-align: center;
+  color: var(--on-desk);
+  text-shadow: var(--on-desk-shadow);
+  animation: lock-rise 560ms var(--ease-out) 160ms both;
+}
+
+.lock__date {
+  font-size: var(--step-chrome-lg);
+  font-weight: 600;
+  letter-spacing: var(--tracking-chrome);
+  color: var(--on-desk-dim);
+}
+
+.lock__clock {
+  margin-top: 0.15em;
+  font-size: var(--step-clock);
+  font-weight: 300;
+  line-height: 0.86;
+  letter-spacing: -0.05em;
+}
+
+/* --- Identity ----------------------------------------------
+   Sits low, small, and says three things: whose machine, what
+   they do, and one line worth being curious about.           */
+
+.lock__id {
+  align-self: end;
+  max-width: 34rem;
+  margin-bottom: clamp(1.75rem, 7vh, 4.5rem);
+  text-align: center;
+  color: var(--on-desk);
+  text-shadow: var(--on-desk-shadow);
+  animation: lock-pop 620ms var(--ease-out) 520ms both;
+}
+
+.lock__mark {
+  display: block;
+  width: 46px;
+  margin: 0 auto 0.9rem;
+  color: var(--on-desk);
+}
+
+.lock__name {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--step-lock-name);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+}
+
+.lock__role {
+  margin-top: 0.4rem;
+  font-size: var(--step-chrome-sm);
+  font-weight: 500;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--on-desk-dim);
+}
+
+.lock__idea {
+  margin-top: 1.15rem;
+  font-size: var(--step-body);
+  line-height: 1.45;
+  text-wrap: balance;
+  color: var(--on-desk-dim);
+}
+
+/* --- The way in --------------------------------------------
+   A button that looks like a caption, because the button is
+   not the affordance — the screen is.                        */
+
+.lock__hint {
+  font-size: var(--step-chrome-sm);
+  font-weight: 500;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--on-desk-quiet);
+  text-shadow: var(--on-desk-shadow);
+  cursor: pointer;
+  transition: color var(--dur-quick);
+  animation: lock-rise 500ms var(--ease-out) 1150ms both;
+}
+
+.lock__hint:hover,
+.lock__hint:focus-visible {
+  color: var(--on-desk);
+}
+
+@keyframes lock-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+/* The pop. Small, once, and the only thing on the page that blurs in —
+   the identity resolving out of the field behind it. */
+@keyframes lock-pop {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.94);
+    filter: blur(7px);
+  }
+}
+
+/* ============================================================
+   MENUBAR
+   Translucent because it is chrome floating over the desk —
+   the one place blur is doing a job rather than decorating.
+   ============================================================ */
+
+.menubar {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 200;
+  height: var(--menubar-h);
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  padding: 0 0.5rem;
+  font-size: var(--step-chrome);
+  color: var(--on-desk);
+  background: var(--veil);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  box-shadow: inset 0 -1px 0 var(--veil-edge);
+}
+
+.menubar__left,
+.menubar__right {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.menubar__right {
+  gap: var(--gap-3);
+  padding-right: 0.35rem;
+}
+
+.menubar__link {
+  color: inherit;
+  text-decoration: none;
+  opacity: 0.8;
+}
+.menubar__link:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+.menubar__clock {
+  font-size: var(--step-chrome);
+  opacity: 0.9;
+}
+
+.menu {
+  position: relative;
+  display: flex;
+}
+
+.menu__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0 0.55rem;
+  border-radius: var(--r-ctl);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--dur-snap);
+}
+.menu__trigger:hover,
+.menu[data-open] .menu__trigger {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.menu__trigger--brand {
+  font-weight: 600;
+}
+
+.mark {
+  display: inline-grid;
+  place-items: center;
+  width: 17px;
+  height: 17px;
+  border-radius: 2px;
+  background: var(--accent);
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 9px;
+  letter-spacing: -0.02em;
+}
+.menu__trigger:hover .mark,
+.menu[data-open] .menu__trigger .mark {
+  background: #fff;
+  color: var(--accent);
+}
+
+.menu__drop {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  z-index: 210;
+  min-width: 15rem;
+  padding: 3px;
+  display: none;
+  background: var(--chrome);
+  border-radius: var(--r-win);
+  box-shadow:
+    var(--raise),
+    0 0 0 1px var(--hairline),
+    var(--shadow-float);
+  color: var(--ink);
+}
+.menu[data-open] .menu__drop {
+  display: block;
+}
+
+.menu__drop button,
+.menu__drop a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-3);
+  width: 100%;
+  padding: 0.3rem 0.55rem;
+  border-radius: 2px;
+  font-size: var(--step-chrome-lg);
+  text-align: left;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.menu__drop button:hover,
+.menu__drop a:hover {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.menu__key {
+  font-family: var(--font-mono);
+  font-size: var(--step-chrome-sm);
+  opacity: 0.55;
+}
+
+.menu__sep {
+  height: 1px;
+  margin: 3px 0.4rem;
+  background: var(--hairline);
+}
+
+/* Checkmark on the active wallpaper. */
+.menu__drop [data-desk][aria-checked="true"]::before {
+  content: "✓";
+  margin-right: -0.3rem;
+}
+
+/* ============================================================
+   DESKTOP
+   ============================================================ */
+
+.desk {
+  position: fixed;
+  inset: var(--menubar-h) 0 0 0;
+  overflow: hidden;
+  background: var(--wallpaper) center / cover no-repeat, var(--chrome);
+}
+
+/* The live field. Sits directly on the wallpaper and is transparent whenever
+   the pointer is away, so the crisp SVG is what you see at rest. */
+.desk__flow {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Everything else on the desk is positioned and comes later in the DOM, so it
+   paints above the canvas without needing a z-index of its own. */
+
+.deskcol {
+  position: absolute;
+  top: clamp(1.25rem, 3vh, 2rem);
+  left: clamp(1.25rem, 3vw, 2.5rem);
+  display: grid;
+  gap: clamp(2rem, 5vh, 3.25rem);
+  justify-items: start;
+}
+
+.nameplate {
+  max-width: 27rem;
+  color: var(--on-desk);
+  text-shadow: var(--on-desk-shadow);
+}
+
+.nameplate__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: var(--step-chrome-sm);
+  font-weight: 600;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #2f9e63;
+  box-shadow: 0 0 0 2px rgb(47 158 99 / 0.25);
+}
+
+.nameplate__name {
+  margin-top: 0.4rem;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(1.75rem, 1.2rem + 1.8vw, 2.5rem);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.nameplate__role {
+  margin-top: 0.4rem;
+  font-size: var(--step-body);
+  font-weight: 500;
+  opacity: 0.88;
+}
+
+.nameplate__pitch {
+  margin-top: 0.5rem;
+  font-size: var(--step-body);
+  opacity: 0.74;
+}
+
+/* ---- Desktop items ---- */
+
+.icons {
+  display: grid;
+  grid-template-columns: repeat(5, 7rem);
+  align-items: start;
+  gap: var(--gap-3) var(--gap-1);
+}
+
+.icon {
+  display: grid;
+  justify-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.25rem 0.35rem;
+  border-radius: var(--r-icon);
+  cursor: pointer;
+  transition: background var(--dur-snap);
+}
+
+.icon__art {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 40px;
+  filter: drop-shadow(0 2px 3px rgb(20 18 14 / 0.28));
+}
+.icon__art svg {
+  width: 100%;
+  height: 100%;
+}
+.icon__art--page {
+  width: 34px;
+  height: 42px;
+}
+
+.icon__label {
+  font-size: var(--step-chrome);
+  line-height: 1.25;
+  text-align: center;
+  color: var(--on-desk);
+  text-shadow: var(--on-desk-shadow);
+  padding: 1px 5px;
+  border-radius: 3px;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.icon:hover .icon__label {
+  background: var(--veil);
+}
+
+/* Selection is the OS's own vocabulary: the label fills, not the tile. */
+.icon.is-selected .icon__label {
+  background: var(--accent);
+  color: var(--accent-ink);
+  text-shadow: none;
+}
+.icon.is-selected {
+  background: var(--veil);
+}
+
+/* ============================================================
+   WIDGET RAIL
+   ============================================================ */
+
+.rail {
+  position: absolute;
+  top: clamp(1.25rem, 3vh, 2rem);
+  right: clamp(1.25rem, 3vw, 2.5rem);
+  width: 13rem;
+  display: grid;
+  gap: var(--gap-2);
+}
+
+.widget {
+  padding: 0.7rem 0.85rem 0.8rem;
+  background: var(--chrome);
+  border-radius: var(--r-win);
+  box-shadow:
+    var(--raise),
+    0 0 0 1px var(--hairline),
+    var(--shadow-float);
+}
+
+.widget__title {
+  font-size: var(--step-chrome-sm);
+  font-weight: 600;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.nowlist {
+  margin-top: 0.5rem;
+  display: grid;
+  gap: 0.4rem;
+}
+.nowlist li {
+  display: grid;
+  gap: 1px;
+  padding-left: 0.55rem;
+  border-left: 1px solid var(--accent);
+}
+.nowlist__what {
+  font-size: var(--step-chrome-lg);
+  font-weight: 600;
+  line-height: 1.2;
+}
+.nowlist__where {
+  font-size: var(--step-chrome);
+  color: var(--ink-muted);
+}
+
+.widget__foot {
+  margin-top: 0.6rem;
+  font-size: var(--step-chrome-sm);
+  color: var(--ink-faint);
+}
+
+.wx__temp {
+  margin-top: 0.15rem;
+  font-size: 2rem;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+.wx__unit {
+  font-size: 0.9rem;
+  color: var(--ink-faint);
+}
+.wx__cond {
+  font-size: var(--step-chrome);
+  color: var(--ink-muted);
+}
+
+/* ============================================================
+   DOCK
+   ============================================================ */
+
+.dock {
+  position: fixed;
+  left: 50%;
+  bottom: 0.75rem;
+  z-index: 190;
+  transform: translateX(-50%);
+}
+
+.dock__list {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.35rem;
+  padding: 0.4rem 0.5rem;
+  background: var(--veil);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  border-radius: var(--r-win);
+  box-shadow:
+    inset 0 0 0 1px var(--veil-edge),
+    var(--shadow-float);
+}
+
+.dock__sep {
+  width: 1px;
+  align-self: stretch;
+  margin: 0.15rem 0.25rem;
+  background: var(--on-desk);
+  opacity: 0.2;
+}
+
+.dockitem {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  transform-origin: bottom center;
+  /* Magnification is set by JS as a custom property so the falloff can be a
+     real curve across neighbours rather than a hover snap. */
+  transform: translateY(calc(var(--mag, 0) * -9px))
+    scale(calc(1 + var(--mag, 0) * 0.42));
+  transition: transform var(--dur-quick) var(--ease-out);
+}
+.dockitem svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 2px 3px rgb(20 18 14 / 0.3));
+}
+
+/* Tooltip. Appears above the magnified icon. */
+.dockitem::after {
+  content: attr(data-label);
+  position: absolute;
+  bottom: calc(100% + 0.55rem);
+  left: 50%;
+  translate: -50% 0;
+  padding: 0.2rem 0.5rem;
+  border-radius: 3px;
+  background: var(--bar);
+  color: var(--bar-ink);
+  font-family: var(--font-mono);
+  font-size: var(--step-chrome-sm);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-quick);
+}
+.dockitem:hover::after,
+.dockitem:focus-visible::after {
+  opacity: 1;
+}
+
+/* Running indicator — honest: it means a window for this document is open. */
+.dockitem.is-running::before {
+  content: "";
+  position: absolute;
+  bottom: -0.28rem;
+  left: 50%;
+  translate: -50% 0;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--on-desk);
+}
+
+/* ============================================================
+   WINDOWS
+   ============================================================ */
+
+.win {
+  position: absolute;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  width: var(--w, 44rem);
+  max-width: calc(100vw - 2rem);
+  max-height: calc(100% - 2rem);
+  background: var(--page);
+  border-radius: var(--r-win);
+  box-shadow:
+    0 0 0 1px var(--bevel-dark),
+    var(--shadow-win);
+  animation: win-in var(--dur-win) var(--ease-out);
+}
+
+@keyframes win-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.985);
+  }
+}
+
+.win.is-front {
+  z-index: 140;
+}
+
+/* The window container is focused programmatically on open so screen readers
+   land inside it. Which window has focus is already stated by the title bar
+   (front is near-black, behind is dimmed), so a ring around the whole frame
+   would be redundant chrome. Interactive children keep theirs. */
+.win:focus,
+.win:focus-visible {
+  outline: none;
+}
+
+.win__bar {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-2);
+  height: 30px;
+  padding: 0 0.4rem 0 0.35rem;
+  background: var(--bar);
+  color: var(--bar-ink);
+  border-radius: var(--r-win) var(--r-win) 0 0;
+  cursor: grab;
+  user-select: none;
+}
+.win__bar:active {
+  cursor: grabbing;
+}
+
+/* Inactive windows dim their bar, so "which window is in front" is
+   answerable at a glance. */
+.win:not(.is-front) .win__bar {
+  background: #4a4854;
+}
+
+.win__close {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  flex: none;
+  border-radius: 2px;
+  background: rgb(255 255 255 / 0.16);
+  color: var(--bar-ink);
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background var(--dur-snap);
+}
+.win__close:hover {
+  background: #e0483c;
+  color: #fff;
+}
+
+.win__title {
+  font-family: var(--font-mono);
+  font-size: var(--step-chrome-lg);
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.win__meta {
+  margin-left: auto;
+  font-size: var(--step-chrome-sm);
+  color: var(--bar-ink-dim);
+}
+
+.win__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--gap-4) var(--gap-4) var(--gap-5);
+  border-radius: 0 0 var(--r-win) var(--r-win);
+}
+
+/* The PDF window is a viewer: no padding, the document fills it. */
+.win--pdf .win__body {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ============================================================
+   DOCUMENT CONTENT
+   ============================================================ */
+
+.doc__h1 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--step-h1);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+}
+
+.doc__lede {
+  margin-top: 0.5rem;
+  font-size: var(--step-lede);
+  color: var(--ink-muted);
+  max-width: var(--measure-text);
+}
+
+.doc p {
+  max-width: var(--measure-text);
+}
+
+.doc > p + p,
+.doc__lede + p {
+  margin-top: var(--gap-3);
+}
+
+.award {
+  display: inline-block;
+  margin-bottom: 0.6rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 2px;
+  background: var(--accent-wash);
+  color: var(--accent-deep);
+  font-size: var(--step-chrome-sm);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+/* Screenshot wells. Deliberately obvious that something is missing. */
+.shot {
+  margin: var(--gap-4) 0;
+  aspect-ratio: 21 / 9;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-ctl);
+  background: repeating-linear-gradient(
+    135deg,
+    var(--chrome) 0 10px,
+    var(--chrome-dim) 10px 20px
+  );
+  box-shadow: var(--inset);
+}
+.shot--wide {
+  aspect-ratio: 16 / 10;
+}
+.shot__label {
+  font-family: var(--font-mono);
+  font-size: var(--step-chrome-sm);
+  color: var(--ink-faint);
+}
+
+/* Spec tables. The workstation's information-density register. */
+.spec {
+  margin-top: var(--gap-4);
+  border-top: 1px solid var(--hairline);
+}
+.spec > div {
+  display: grid;
+  grid-template-columns: 6.5rem 1fr;
+  gap: var(--gap-3);
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--hairline);
+}
+.spec dt {
+  font-size: var(--step-chrome);
+  font-weight: 600;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  padding-top: 0.14rem;
+}
+.spec dd {
+  margin: 0;
+  font-size: var(--step-body);
+}
+
+/* ---- Roles ---- */
+
+.roles {
+  margin-top: var(--gap-4);
+  display: grid;
+}
+
+.role {
+  padding: var(--gap-3) 0;
+  border-top: 1px solid var(--hairline);
+}
+.role:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.role__when {
+  font-size: var(--step-chrome);
+  color: var(--ink-faint);
+}
+
+.role__title {
+  margin-top: 0.15rem;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--step-h3);
+  letter-spacing: -0.015em;
+}
+
+.role__org {
+  margin-bottom: 0.4rem;
+  font-size: var(--step-chrome-lg);
+  color: var(--accent-deep);
+  font-weight: 500;
+}
+
+.edu {
+  margin-top: var(--gap-4);
+  padding: var(--gap-3);
+  border-radius: var(--r-ctl);
+  background: var(--chrome);
+  box-shadow: var(--raise);
+}
+.edu__note {
+  margin-top: 0.2rem;
+  font-size: var(--step-chrome-lg);
+  color: var(--ink-muted);
+}
+
+/* ---- PDF viewer ---- */
+
+.pdf {
+  flex: 1;
+  min-height: 24rem;
+  background: var(--chrome-dim);
+  box-shadow: var(--inset);
+}
+.pdf__view {
+  width: 100%;
+  height: 100%;
+  min-height: 24rem;
+  border: 0;
+}
+.pdf__fallback {
+  display: grid;
+  gap: var(--gap-3);
+  justify-items: center;
+  align-content: center;
+  height: 100%;
+  padding: var(--gap-5);
+  text-align: center;
+}
+
+.pdf__bar {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-4);
+  padding: 0.6rem 0.9rem;
+  background: var(--chrome);
+  box-shadow: inset 0 1px 0 var(--bevel-light);
+}
+.pdf__meta {
+  display: flex;
+  gap: var(--gap-4);
+  flex-wrap: wrap;
+}
+.pdf__meta > div {
+  display: grid;
+  gap: 1px;
+}
+.pdf__meta dt {
+  font-size: var(--step-chrome-sm);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.pdf__meta dd {
+  margin: 0;
+  font-size: var(--step-chrome-lg);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: var(--r-ctl);
+  font-size: var(--step-chrome-lg);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background var(--dur-quick);
+}
+.btn--primary {
+  margin-left: auto;
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+.btn--primary:hover {
+  background: var(--accent-deep);
+}
+
+/* Documents are invisible until promoted into a window (JS mode only). */
+html.js .docs {
+  display: none;
+}
+
+/* ============================================================
+   MOBILE — an iOS home screen, not a shrunken desktop.
+   Windows become full-height sheets.
+   ============================================================ */
+
+@media (max-width: 780px) {
+  .menubar__link {
+    display: none;
+  }
+  .menubar {
+    padding-inline: 0.35rem;
+  }
+  .menu__trigger {
+    padding-inline: 0.4rem;
+  }
+
+  .desk {
+    position: static;
+    min-height: calc(100dvh - var(--menubar-h));
+    margin-top: var(--menubar-h);
+    padding: var(--gap-4) var(--gap-3) 7rem;
+    overflow: visible;
+  }
+
+  .deskcol,
+  .rail {
+    position: static;
+    display: block;
+    max-width: none;
+  }
+  .nameplate {
+    max-width: none;
+  }
+
+  .icons {
+    display: grid;
+    margin-top: var(--gap-5);
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--gap-4) var(--gap-1);
+  }
+  /* Narrow columns: let a long filename take two lines rather than truncate. */
+  .icon__label {
+    white-space: normal;
+    overflow: visible;
+  }
+
+  .rail {
+    width: auto;
+    margin-top: var(--gap-5);
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+
+  .dock {
+    bottom: max(0.6rem, env(safe-area-inset-bottom));
+  }
+  .dockitem {
+    width: 34px;
+    height: 34px;
+    /* Magnification is a pointer affordance; on touch it just gets in the
+       way, so the transform is neutralised rather than restyled. */
+    transform: none;
+  }
+  .dockitem::after {
+    display: none;
+  }
+
+  .win {
+    position: fixed;
+    inset: auto 0 0 0;
+    width: 100%;
+    max-width: none;
+    height: calc(100dvh - var(--menubar-h));
+    max-height: none;
+    border-radius: var(--r-win) var(--r-win) 0 0;
+    animation: sheet-in var(--dur-win) var(--ease-out);
+  }
+  @keyframes sheet-in {
+    from {
+      transform: translateY(14px);
+      opacity: 0;
+    }
+  }
+  .win__bar {
+    height: 42px;
+    cursor: default;
+  }
+  .win__close {
+    width: 22px;
+    height: 22px;
+    font-size: 15px;
+  }
+  .win__body {
+    padding: var(--gap-4) var(--gap-3) var(--gap-6);
+  }
+
+  .spec > div {
+    grid-template-columns: 1fr;
+    gap: 0.1rem;
+  }
+  .pdf__bar {
+    flex-wrap: wrap;
+    gap: var(--gap-2);
+  }
+  .btn--primary {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ============================================================
+   REDUCED MOTION
+   The wake still happens — it is the navigation — but instantly.
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    /* Delays matter as much as durations here: a filled animation holds its
+       `from` state through the delay, so a staggered entrance would still
+       start invisible and only pop in later. */
+    animation-delay: 0ms !important;
+    transition-delay: 0ms !important;
+  }
+  .lock.is-waking {
+    transform: none;
+  }
+  .lock__id {
+    filter: none;
+  }
+  .dockitem {
+    transform: none !important;
+  }
+}
