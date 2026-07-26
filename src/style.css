@@ -923,6 +923,45 @@ html:not(.js) .doc {
   color: var(--ink-muted);
 }
 
+/* The game's tile. A widget that is also a launcher, so it needs the button
+   reset the other two never did — and it deliberately has no .widget__foot:
+   the plan and the count say what it is, and a line of explanation under it
+   would be the tell that it needed one. */
+.widget--spots {
+  display: block;
+  width: 100%;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  border: 0;
+  cursor: pointer;
+}
+.widget--spots .widget__title {
+  display: block;
+}
+.widget--spots:hover {
+  background: var(--page);
+}
+
+.spots__mini {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: 0.5rem;
+}
+
+.spots__tally {
+  display: block;
+  margin-top: 0.45rem;
+  font-size: var(--step-chrome-lg);
+  color: var(--ink);
+}
+/* A word, not a measured value, so it leaves the monospace run. */
+.spots__of {
+  font-size: var(--step-chrome-sm);
+  color: var(--ink-faint);
+}
+
 /* ============================================================
    DOCK
    ============================================================ */
@@ -1451,17 +1490,32 @@ html:not(.js) .doc {
 }
 
 /* ============================================================
-   dinner.run
-   The one thing on this desktop that is not work. It reads as an
-   instrument panel rather than a game board: the field is recessed
-   into the window like a plotter bed, the blocks are unlit until
-   they have been measured, and the only colour is the accent on the
-   block that turned out to be right.
+   spots.map
+   The one thing on this desktop that is not work. It is a survey
+   sheet rather than a game board: the plan is recessed into the
+   window like a plotter bed, buildings are flat footprints with a
+   single-pixel edge, and the only colour is the accent on where you
+   are standing and on what you have already found.
+   Contract in GAME.md. Nothing here animates on a loop.
    ============================================================ */
 
-/* The board is JS-built. Without it, the article is the piece of writing it
-   already is, and a dead empty box would be worse than none. */
-html:not(.js) .dinner {
+/* The plan is JS-built, and the list under it is the document. Without JS the
+   list stands on its own and a dead empty box would be worse than none. */
+html:not(.js) .plan {
+  display: none;
+}
+
+/* With JS the list is the game's data, not its content: showing it would hand
+   over every answer before the first step. src/os/spots.ts moves one <li> at a
+   time out of it and into the card.
+
+   Its heading and lede go too — they introduce a list that is no longer
+   visible, and the article already opens with its own. The draft band and the
+   nothing-written-yet line stay: both are still true with the map up, and the
+   second one is the only thing explaining why every storefront is empty. */
+html.js .spots,
+html.js .spots__h,
+html.js .spots__lede {
   display: none;
 }
 
@@ -1469,117 +1523,271 @@ html:not(.js) .dinner {
   padding-top: var(--gap-3);
 }
 
-.dinner {
+/* Map on the left, readout on the right. Stacked, the card lands below the
+   fold and the whole point of walking — step on a place, read it — happens
+   somewhere you cannot see. The columns keep both in one view. */
+.plan {
   margin: var(--gap-4) 0 var(--gap-5);
+  display: grid;
+  grid-template-columns: minmax(0, 1.9fr) minmax(11rem, 1fr);
+  column-gap: var(--gap-3);
+  align-items: start;
+}
+.plan__paper {
+  grid-column: 1;
+  grid-row: 1;
+}
+.plan__hud {
+  grid-column: 1;
+  grid-row: 2;
+}
+.plan__say {
+  grid-column: 1;
+  grid-row: 3;
+}
+.plan__card {
+  grid-column: 2;
+  grid-row: 1 / -1;
 }
 
-.dinner__hud {
-  display: flex;
-  gap: var(--gap-4);
-  align-items: baseline;
-  padding: 0.4rem 0.6rem;
-  border-radius: var(--r-ctl) var(--r-ctl) 0 0;
-  background: var(--chrome);
-  box-shadow: var(--raise);
-}
-.dinner__stat {
-  display: flex;
-  gap: 0.4rem;
-  align-items: baseline;
-}
-.dinner__k {
-  font-size: var(--step-chrome-sm);
-  letter-spacing: var(--tracking-caps);
-  text-transform: uppercase;
-  color: var(--ink-faint);
-}
-.dinner__stat .num {
-  font-size: var(--step-chrome-lg);
-  color: var(--ink);
-}
-
-/* 8 x 6 blocks. The aspect ratio is the grid's, so blocks stay square and the
-   contours are never stretched out of true. */
-.dinner__board {
+/* 28 x 18 cells. The aspect ratio is the grid's, so cells stay square and the
+   blocks are never stretched out of true. */
+.plan__paper {
   position: relative;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 28 / 18;
   background: var(--chrome);
   box-shadow: var(--inset);
 }
-.dinner__field,
-.dinner__grid {
+.plan__ink,
+.plan__layer {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
 }
-.dinner__grid {
-  display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  grid-template-rows: repeat(6, 1fr);
-}
-/* Rows exist for the grid role, not for the layout. */
-.dinner__grid [role="row"] {
-  display: contents;
+
+/* One cell, addressed by --cx/--cy. Percentages here are of the element's own
+   box, which is exactly one cell, so the arithmetic stays exact at any size
+   and the stylesheet never needs to know the grid dimensions. */
+.plan__walker,
+.plan__door {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(100% / var(--cols, 28));
+  height: calc(100% / var(--rows, 18));
+  transform: translate(calc(var(--cx, 0) * 100%), calc(var(--cy, 0) * 100%));
 }
 
-.spot {
+/* The only moving thing in the game, and it moves on the compositor: one
+   transform transition per step, no loop, nothing running at rest. */
+.plan__walker {
+  z-index: 2;
   display: grid;
   place-items: center;
-  margin: 1px;
-  border-radius: 2px;
-  background: transparent;
-  cursor: pointer;
-  transition: background var(--dur-snap);
+  transition: transform var(--dur-snap) var(--ease-out);
 }
-.spot:hover {
+
+/* A disc, where every storefront is a square. Both are indigo and they end up
+   side by side the moment you find one, so the accent rule — one thing at a
+   time — is carried by shape here rather than by colour.
+   Sized as a percentage of the cell, not padding on the walker itself:
+   percentage padding on an absolutely positioned box resolves against the
+   whole map's width, which collapses it to nothing. */
+.plan__walker::before {
+  content: "";
+  width: 58%;
+  height: 58%;
+  border-radius: 50%;
+  /* #2f27ba on #eceae4 is 8.2:1. */
+  background: var(--accent-deep);
+}
+
+.plan__door {
+  z-index: 1;
+  background: transparent;
+  border-radius: 2px;
+  cursor: pointer;
+}
+.plan__door:hover {
   background: rgb(67 56 245 / 0.1);
 }
-.spot[aria-disabled="true"] {
+.plan__door.is-vacant {
   cursor: default;
 }
-.spot[aria-disabled="true"]:hover {
+.plan__door.is-vacant:hover {
   background: transparent;
 }
 
-/* A measured block. #1b1a20 on #eceae4 is 14.3:1. */
-.spot.is-known {
-  background: rgb(252 251 247 / 0.82);
-  box-shadow: var(--raise);
+.plan__layer:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
-.spot__v {
+
+/* Thumb controls. Hidden wherever there is a real pointer, because there the
+   keyboard and the doors themselves already do this and a D-pad on a desktop
+   would be set dressing. Shown on coarse pointers, where a twelve-pixel door
+   cell is not a tap target. */
+.plan__pad {
+  display: none;
+}
+@media (pointer: coarse) {
+  .plan__pad {
+    grid-column: 1;
+    grid-row: 2;
+    display: grid;
+    grid-template-columns: repeat(3, 2.75rem);
+    grid-template-rows: repeat(2, 2.75rem);
+    gap: var(--gap-1);
+    justify-content: center;
+    margin-top: var(--gap-2);
+  }
+  .plan__hud {
+    grid-row: 3;
+  }
+  .plan__say {
+    grid-row: 4;
+  }
+}
+
+/* 2.75rem is 44px: the floor for a tap target. */
+.plan__step {
+  position: relative;
+  background: var(--chrome);
+  border-radius: var(--r-ctl);
+  box-shadow: var(--raise);
+  cursor: pointer;
+}
+.plan__step:active {
+  background: var(--chrome-dim);
+  box-shadow: var(--inset);
+}
+/* A chevron drawn from a rotated corner, so the four share one shape. */
+.plan__step::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-top: 2px solid var(--ink-muted);
+  border-left: 2px solid var(--ink-muted);
+}
+.plan__step[data-step="0,-1"] {
+  grid-column: 2;
+  grid-row: 1;
+}
+.plan__step[data-step="0,-1"]::before {
+  transform: translateY(2px) rotate(45deg);
+}
+.plan__step[data-step="-1,0"] {
+  grid-column: 1;
+  grid-row: 2;
+}
+.plan__step[data-step="-1,0"]::before {
+  transform: translateX(2px) rotate(-45deg);
+}
+.plan__step[data-step="1,0"] {
+  grid-column: 3;
+  grid-row: 2;
+}
+.plan__step[data-step="1,0"]::before {
+  transform: translateX(-2px) rotate(135deg);
+}
+.plan__step[data-step="0,1"] {
+  grid-column: 2;
+  grid-row: 2;
+}
+.plan__step[data-step="0,1"]::before {
+  transform: translateY(-2px) rotate(-135deg);
+}
+
+.plan__hud {
+  display: flex;
+  gap: 0.4rem;
+  align-items: baseline;
+  margin-top: var(--gap-2);
+}
+.plan__k {
   font-size: var(--step-chrome-sm);
-  font-weight: 600;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  /* #6a6775 on #fbfaf7 is 5.3:1. */
+  color: var(--ink-faint);
+}
+.plan__hud .num {
+  font-size: var(--step-chrome-lg);
   color: var(--ink);
 }
 
-/* The block that was actually best, marked only once the week is over.
-   #4338f5 on #eceae4 is 5.6:1. */
-.spot.is-best {
-  background: var(--accent);
-  box-shadow: 0 0 0 2px var(--accent-deep);
-}
-/* #ffffff on #4338f5 is 6.7:1. */
-.spot.is-best .spot__v {
-  color: var(--accent-ink);
-}
-
-.dinner__say {
-  min-height: 2.6em;
-  margin-top: var(--gap-2);
-  font-size: var(--step-body);
+.plan__say {
+  min-height: 1.4em;
+  margin-top: var(--gap-1);
+  font-size: var(--step-chrome);
   color: var(--ink-muted);
 }
-.dinner__foot {
-  margin-top: var(--gap-2);
-}
-.dinner__foot .btn {
+
+/* The readout. Raised off the page like the HUD, because it is the instrument
+   reporting what you walked into rather than a card in a feed. */
+.plan__card {
+  padding: 0.7rem 0.85rem 0.8rem;
   background: var(--chrome);
-  color: var(--ink);
+  border-radius: var(--r-ctl);
   box-shadow: var(--raise);
 }
-.dinner__foot .btn:hover {
-  background: var(--chrome-dim);
+.plan__card .place {
+  list-style: none;
+}
+.plan__prompt {
+  font-size: var(--step-chrome);
+  color: var(--ink-faint);
+}
+.plan__prompt[hidden] {
+  display: none;
+}
+/* #1b1a20 on #eceae4 is 14.4:1. */
+.place__name {
+  font-family: var(--font-display);
+  font-size: var(--step-h3);
+  color: var(--ink);
+}
+/* The dish, not a measured value, so not monospace. 6.3:1 on #eceae4. */
+.place__dish {
+  margin-top: 0.15rem;
+  font-size: var(--step-chrome);
+  color: var(--ink-muted);
+}
+.place__note {
+  margin-top: var(--gap-2);
+  font-size: var(--step-body);
+  color: var(--ink);
+}
+
+/* An entry someone started and did not finish. Deliberately obvious: a place
+   that quietly reads fine while missing half of itself never gets fixed. */
+.place__dish--missing,
+.place__note--missing {
+  color: var(--ink-faint);
+  font-style: italic;
+}
+
+/* The no-JS list. Only ever seen with scripting off. */
+.spots {
+  margin: var(--gap-4) 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: var(--gap-3);
+}
+.spots__h {
+  font-family: var(--font-display);
+  font-size: var(--step-h3);
+  color: var(--ink);
+}
+.spots__lede,
+.spots__empty {
+  margin-top: var(--gap-1);
+  color: var(--ink-muted);
 }
 
 /* Documents are invisible until promoted into a window (JS mode only). */
@@ -1702,6 +1910,28 @@ html.js .docs {
   .btn--primary {
     width: 100%;
     justify-content: center;
+  }
+
+  /* The plan stacks: at this width the two columns leave the map too small for
+     a building to read as a building. The readout goes under it, where the
+     sheet scrolls to it naturally. */
+  .plan {
+    grid-template-columns: 1fr;
+    row-gap: var(--gap-2);
+  }
+  .plan__paper,
+  .plan__pad,
+  .plan__hud,
+  .plan__say,
+  .plan__card {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  /* The rail is a two-column grid here, so the tile has to survive half width.
+     The plan is the part that gives, not the count. */
+  .spots__mini {
+    margin-top: 0.35rem;
   }
 }
 

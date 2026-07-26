@@ -39,6 +39,13 @@ function bringToFront(win: HTMLElement): void {
 }
 
 /**
+ * Below this width a window is a bottom sheet pinned to the viewport edges by
+ * the stylesheet rather than a free-floating panel. It neither cascades nor
+ * drags, and nothing here may write inline geometry onto it.
+ */
+const sheet = () => window.matchMedia("(max-width: 780px)").matches;
+
+/**
  * Initial placement. Windows cascade down-right from a fixed origin so a stack
  * of them stays individually clickable, then wrap back to the top once they
  * would run off the desk.
@@ -71,9 +78,10 @@ const WIDTH: Record<string, string> = {
   experience: "44rem",
   clinical: "46rem",
   chessblitz: "46rem",
-  // Narrower than the documents: the board wants to be squarish, and the prose
-  // under it is short.
-  dinner: "34rem",
+  // Wider than the documents: the plan is 28 cells across with the readout
+  // beside it, and the blocks stop reading as buildings once a cell is under
+  // about 20px.
+  spots: "56rem",
 };
 
 export function openDoc(id: string): void {
@@ -118,13 +126,19 @@ export function openDoc(id: string): void {
   body.append(article);
   desk().append(win);
 
-  const width = win.getBoundingClientRect().width;
-  const { x, y } = place(width);
-  win.style.left = `${x}px`;
-  win.style.top = `${y}px`;
-  // A cascaded window starts lower down, so its ceiling has to account for the
-  // offset or the last one in the stack runs off the bottom of the desk.
-  win.style.maxHeight = `${desk().getBoundingClientRect().height - y - 16}px`;
+  // Below 780px a window is a bottom sheet pinned to all four edges by the
+  // stylesheet, and there is no cascade to place it in. Writing inline left/top
+  // here would beat that rule — the sheet would start at the cascade origin,
+  // keep its full width, and hang off the right of the screen.
+  if (!sheet()) {
+    const width = win.getBoundingClientRect().width;
+    const { x, y } = place(width);
+    win.style.left = `${x}px`;
+    win.style.top = `${y}px`;
+    // A cascaded window starts lower down, so its ceiling has to account for
+    // the offset or the last one in the stack runs off the bottom of the desk.
+    win.style.maxHeight = `${desk().getBoundingClientRect().height - y - 16}px`;
+  }
 
   open.set(id, win);
   bringToFront(win);
@@ -175,7 +189,7 @@ function makeDraggable(win: HTMLElement, handle: HTMLElement): void {
     // Let the close button do its own job.
     if ((event.target as HTMLElement).closest(".win__close")) return;
     if (event.button !== 0) return;
-    if (window.matchMedia("(max-width: 780px)").matches) return;
+    if (sheet()) return;
 
     const bounds = desk().getBoundingClientRect();
     const rect = win.getBoundingClientRect();

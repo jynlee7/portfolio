@@ -110,12 +110,12 @@ The lock screen's entrance resolves the field level by level (deepest first),
 then hands off to the live canvas so the two never animate the same contours
 at once.
 
-`dinner.run` is the one interactive surface besides the field, and it is
-turn-based specifically so the budget survives it: nothing runs between turns,
-the board redraws once when a night is eaten, and an idle open window requests
-zero frames. Its single animated moment is the reveal at the end — a 260ms
-crossfade from the inferred map to the real one, bounded, self-terminating, and
-skipped entirely under reduced motion, where the truth simply appears.
+`spots.map` is the one interactive surface besides the field, and it spends no
+part of this budget: it has no animation loop at all. Walking is a discrete grid
+step, the walker is a DOM element moved by a CSS transform transition on the
+compositor, and the map repaints once per step and only when something was
+actually discovered. An idle open window requests zero frames. Its contract is
+`GAME.md`.
 
 ## Composition
 

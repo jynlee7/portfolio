@@ -1,11 +1,22 @@
 import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { renderDoc } from "./scripts/doc.mjs";
+import { renderSpots } from "./scripts/spots.mjs";
+import { SLOTS } from "./src/game/neighborhood.ts";
 
 /** Documents written as prose rather than markup. id → source file. */
 const WRITTEN = {
   principles: "content/principles.md",
 };
+
+/**
+ * The places in spots.map, compiled into the game's article at its own marker.
+ *
+ * Separate from WRITTEN because this is not a whole document — it is the list
+ * inside one, and the article around it (the heading, the prose, the mount the
+ * canvas goes in) is hand-authored in index.html.
+ */
+const SPOTS = "content/spots.md";
 
 /**
  * Compile the written documents into index.html at its `<!-- @doc id -->`
@@ -17,7 +28,7 @@ const WRITTEN = {
  * visitor with JavaScript off still gets the whole document.
  */
 function writtenDocs() {
-  const sources = Object.values(WRITTEN).map((p) => resolve(p));
+  const sources = [...Object.values(WRITTEN), SPOTS].map((p) => resolve(p));
 
   return {
     name: "written-docs",
@@ -40,6 +51,23 @@ function writtenDocs() {
           }
           html = html.replace(marker, article);
         }
+
+        const spotsMarker = /[ \t]*<!--\s*@spots\s*-->/;
+        if (spotsMarker.test(html)) {
+          if (!existsSync(SPOTS)) {
+            this.warn?.(`written-docs: ${SPOTS} is missing; the map will have no places`);
+          } else {
+            const { html: list, warnings } = renderSpots(
+              readFileSync(SPOTS, "utf8"),
+              SLOTS.map((s) => s.id),
+            );
+            for (const warning of warnings) {
+              console.warn(`\n  ${SPOTS}: ${warning}\n`);
+            }
+            html = html.replace(spotsMarker, list);
+          }
+        }
+
         return html;
       },
     },

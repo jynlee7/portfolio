@@ -1,239 +1,219 @@
 /**
- * The neighborhood: a hidden scalar field you can only learn by eating.
+ * spots.map — the block plan.
  *
- * This is the same shape as the surface behind the desktop — two peaks with a
- * saddle between them, one better than the other — but it is deliberately NOT
- * `src/field/core.ts`. That file is the wallpaper's single source of truth and
- * changing it means regenerating three SVGs. This one is reseeded every day and
- * has no business touching the desk.
+ * No DOM in here. The map is checkable on its own, and `validate()` exists so
+ * it can be checked from Node without a browser:
  *
- * No DOM in here. The rules are checkable on their own.
+ *     node --experimental-strip-types \
+ *       -e 'import("./src/game/neighborhood.ts").then(m => console.log(m.validate()))'
+ *
+ * The geometry is hand-drawn, not generated. A procedural neighborhood reads as
+ * a screensaver; a real block plan reads as a place, and this one is meant to
+ * be somewhere you can get your bearings in. There is no seed and no daily
+ * reshuffle — those belonged to the game this replaced.
  */
 
-export const COLS = 8;
-export const ROWS = 6;
-export const NIGHTS = 7;
+/** The whole plan is integer cells; nothing in here knows about pixels. */
+export const GRID = { cols: 28, rows: 18 } as const;
 
-/** Ratings live in a range people already know how to read. */
-const FLOOR = 4.2;
-const CEIL = 9.4;
+export type Cell = { x: number; y: number };
+export type Rect = { x: number; y: number; w: number; h: number };
 
-/** A visited block. `value` is fixed the moment it is first sampled. */
-export type Sample = { c: number; r: number; value: number };
+/** Which way the building lies from its door cell. */
+export type Facing = "N" | "S" | "E" | "W";
 
-export type Block = { c: number; r: number; value: number };
+export type Slot = { id: string; door: Cell; facing: Facing };
 
-export type Neighborhood = {
-  seed: number;
-  /** Rating of a block, to one decimal. Deterministic. */
-  rating: (c: number, r: number) => number;
-  /**
-   * The underlying surface, continuous and unrounded, for drawing contours.
-   * Block ratings are this plus a little per-block noise: the map is the smooth
-   * truth, individual kitchens vary.
-   */
-  smooth: (c: number, r: number) => number;
-  /** The single best block. What the whole week was competing against. */
-  best: Block;
-  /** The best block far away from `best` — the plausible wrong answer. */
-  decoy: Block;
+/** Where the walker starts: a middle intersection, near nothing in particular. */
+export const START: Cell = { x: 9, y: 6 };
+
+/**
+ * Building footprints. Everything not inside one is street.
+ *
+ * Three bands of three, with two-cell corridors between them — wide enough that
+ * the walker never looks wedged, narrow enough that the neighborhood fits one
+ * screen. The bottom band is shallower than the other two so the plan does not
+ * read as graph paper.
+ */
+export const BLOCKS: readonly Rect[] = [
+  { x: 2, y: 2, w: 6, h: 4 },
+  { x: 10, y: 2, w: 6, h: 4 },
+  { x: 18, y: 2, w: 8, h: 4 },
+  { x: 2, y: 8, w: 6, h: 4 },
+  { x: 10, y: 8, w: 6, h: 4 },
+  { x: 18, y: 8, w: 8, h: 4 },
+  { x: 2, y: 14, w: 6, h: 2 },
+  { x: 10, y: 14, w: 6, h: 2 },
+  { x: 18, y: 14, w: 8, h: 2 },
+];
+
+/**
+ * Storefront doors, in fill order.
+ *
+ * `content/spots.md` fills these in the order they are written — entry n lands
+ * in slot n — so Jayden never types a coordinate. The order below is a walk
+ * rather than a raster scan: it starts beside the spawn and works outward, so
+ * the first places he writes are the first ones found.
+ *
+ * There are more slots than the twelve-or-so the content is sized for. Extras
+ * stay vacant, which is honest, and which makes the plan look like a
+ * neighborhood rather than a board with every square filled.
+ */
+export const SLOTS: readonly Slot[] = [
+  { id: "s1", door: { x: 9, y: 4 }, facing: "E" },
+  { id: "s2", door: { x: 5, y: 6 }, facing: "N" },
+  { id: "s3", door: { x: 13, y: 7 }, facing: "S" },
+  { id: "s4", door: { x: 9, y: 10 }, facing: "E" },
+  { id: "s5", door: { x: 12, y: 1 }, facing: "S" },
+  { id: "s6", door: { x: 4, y: 1 }, facing: "S" },
+  { id: "s7", door: { x: 1, y: 3 }, facing: "E" },
+  { id: "s8", door: { x: 3, y: 7 }, facing: "S" },
+  { id: "s9", door: { x: 16, y: 9 }, facing: "W" },
+  { id: "s10", door: { x: 21, y: 1 }, facing: "S" },
+  { id: "s11", door: { x: 22, y: 7 }, facing: "S" },
+  { id: "s12", door: { x: 26, y: 4 }, facing: "W" },
+  { id: "s13", door: { x: 5, y: 13 }, facing: "S" },
+  { id: "s14", door: { x: 20, y: 13 }, facing: "S" },
+];
+
+const OFFSET: Record<Facing, Cell> = {
+  N: { x: 0, y: -1 },
+  S: { x: 0, y: 1 },
+  E: { x: 1, y: 0 },
+  W: { x: -1, y: 0 },
 };
 
-/** `A1` through `H6`. A grid reference, not a fabricated restaurant name. */
-export function label(c: number, r: number): string {
-  return `${String.fromCharCode(65 + c)}${r + 1}`;
+const STEPS: readonly Cell[] = [OFFSET.N, OFFSET.S, OFFSET.E, OFFSET.W];
+
+export function inBounds(c: Cell): boolean {
+  return c.x >= 0 && c.y >= 0 && c.x < GRID.cols && c.y < GRID.rows;
 }
 
-/** Small deterministic PRNG. Same seed, same neighborhood, no dependency. */
-function mulberry32(seed: number): () => number {
-  let a = seed >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let t = a;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
+function insideBlock(c: Cell): boolean {
+  for (const b of BLOCKS) {
+    if (c.x >= b.x && c.x < b.x + b.w && c.y >= b.y && c.y < b.y + b.h) return true;
+  }
+  return false;
+}
+
+/** Street, and on the plan. Buildings are solid; you walk around them. */
+export function walkable(c: Cell): boolean {
+  return inBounds(c) && !insideBlock(c);
 }
 
 /**
- * Today, on this machine's clock.
- *
- * Pacific, not the visitor's own timezone, and deliberately: the menubar clock
- * keeps Pacific, and the document claims everyone gets the same neighborhood on
- * the same day. Seeding off local time would quietly make that false — someone
- * in Tokyo would be playing tomorrow's board. One machine, one day, one
- * neighborhood.
+ * One step. Returns the *same object* when the move is into a wall or off the
+ * plan, so a caller can compare by identity to know nothing happened and skip
+ * the repaint. That check is what keeps walking into a wall free.
  */
-export function dayKey(now = new Date()): string {
-  // en-CA formats as YYYY-MM-DD, which is the key we want anyway.
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "America/Los_Angeles",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(now);
+export function step(from: Cell, dx: number, dy: number): Cell {
+  const next = { x: from.x + dx, y: from.y + dy };
+  return walkable(next) ? next : from;
 }
 
-export function seedForDay(key: string): number {
-  let h = 2166136261;
-  for (let i = 0; i < key.length; i++) {
-    h ^= key.charCodeAt(i);
-    h = Math.imul(h, 16777619);
+/** The storefront whose door is this exact cell, if any. */
+export function slotAt(c: Cell): Slot | null {
+  for (const s of SLOTS) {
+    if (s.door.x === c.x && s.door.y === c.y) return s;
   }
-  return h >>> 0;
+  return null;
 }
 
-/** Distance in normalised board units. */
-function dist(ax: number, ay: number, bx: number, by: number): number {
-  return Math.hypot(ax - bx, ay - by);
+/** The building cell a storefront's front is drawn on. */
+export function frontOf(slot: Slot): Cell {
+  const o = OFFSET[slot.facing];
+  return { x: slot.door.x + o.x, y: slot.door.y + o.y };
 }
 
-function peak(
-  x: number,
-  y: number,
-  cx: number,
-  cy: number,
-  height: number,
-  spread: number,
-): number {
-  const dx = x - cx;
-  const dy = y - cy;
-  return height * Math.exp(-(dx * dx + dy * dy) / (2 * spread * spread));
+const key = (c: Cell) => c.y * GRID.cols + c.x;
+const unkey = (k: number): Cell => ({ x: k % GRID.cols, y: Math.floor(k / GRID.cols) });
+
+/**
+ * Shortest walk between two street cells, excluding the start and including the
+ * destination. `null` when the route does not exist or an end is a building.
+ *
+ * Breadth-first over at most 504 cells. Only a tap calls this — keyboard
+ * movement goes a cell at a time through `step` — so it runs once per gesture
+ * and never in a loop.
+ */
+export function pathTo(from: Cell, to: Cell): Cell[] | null {
+  if (!walkable(from) || !walkable(to)) return null;
+
+  const start = key(from);
+  const target = key(to);
+  if (start === target) return [];
+
+  const cameFrom = new Map<number, number>();
+  const seen = new Set<number>([start]);
+  let frontier: Cell[] = [from];
+
+  while (frontier.length) {
+    const next: Cell[] = [];
+
+    for (const c of frontier) {
+      for (const o of STEPS) {
+        const n = { x: c.x + o.x, y: c.y + o.y };
+        if (!walkable(n)) continue;
+
+        const k = key(n);
+        if (seen.has(k)) continue;
+        seen.add(k);
+        cameFrom.set(k, key(c));
+
+        if (k === target) {
+          const path: Cell[] = [];
+          for (let at = k; at !== start; at = cameFrom.get(at) as number) {
+            path.push(unkey(at));
+          }
+          return path.reverse();
+        }
+        next.push(n);
+      }
+    }
+    frontier = next;
+  }
+  return null;
 }
 
 /**
- * Build a neighborhood.
+ * Problems with the plan, as plain sentences. Empty means the map is sound.
  *
- * The weaker peak is pulled toward the middle of the board and given a wider
- * spread, so a greedy walk finds it first and finds it easily. The better one
- * is tighter and pushed to the edges. That asymmetry is the entire game: the
- * comfortable answer is genuinely good and genuinely not the best.
+ * Worth running after any edit to BLOCKS or SLOTS. A door sunk inside a
+ * building, or one facing open street, draws nothing on the canvas and would
+ * otherwise surface only as a storefront nobody can find.
  */
-export function makeNeighborhood(seed: number): Neighborhood {
-  let attempt = seed >>> 0;
+export function validate(): string[] {
+  const problems: string[] = [];
+  const ids = new Set<string>();
+  const doors = new Set<number>();
 
-  for (let tries = 0; tries < 12; tries++) {
-    const built = build(attempt);
-    // Reject boards where the safe answer is as good as the right one; there
-    // is no decision left in those and the closing line falls flat.
-    if (built.best.value - built.decoy.value >= 0.55) return built;
-    attempt = (Math.imul(attempt, 1664525) + 1013904223) >>> 0;
-  }
-
-  return build(attempt);
-}
-
-function build(seed: number): Neighborhood {
-  const rand = mulberry32(seed);
-
-  // Decoy sits central. Wide and forgiving — easy to stumble into.
-  const dx = 0.34 + rand() * 0.32;
-  const dy = 0.32 + rand() * 0.36;
-
-  // The real one keeps its distance. Tighter, so it has to be looked for.
-  let bx = 0;
-  let by = 0;
-  do {
-    bx = 0.1 + rand() * 0.8;
-    by = 0.1 + rand() * 0.8;
-  } while (dist(bx, by, dx, dy) < 0.44);
-
-  const ripplePhase = rand() * Math.PI * 2;
-  const rippleFreq = 2.2 + rand() * 1.4;
-
-  // Per-block jitter, precomputed so a block's rating never moves once set.
-  const jitter = new Float64Array(COLS * ROWS);
-  for (let i = 0; i < jitter.length; i++) jitter[i] = (rand() - 0.5) * 0.16;
-
-  // The surface, continuous in c and r so contours drawn from it are smooth.
-  const raw = (c: number, r: number): number => {
-    const x = (c + 0.5) / COLS;
-    const y = (r + 0.5) / ROWS;
-    return (
-      peak(x, y, bx, by, 1.2, 0.17) +
-      peak(x, y, dx, dy, 1.0, 0.25) +
-      0.09 * Math.sin(rippleFreq * x + ripplePhase) * Math.cos(rippleFreq * y)
-    );
-  };
-
-  const noiseAt = (c: number, r: number): number => jitter[r * COLS + c] ?? 0;
-
-  // Normalise across the whole board so ratings always use the full range.
-  let lo = Infinity;
-  let hi = -Infinity;
-  for (let r = 0; r < ROWS; r++) {
-    for (let c = 0; c < COLS; c++) {
-      const v = raw(c, r) + noiseAt(c, r);
-      if (v < lo) lo = v;
-      if (v > hi) hi = v;
-    }
-  }
-  const span = hi - lo || 1;
-  const scale = (v: number): number => FLOOR + ((v - lo) / span) * (CEIL - FLOOR);
-
-  const smooth = (c: number, r: number): number => scale(raw(c, r));
-
-  const rating = (c: number, r: number): number =>
-    Math.round(scale(raw(c, r) + noiseAt(c, r)) * 10) / 10;
-
-  // The best block is whatever actually scores highest — read off the board,
-  // not asserted from the peak we placed.
-  let best: Block = { c: 0, r: 0, value: -Infinity };
-  for (let r = 0; r < ROWS; r++) {
-    for (let c = 0; c < COLS; c++) {
-      const v = rating(c, r);
-      if (v > best.value) best = { c, r, value: v };
+  for (const b of BLOCKS) {
+    if (b.x < 1 || b.y < 1 || b.x + b.w > GRID.cols - 1 || b.y + b.h > GRID.rows - 1) {
+      problems.push(`block at ${b.x},${b.y} touches or crosses the plan edge`);
     }
   }
 
-  // The runner-up, measured far enough from the winner that it is a different
-  // place to eat rather than the block next door.
-  let decoy: Block = { c: 0, r: 0, value: -Infinity };
-  for (let r = 0; r < ROWS; r++) {
-    for (let c = 0; c < COLS; c++) {
-      const far = dist((c + 0.5) / COLS, (r + 0.5) / ROWS, (best.c + 0.5) / COLS, (best.r + 0.5) / ROWS);
-      if (far < 0.3) continue;
-      const v = rating(c, r);
-      if (v > decoy.value) decoy = { c, r, value: v };
+  for (const s of SLOTS) {
+    if (ids.has(s.id)) problems.push(`duplicate slot id ${s.id}`);
+    ids.add(s.id);
+
+    if (doors.has(key(s.door))) {
+      problems.push(`two slots share the door cell ${s.door.x},${s.door.y}`);
+    }
+    doors.add(key(s.door));
+
+    if (!walkable(s.door)) {
+      problems.push(`${s.id}: door ${s.door.x},${s.door.y} is not on the street`);
+    }
+    if (!insideBlock(frontOf(s))) {
+      problems.push(`${s.id}: faces ${s.facing} into open street, not a building`);
+    }
+    if (!pathTo(START, s.door)) {
+      problems.push(`${s.id}: no route from the start`);
     }
   }
 
-  return { seed, rating, smooth, best, decoy };
-}
+  if (!walkable(START)) problems.push("START is not on the street");
 
-/**
- * What the machine believes the neighborhood looks like, given what has been
- * eaten so far. Inverse distance weighting at power four — sharp enough that
- * each new sample visibly rearranges the map, which is the point of drawing it.
- *
- * Under two samples there is nothing honest to draw, so it returns null and the
- * board shows an empty grid.
- */
-export function estimate(
-  samples: Sample[],
-): ((c: number, r: number) => number) | null {
-  if (samples.length < 2) return null;
-
-  return (c, r) => {
-    let num = 0;
-    let den = 0;
-    for (const s of samples) {
-      const dc = c - s.c;
-      const dr = r - s.r;
-      const d2 = dc * dc + dr * dr;
-      if (d2 < 1e-9) return s.value;
-      const w = 1 / (d2 * d2);
-      num += w * s.value;
-      den += w;
-    }
-    return num / den;
-  };
-}
-
-/** The average of every night eaten. The only score that counts. */
-export function weekAverage(picks: Sample[]): number {
-  if (!picks.length) return 0;
-  const total = picks.reduce((sum, p) => sum + p.value, 0);
-  return Math.round((total / picks.length) * 10) / 10;
+  return problems;
 }

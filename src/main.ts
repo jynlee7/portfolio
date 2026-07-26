@@ -7,7 +7,7 @@ import { initArrange } from "./os/arrange";
 import { initWindowKeys, openDoc } from "./os/windows";
 import { initWeather } from "./os/widgets";
 import { initFlow } from "./os/flow";
-import { initDinner } from "./os/dinner";
+import { initSpots } from "./os/spots";
 
 initLock();
 initMenubar();
@@ -15,7 +15,7 @@ initLaunchers();
 initArrange();
 initDock();
 initWindowKeys();
-initDinner();
+initSpots();
 void initWeather();
 
 // The pointer deforms the contour field on both surfaces that show it.

@@ -110,46 +110,6 @@
           <path d="M7 15h7" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round" />
         </symbol>
 
-        <!-- dinner.run: a folded map with two rings on it and the pin on the
-             smaller one, because the game is that the two are not equal. Same
-             grammar as the folder — landscape card, flat fills, indigo on the
-             one part that says what this is. -->
-        <symbol id="i-map" viewBox="0 0 40 34">
-          <path
-            d="M2 6.5 14 3l12 3.5L38 3v24.5L26 31l-12-3.5L2 31z"
-            fill="#fbfaf7"
-            stroke="#8d8a80"
-            stroke-width="1.4"
-            stroke-linejoin="round"
-          />
-          <g stroke="#8d8a80" stroke-width="1.2" stroke-opacity="0.55">
-            <path d="M14 3.4v24.2" fill="none" />
-            <path d="M26 6.6v24.2" fill="none" />
-          </g>
-          <ellipse
-            cx="9.6"
-            cy="19"
-            rx="5.2"
-            ry="4"
-            fill="none"
-            stroke="#9a978d"
-            stroke-width="1.5"
-          />
-          <ellipse
-            cx="30.4"
-            cy="14.6"
-            rx="6"
-            ry="4.6"
-            fill="none"
-            stroke="var(--accent)"
-            stroke-width="1.5"
-            stroke-opacity="0.5"
-          />
-          <path
-            d="M30.4 18.4c-2 -2.6 -3.1 -4 -3.1 -5.4a3.1 3.1 0 0 1 6.2 0c0 1.4 -1.1 2.8 -3.1 5.4z"
-            fill="var(--accent)"
-          />
-        </symbol>
 
         <symbol id="i-mail" viewBox="0 0 40 32">
           <rect
@@ -301,9 +261,9 @@
         <div class="menu" data-menu>
           <button class="menu__trigger" type="button" aria-expanded="false">Play</button>
           <div class="menu__drop" role="menu">
-            <button type="button" role="menuitem" data-open="dinner">dinner.run<span class="menu__key">7</span></button>
+            <button type="button" role="menuitem" data-open="spots">spots.map</button>
             <div class="menu__sep"></div>
-            <button type="button" role="menuitem" data-action="dinner-new">New neighborhood</button>
+            <button type="button" role="menuitem" data-action="spots-reset">Start the walk over</button>
           </div>
         </div>
 
@@ -405,12 +365,6 @@
           <span class="icon__label">principles.txt</span>
         </button>
 
-        <!-- The only thing on this desktop that is not work. It earns its
-             place by being about the same problem as the wallpaper. -->
-        <button class="icon" type="button" role="listitem" data-open="dinner">
-          <span class="icon__art"><svg viewBox="0 0 40 34"><use href="#i-map" /></svg></span>
-          <span class="icon__label">dinner.run</span>
-        </button>
       </div>
       </div>
 
@@ -437,6 +391,35 @@
           <p class="wx__temp num"><span id="wx-temp">—</span>°<span class="wx__unit">F</span></p>
           <p class="wx__cond" id="wx-cond">Loading…</p>
         </div>
+
+        <!-- The game's only launcher, and deliberately the quietest thing on
+             the rail: the plan, two numbers, and no line of explanation. It is
+             the same block plan src/game/neighborhood.ts draws, at 1/20th the
+             size, so the tile is a small picture of the actual place rather
+             than a generic map glyph. Opening it is wired by initLaunchers,
+             which binds every [data-open] that is not a desktop icon. -->
+        <button class="widget widget--spots" type="button" data-open="spots" aria-label="Open spots.map">
+          <span class="widget__title">Spots</span>
+          <svg class="spots__mini" viewBox="0 0 28 18" aria-hidden="true" focusable="false">
+            <g fill="var(--chrome-dim)" stroke="var(--bevel-dark)" stroke-width="0.4">
+              <rect x="2" y="2" width="6" height="4" />
+              <rect x="10" y="2" width="6" height="4" />
+              <rect x="18" y="2" width="8" height="4" />
+              <rect x="2" y="8" width="6" height="4" />
+              <rect x="10" y="8" width="6" height="4" />
+              <rect x="18" y="8" width="8" height="4" />
+              <rect x="2" y="14" width="6" height="2" />
+              <rect x="10" y="14" width="6" height="2" />
+              <rect x="18" y="14" width="8" height="2" />
+            </g>
+            <rect x="10" y="4" width="1" height="1" fill="var(--accent)" />
+          </svg>
+          <span class="spots__tally">
+            <span class="num" id="spots-found">0</span>
+            <span class="spots__of">of</span>
+            <span class="num" id="spots-total">0</span>
+          </span>
+        </button>
       </aside>
     </main>
 
@@ -450,8 +433,6 @@
         <li><button class="dockitem" type="button" data-open="chessblitz" data-label="chessblitz"><svg viewBox="0 0 40 34"><use href="#i-folder" /></svg></button></li>
         <li><button class="dockitem" type="button" data-open="experience" data-label="experience.log"><svg viewBox="0 0 32 40"><use href="#i-log" /></svg></button></li>
         <li><button class="dockitem" type="button" data-open="resume" data-label="resume.pdf"><svg viewBox="0 0 32 40"><use href="#i-pdf" /></svg></button></li>
-        <li class="dock__sep" aria-hidden="true"></li>
-        <li><button class="dockitem" type="button" data-open="dinner" data-label="dinner.run"><svg viewBox="0 0 40 34"><use href="#i-map" /></svg></button></li>
         <li class="dock__sep" aria-hidden="true"></li>
         <li><a class="dockitem" href="mailto:jeyl@berkeley.edu" data-label="jeyl@berkeley.edu"><svg viewBox="0 0 40 32"><use href="#i-mail" /></svg></a></li>
       </ul>
@@ -659,51 +640,45 @@
         </div>
       </article>
 
-      <!-- ---------------- dinner.run ----------------
-           The board is built by src/os/dinner.ts into the empty mount below.
-           Everything after it is the document, and it has to stand on its own:
-           without JS the mount is hidden and this reads as a short piece of
-           writing about the hobby, which is what it is. -->
-      <article class="doc doc--game" id="doc-dinner" data-title="dinner.run" data-meta="seven nights">
-        <h2 class="doc__h1">dinner.run</h2>
+      <!-- ---------------- spots.map ----------------
+           The map is built by src/os/spots.ts into the empty .plan mount, and
+           the list of places is compiled into the @spots marker from
+           content/spots.md at build time. Without JS the mount is hidden and
+           the list is simply a list, which is what it is — the game is a way
+           of reading it one at a time, not a substitute for it. -->
+      <article class="doc doc--game" id="doc-spots" data-title="spots.map" data-meta="one neighborhood">
+        <h2 class="doc__h1">spots.map</h2>
         <p class="doc__lede">
-          My actual hobby is finding places to eat, which turns out to be the
-          same problem as the picture behind this desktop.
+          A few blocks of Berkeley, and what I ate on them. Walk it and the
+          places open one at a time.
         </p>
 
-        <div class="dinner"></div>
+        <!-- @spots -->
+
+        <div class="plan"></div>
 
         <p>
-          The wallpaper on this machine is a loss surface with two minima, and
-          the lock screen says one of them is wrong. That is not a metaphor I
-          reached for. It is the thing that happens every time I decide where
-          to eat: there is a place I know is good, and somewhere within walking
-          distance there is a better one I have never tried, and every night I
-          spend confirming the first is a night I did not spend looking for the
-          second.
+          Every place on this map is somewhere I actually went, written up in
+          one file I edit by hand. Nothing here is generated and there are no
+          filler entries — where I have not written anything, the storefront
+          stands empty and the map says so rather than inventing a restaurant
+          to fill the gap. That constraint is most of why it is worth walking.
         </p>
         <p>
-          So the game is seven nights in a neighborhood you cannot see. Each
-          block has a rating you only learn by eating there, and your score is
-          the average of the week rather than the best night in it — which is
-          the part that makes it a decision. Going somewhere new drags the
-          average down when it is bad. Going back to a sure thing caps you at
-          whatever the sure thing was worth. Explore too long and you never
-          cash in; settle too early and you never find out.
+          It is a map rather than a list because a list gets skimmed. Twelve
+          names and twelve one-line reviews are four seconds of scrolling and
+          nothing retained. Making you walk two blocks to the next one buys
+          each place the few seconds it takes to actually read it, which is the
+          only thing I wanted from the format.
         </p>
         <p>
-          As you eat, the map draws what it can infer about the rest of the
-          neighborhood from the blocks you have already been to. It is usually
-          wrong in an interesting way. At the end it shows you the real
-          surface, and where the best block actually was.
-        </p>
-        <p>
-          Everyone gets the same neighborhood on the same day. The blocks are
-          grid references rather than real restaurants, because the rest of
-          this site does not make things up and this part is not going to
-          either.
+          There is no score, no timer and no way to lose, and it does not ask
+          you to come back tomorrow. Walking is one keypress per block, the map
+          redraws only when you find something, and nothing on this page
+          animates while you are standing still.
         </p>
       </article>
+
     </div>
 
     <script type="module" src="/src/main.ts"></script>

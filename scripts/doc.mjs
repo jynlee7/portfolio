@@ -35,7 +35,7 @@
  */
 
 const ESCAPES = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" };
-const escape = (s) => s.replace(/[&<>"]/g, (c) => ESCAPES[c]);
+export const escape = (s) => s.replace(/[&<>"]/g, (c) => ESCAPES[c]);
 
 /** Straight marks are for source code. Prose gets the real ones. */
 const typeset = (s) =>
@@ -52,7 +52,7 @@ const typeset = (s) =>
 const safeHref = (url) =>
   /^(https?:\/\/|mailto:|\/|#)/i.test(url) ? url : "#";
 
-function inline(raw) {
+export function inline(raw) {
   // Code spans are split out first so neither typography nor markup can reach
   // inside them — a backticked path with an apostrophe in it stays literal.
   return raw
@@ -73,7 +73,7 @@ function inline(raw) {
 }
 
 /** `Key: value` lines above the first blank line. */
-function frontmatter(source) {
+export function frontmatter(source) {
   const lines = source.replace(/\r\n/g, "\n").split("\n");
   const meta = {};
   let i = 0;

@@ -41,17 +41,19 @@ profile, because the individual repo URLs are unknown. Someone clicking
 The user said "three projects not yet." Two are in. A third would need a
 `doc-*` article, a desktop icon, a dock item, and a `Work` menu entry.
 
-### 4. Real places for `dinner.run` — optional
+### 4. The places in `spots.map` — blocking
 
-The game is finished and complete without this. Blocks are grid references
-(`A1`–`H6`) because nothing on this site invents facts about Jayden, and a
-board full of made-up restaurant names would be exactly that.
+**This is the one that stops the game shipping.** `content/spots.md` is in the
+repo with a heading, a draft band, and zero entries, because every place in it
+is a fact about Jayden and nothing on this site invents those. Until he writes
+it, the map draws vacant storefronts and says so.
 
-If he wants to name them, a list of real places he has actually eaten — one per
-line, best to worst is not needed, just the names — can be dropped into
-`content/spots.md` and wired through the `WRITTEN` map in `vite.config.mjs` the
-way `content/principles.md` already is. The reveal would then name the block
-instead of only numbering it. **Do not write this list for him.**
+The format is in `GAME.md` §3. Per place: a `##` line with the name, one short
+line naming the dish, then a sentence or two about it. No coordinates — entries
+fill the storefronts in the order they are written. Twelve or so is the size the
+map is drawn for; fewer is fine.
+
+**Do not write this list for him.**
 
 ### 5. Phone number
 
@@ -80,8 +82,8 @@ headless Chromium reports `pointer: fine` and no motion preference:
   and icons stay in the fixed grid rather than becoming draggable.
 
 Worth ten minutes on a real phone and with the OS setting toggled. This now also
-covers `dinner.run`'s reveal, which should skip the crossfade and show the true
-map immediately under reduced motion.
+covers `spots.map`, where the walker should jump between cells rather than
+sliding, and every storefront must stay tappable at 44px in the mobile sheet.
 
 ### Confirm the résumé window previews inline
 
@@ -98,8 +100,6 @@ inline."
   24 Jul 2026. It does not sync. Re-copy whenever the original changes, and
   update the `181 KB` figure in the résumé document's `data-meta` and
   `.pdf__meta` if the size moves.
-- **Delete `REPLACE.md`.** Superseded by this file and actively misleading: it
-  documents `.project__well` and a `.pair` grid that no longer exist.
 - **`CHANGELOG.md` and `README.md`** were not reviewed this session and may
   still describe the old scroll-stack design.
 
@@ -110,7 +110,7 @@ inline."
 **Deployment.** No Vercel config, no domain, no analytics. The user asked to
 stay local. Do not add it unprompted.
 
-**A leaderboard or a share string for `dinner.run`.** It is a toy on a
+**A leaderboard or a share string for `spots.map`.** It is a toy on a
 portfolio, not a product. Nothing about it should ask for a second visit it
 has not earned.
 

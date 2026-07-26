@@ -55,14 +55,17 @@ src/os/arrange.ts   initArrange, tidy (draggable icons, persistence)
 src/os/windows.ts   openDoc, closeDoc, closeAll, initWindowKeys
 src/os/widgets.ts   initWeather (Open-Meteo, Berkeley)
 src/os/flow.ts      initFlow (pointer-driven live wallpaper)
-src/os/dinner.ts    initDinner (dinner.run — the minigame; turn-based, no loop)
+src/os/spots.ts     initSpots (spots.map — the walk-around game; no loop)
 src/field/core.ts   the scalar field — shared by generator AND runtime
 src/game/neighborhood.ts
-                    dinner.run's own hidden surface — pure, no DOM
+                    spots.map's block plan — pure geometry, no DOM
+content/spots.md    the places. Jayden's to write.
+scripts/spots.mjs   compiles spots.md into the article at build time
 scripts/field.mjs   writes public/field-{lab,slate,blueprint}.svg
 ```
 
-`PRODUCT.md` product truth · `DESIGN.md` visual contract · `TODO.md` what's left.
+`PRODUCT.md` product truth · `DESIGN.md` visual contract · `GAME.md` the game's
+contract · `TODO.md` what's left.
 
 ## Conventions that matter
 
@@ -98,14 +101,12 @@ must not start under reduced motion, on a coarse pointer, or on a hidden tab.
 
 **Storage keys:** `jl.woke` (sessionStorage, lock dismissed) · `jl.desk`
 (wallpaper) · `jl.icons` (icon positions) · `jl.bt` (Berkeley-time toggle) ·
-`jl.dinner` (today's `dinner.run`).
+`jl.spots` (found places and walker position).
 
-**`dinner.run` does not touch the wallpaper.** Its surface lives in
-`src/game/neighborhood.ts` and is reseeded daily; `src/field/core.ts` stays the
-wallpaper's single source of truth, and the game only borrows the pure
-`marchingSquares` helper from it. Changing the game never means regenerating an
-SVG. The board is seeded from the *Pacific* date, matching the menubar clock, so
-"the same neighborhood on the same day" is true across timezones.
+**The game has its own contract: read `GAME.md` before touching it.** Short
+version: `spots.map` never touches the wallpaper, has no `requestAnimationFrame`
+loop of any kind, and every place in it is real and written by Jayden in
+`content/spots.md`. Changing the game never means regenerating an SVG.
 
 ## Verifying work
 
