@@ -88,6 +88,10 @@ datasets, 36 MGF spectral files, 300 patient scenarios, 8 engineers led.
 third project. Do not invent any of them. There are no live deployed URLs for
 either project, so the page links to source only.
 
+`principles.txt` exists as a scaffold in `content/principles.md` and is marked
+`Draft: yes`. Jayden writes it; do not write his principles for him. Formatting,
+trimming and structure are the help to give once there is real text there.
+
 ## Product Principles
 
 1. **Specific beats impressive.** A real number from real work outranks any

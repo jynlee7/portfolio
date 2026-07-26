@@ -110,6 +110,47 @@
           <path d="M7 15h7" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round" />
         </symbol>
 
+        <!-- dinner.run: a folded map with two rings on it and the pin on the
+             smaller one, because the game is that the two are not equal. Same
+             grammar as the folder — landscape card, flat fills, indigo on the
+             one part that says what this is. -->
+        <symbol id="i-map" viewBox="0 0 40 34">
+          <path
+            d="M2 6.5 14 3l12 3.5L38 3v24.5L26 31l-12-3.5L2 31z"
+            fill="#fbfaf7"
+            stroke="#8d8a80"
+            stroke-width="1.4"
+            stroke-linejoin="round"
+          />
+          <g stroke="#8d8a80" stroke-width="1.2" stroke-opacity="0.55">
+            <path d="M14 3.4v24.2" fill="none" />
+            <path d="M26 6.6v24.2" fill="none" />
+          </g>
+          <ellipse
+            cx="9.6"
+            cy="19"
+            rx="5.2"
+            ry="4"
+            fill="none"
+            stroke="#9a978d"
+            stroke-width="1.5"
+          />
+          <ellipse
+            cx="30.4"
+            cy="14.6"
+            rx="6"
+            ry="4.6"
+            fill="none"
+            stroke="var(--accent)"
+            stroke-width="1.5"
+            stroke-opacity="0.5"
+          />
+          <path
+            d="M30.4 18.4c-2 -2.6 -3.1 -4 -3.1 -5.4a3.1 3.1 0 0 1 6.2 0c0 1.4 -1.1 2.8 -3.1 5.4z"
+            fill="var(--accent)"
+          />
+        </symbol>
+
         <symbol id="i-mail" viewBox="0 0 40 32">
           <rect
             x="2"
@@ -238,6 +279,7 @@
           </button>
           <div class="menu__drop" role="menu">
             <button type="button" role="menuitem" data-open="about">About this machine</button>
+            <button type="button" role="menuitem" data-open="principles">Principles…</button>
             <button type="button" role="menuitem" data-open="resume">Résumé…</button>
             <div class="menu__sep"></div>
             <a role="menuitem" href="mailto:jeyl@berkeley.edu">Send mail<span class="menu__key">↗</span></a>
@@ -257,12 +299,22 @@
         </div>
 
         <div class="menu" data-menu>
+          <button class="menu__trigger" type="button" aria-expanded="false">Play</button>
+          <div class="menu__drop" role="menu">
+            <button type="button" role="menuitem" data-open="dinner">dinner.run<span class="menu__key">7</span></button>
+            <div class="menu__sep"></div>
+            <button type="button" role="menuitem" data-action="dinner-new">New neighborhood</button>
+          </div>
+        </div>
+
+        <div class="menu" data-menu>
           <button class="menu__trigger" type="button" aria-expanded="false">View</button>
           <div class="menu__drop" role="menu">
             <button type="button" role="menuitemradio" data-desk="lab">Lab<span class="menu__key">bone</span></button>
             <button type="button" role="menuitemradio" data-desk="slate">Slate<span class="menu__key">grey</span></button>
             <button type="button" role="menuitemradio" data-desk="blueprint">Blueprint<span class="menu__key">indigo</span></button>
             <div class="menu__sep"></div>
+            <button type="button" role="menuitem" data-action="tidy">Tidy desktop</button>
             <button type="button" role="menuitem" data-action="close-all">Close all windows</button>
           </div>
         </div>
@@ -270,8 +322,26 @@
 
       <div class="menubar__right">
         <a class="menubar__link" href="https://github.com/jynlee7" aria-label="GitHub">GitHub</a>
-        <a class="menubar__link" href="https://linkedin.com/in/jynlee7/" aria-label="LinkedIn">LinkedIn</a>
-        <span class="menubar__clock num" id="bar-clock">--:--</span>
+        <a class="menubar__link" href="https://linkedin.com/in/jaydenelee/" aria-label="LinkedIn">LinkedIn</a>
+        <!-- The bar clock keeps two times. Pacific is the honest one and the
+             default; clicking switches it to Berkeley time, which every class
+             on this campus starts ten minutes into. The `BT` mark holds its
+             width while hidden so the toggle cannot shove the bar around. -->
+        <button
+          class="menubar__clock"
+          type="button"
+          id="bar-clock"
+          aria-pressed="false"
+          aria-describedby="bar-clock-desc"
+        >
+          <span class="num" id="bar-time">--:--</span>
+          <span class="menubar__bt" aria-hidden="true">BT</span>
+          <span class="tip" id="bar-tip" aria-hidden="true"></span>
+        </button>
+        <span class="sr-only" id="bar-clock-desc"
+          >Berkeley time — ten minutes past the hour, when lecture actually
+          starts.</span
+        >
       </div>
     </header>
 
@@ -326,6 +396,21 @@
           <span class="icon__art icon__art--page"><svg viewBox="0 0 32 40"><use href="#i-txt" /></svg></span>
           <span class="icon__label">about.txt</span>
         </button>
+
+        <!-- Written in content/principles.md, not here. Deliberately absent
+             from the dock: the dock's job is the work artifacts, the game and
+             the mail link, and principles.txt is a document you read once. -->
+        <button class="icon" type="button" role="listitem" data-open="principles">
+          <span class="icon__art icon__art--page"><svg viewBox="0 0 32 40"><use href="#i-txt" /></svg></span>
+          <span class="icon__label">principles.txt</span>
+        </button>
+
+        <!-- The only thing on this desktop that is not work. It earns its
+             place by being about the same problem as the wallpaper. -->
+        <button class="icon" type="button" role="listitem" data-open="dinner">
+          <span class="icon__art"><svg viewBox="0 0 40 34"><use href="#i-map" /></svg></span>
+          <span class="icon__label">dinner.run</span>
+        </button>
       </div>
       </div>
 
@@ -366,6 +451,8 @@
         <li><button class="dockitem" type="button" data-open="experience" data-label="experience.log"><svg viewBox="0 0 32 40"><use href="#i-log" /></svg></button></li>
         <li><button class="dockitem" type="button" data-open="resume" data-label="resume.pdf"><svg viewBox="0 0 32 40"><use href="#i-pdf" /></svg></button></li>
         <li class="dock__sep" aria-hidden="true"></li>
+        <li><button class="dockitem" type="button" data-open="dinner" data-label="dinner.run"><svg viewBox="0 0 40 34"><use href="#i-map" /></svg></button></li>
+        <li class="dock__sep" aria-hidden="true"></li>
         <li><a class="dockitem" href="mailto:jeyl@berkeley.edu" data-label="jeyl@berkeley.edu"><svg viewBox="0 0 40 32"><use href="#i-mail" /></svg></a></li>
       </ul>
     </nav>
@@ -376,6 +463,12 @@
          when opened, so there is exactly one copy of every fact.
          ============================================================ -->
     <div class="docs" id="docs">
+      <!-- ---------------- principles.txt ----------------
+           Compiled from content/principles.md at build time by the
+           written-docs plugin in vite.config.mjs. Edit the prose there;
+           this marker is replaced with the whole <article>. -->
+      <!-- @doc principles -->
+
       <!-- ---------------- about.txt ---------------- -->
       <article class="doc" id="doc-about" data-title="about.txt" data-meta="plain text">
         <h2 class="doc__h1">Jayden Lee</h2>
@@ -541,8 +634,8 @@
         </ol>
 
         <div class="edu">
-          <p><strong>B.A. Data Science and B.A. Computer Science</strong>, UC Berkeley · GPA <span class="num">3.63</span></p>
-          <p class="edu__note">Open Project · Sports Analytics Group at Berkeley</p>
+          <p><strong>B.A. Data Science</strong>, UC Berkeley · GPA <span class="num">3.7</span></p>
+          <p class="edu__note">Sports Analytics Group at Berkeley</p>
         </div>
       </article>
 
@@ -564,6 +657,52 @@
           </dl>
           <a class="btn btn--primary" href="/resume.pdf" download>Download</a>
         </div>
+      </article>
+
+      <!-- ---------------- dinner.run ----------------
+           The board is built by src/os/dinner.ts into the empty mount below.
+           Everything after it is the document, and it has to stand on its own:
+           without JS the mount is hidden and this reads as a short piece of
+           writing about the hobby, which is what it is. -->
+      <article class="doc doc--game" id="doc-dinner" data-title="dinner.run" data-meta="seven nights">
+        <h2 class="doc__h1">dinner.run</h2>
+        <p class="doc__lede">
+          My actual hobby is finding places to eat, which turns out to be the
+          same problem as the picture behind this desktop.
+        </p>
+
+        <div class="dinner"></div>
+
+        <p>
+          The wallpaper on this machine is a loss surface with two minima, and
+          the lock screen says one of them is wrong. That is not a metaphor I
+          reached for. It is the thing that happens every time I decide where
+          to eat: there is a place I know is good, and somewhere within walking
+          distance there is a better one I have never tried, and every night I
+          spend confirming the first is a night I did not spend looking for the
+          second.
+        </p>
+        <p>
+          So the game is seven nights in a neighborhood you cannot see. Each
+          block has a rating you only learn by eating there, and your score is
+          the average of the week rather than the best night in it — which is
+          the part that makes it a decision. Going somewhere new drags the
+          average down when it is bad. Going back to a sure thing caps you at
+          whatever the sure thing was worth. Explore too long and you never
+          cash in; settle too early and you never find out.
+        </p>
+        <p>
+          As you eat, the map draws what it can infer about the rest of the
+          neighborhood from the blocks you have already been to. It is usually
+          wrong in an interesting way. At the end it shows you the real
+          surface, and where the best block actually was.
+        </p>
+        <p>
+          Everyone gets the same neighborhood on the same day. The blocks are
+          grid references rather than real restaurants, because the rest of
+          this site does not make things up and this part is not going to
+          either.
+        </p>
       </article>
     </div>
 

@@ -67,9 +67,13 @@ function place(width: number): { x: number; y: number } {
 const WIDTH: Record<string, string> = {
   resume: "42rem",
   about: "38rem",
+  principles: "40rem",
   experience: "44rem",
   clinical: "46rem",
   chessblitz: "46rem",
+  // Narrower than the documents: the board wants to be squarish, and the prose
+  // under it is short.
+  dinner: "34rem",
 };
 
 export function openDoc(id: string): void {
@@ -108,6 +112,7 @@ export function openDoc(id: string): void {
   body.className = "win__body";
 
   if (article.classList.contains("doc--pdf")) win.classList.add("win--pdf");
+  if (article.classList.contains("doc--game")) win.classList.add("win--game");
 
   win.append(bar, body);
   body.append(article);

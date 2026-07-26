@@ -114,6 +114,21 @@ svg {
   top: 0.5rem;
 }
 
+/* Available to assistive technology, absent from the layout. Used where a
+   control's visible label is a value and the description has to arrive some
+   other way. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* ============================================================
    NO-JS FALLBACK
    Everything that makes this a desktop is chrome. Strip it and
@@ -133,6 +148,11 @@ html:not(.js) body {
 }
 
 html:not(.js) .desk {
+  /* Without the OS the desk is not a viewport-filling surface, it is the top
+     of an ordinary page: no fixed positioning, and no wallpaper to leave a
+     screen-high gap above the first document. */
+  position: static;
+  background: none;
   padding: var(--gap-6) var(--gap-4) var(--gap-4);
 }
 
@@ -420,9 +440,82 @@ html:not(.js) .doc {
   text-decoration: underline;
 }
 
+/* The clock is a control, not a readout. It looks exactly like the readout it
+   replaced until a pointer lands on it, and then it takes the same indigo the
+   menu triggers take — that hover is the only thing telling anyone there is a
+   second time behind it. */
 .menubar__clock {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 3px 0.4rem;
+  border-radius: var(--r-ctl);
   font-size: var(--step-chrome);
+  cursor: pointer;
+  transition: background var(--dur-snap);
+}
+.menubar__clock > .num {
   opacity: 0.9;
+}
+.menubar__clock:hover {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+/* Unit label, not a measured value, so it stays in the body face beside the
+   monospace digits. It is always in the layout and only fades, so switching
+   times never changes the width of the bar's right end. */
+.menubar__bt {
+  font-size: var(--step-chrome-sm);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--on-desk-dim);
+  opacity: 0;
+  transition: opacity var(--dur-snap) var(--ease-out);
+}
+.menubar__clock[aria-pressed="true"] .menubar__bt {
+  opacity: 1;
+}
+.menubar__clock:hover .menubar__bt {
+  color: var(--accent-ink);
+}
+
+/* Tooltip. Floating chrome, so it gets the panel's own material — bone face,
+   1px bevel, hairline, one float shadow — rather than a dark web tooltip.
+   The dwell delay is timed in JS, not here: a delay is not motion, and the
+   reduced-motion block below zeroes every transition-delay in the document. */
+.tip {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 210;
+  width: max-content;
+  max-width: min(17rem, calc(100vw - 1.5rem));
+  padding: 0.3rem 0.5rem;
+  border-radius: var(--r-ctl);
+  background: var(--chrome);
+  color: var(--ink);
+  box-shadow:
+    var(--raise),
+    0 0 0 1px var(--hairline),
+    var(--shadow-float);
+  font-size: var(--step-chrome);
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: normal;
+  text-align: left;
+  white-space: normal;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-2px);
+  transition:
+    opacity var(--dur-quick) var(--ease-out),
+    transform var(--dur-quick) var(--ease-out);
+}
+[data-tip] > .tip {
+  opacity: 1;
+  transform: none;
 }
 
 .menu {
@@ -578,12 +671,68 @@ html:not(.js) .doc {
   opacity: 0.85;
 }
 
+/* The availability dot.
+
+   The category default here is a soft blurred halo breathing in and out. This
+   world is drawn entirely in crisp 1px contour lines, so the dot emits level
+   sets instead: two hairline rings leaving it on a stagger, the same idea as
+   the wallpaper at 7px. It also replaces a zero-offset colour halo, which was
+   decoration pretending to be depth.
+
+   Slow and widely spaced on purpose — this says "still open", it is not a
+   notification asking to be dealt with. */
 .dot {
+  position: relative;
   width: 7px;
   height: 7px;
   border-radius: 50%;
   background: #2f9e63;
-  box-shadow: 0 0 0 2px rgb(47 158 99 / 0.25);
+}
+
+.dot::before,
+.dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  /* An OUTLINE, expanded by its offset — not a scaled border. Scaling would
+     multiply the stroke with the radius, so the "hairline" would arrive 3px
+     thick at full reach, which is the one thing this world's linework is not.
+     Offsetting keeps it exactly 1px the whole way out, and outline is outside
+     layout entirely, so nothing reflows around it. */
+  outline: 1px solid #2f9e63;
+  outline-offset: 0;
+  animation: dot-emit 3.4s var(--ease-out) infinite;
+  pointer-events: none;
+}
+
+.dot::after {
+  animation-delay: 1.15s;
+}
+
+@keyframes dot-emit {
+  from {
+    outline-offset: 0;
+    opacity: 0.55;
+  }
+  /* Hold the ring up through the sweep. Decaying from the first frame would
+     make it faintest exactly when it is widest, which is the moment doing the
+     work; the fade belongs at the end of the travel, not the start. */
+  38% {
+    opacity: 0.42;
+  }
+  /* Expansion finishes at 62%, then it holds invisible — that gap is what
+     keeps a repeating loop from reading as a nag.
+
+     4.67px is the ceiling, not a taste call: the label sits 0.45rem (7.2px)
+     from the dot, and the ring's outer extent is this offset plus its own 1px
+     stroke. At the previous 7px it reached 8px and crossed into the letters.
+     Anything above ~6px here will touch the text again. */
+  62%,
+  to {
+    outline-offset: 4.67px;
+    opacity: 0;
+  }
 }
 
 .nameplate__name {
@@ -615,6 +764,35 @@ html:not(.js) .doc {
   grid-template-columns: repeat(5, 7rem);
   align-items: start;
   gap: var(--gap-3) var(--gap-1);
+}
+
+/* Promoted to free positions by src/os/arrange.ts once there is a pointer and
+   room to use one. The container spans the desk but never takes a pointer
+   event itself, so clicking bare desktop still clears the selection; only the
+   icons are interactive. z-index 0 keeps it above the field canvas and below
+   the nameplate and rail, so a dragged icon slides under the furniture. */
+.icons.is-free {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  pointer-events: none;
+}
+
+.icons.is-free .icon {
+  position: absolute;
+  width: 7rem;
+  pointer-events: auto;
+  cursor: grab;
+  /* The pointer owns the gesture; without this a drag scrolls the page. */
+  touch-action: none;
+}
+
+.icons.is-free .icon.is-dragging {
+  z-index: 2;
+  cursor: grabbing;
+  /* Lifted, not enlarged: scaling would blur the 1px icon linework. */
+  filter: drop-shadow(0 6px 10px rgb(20 18 14 / 0.3));
 }
 
 .icon {
@@ -1068,6 +1246,124 @@ html:not(.js) .doc {
   font-weight: 500;
 }
 
+/* ---- Principles ----
+   Deliberately the same grammar as the roles list above: hairline-separated
+   blocks, display face on the title, accent on the line underneath. A page of
+   principles has to look like it belongs to the same machine as the work
+   history, or it reads as a different site that wandered in. */
+
+.tenets {
+  margin-top: var(--gap-4);
+  display: grid;
+}
+
+.tenet {
+  padding: var(--gap-4) 0;
+  border-top: 1px solid var(--hairline);
+}
+.tenet:first-child {
+  border-top: 0;
+  padding-top: var(--gap-3);
+}
+
+.tenet__title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--step-h3);
+  line-height: var(--leading-tight);
+  letter-spacing: -0.015em;
+  max-width: var(--measure-text);
+}
+
+/* The evidence line, in the slot where a job's employer sits. The dash is set
+   here rather than kept in the prose so the file reads as prose. */
+.tenet__anchor {
+  margin-bottom: 0.5rem;
+  font-size: var(--step-chrome-lg);
+  font-weight: 500;
+  color: var(--accent-deep);
+}
+.tenet__anchor::before {
+  content: "— ";
+}
+
+/* A principle with nothing behind it leaves a hole, on the same argument as
+   the screenshot wells: the absence is the honest thing to render. */
+.tenet__anchor--missing {
+  display: inline-block;
+  padding: 0.1rem 0.45rem;
+  border-radius: 2px;
+  background: repeating-linear-gradient(
+    135deg,
+    var(--chrome) 0 8px,
+    var(--chrome-dim) 8px 16px
+  );
+  box-shadow: var(--inset);
+  font-family: var(--font-mono);
+  font-size: var(--step-chrome-sm);
+  color: var(--ink-faint);
+}
+.tenet__anchor--missing::before {
+  content: none;
+}
+
+.tenet p + p,
+.tenet__anchor + p {
+  margin-top: var(--gap-3);
+}
+
+.bullets {
+  margin-top: var(--gap-3);
+  padding-left: 1.1rem;
+  max-width: var(--measure-text);
+  list-style: disc;
+}
+.bullets--num {
+  list-style: decimal;
+}
+.bullets li::marker {
+  color: var(--ink-faint);
+}
+.bullets--num li::marker {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+.bullets li + li {
+  margin-top: 0.2rem;
+}
+.bullets + p {
+  margin-top: var(--gap-3);
+}
+
+.doc__rule {
+  margin: var(--gap-4) 0;
+  max-width: var(--measure-text);
+  border: 0;
+  border-top: 1px solid var(--hairline);
+}
+
+.doc code {
+  font-size: 0.9em;
+  color: var(--ink-muted);
+}
+
+/* Unfinished work says so, on the machine, in the window. Same striping as the
+   screenshot wells for the same reason. */
+.draftbar {
+  margin-bottom: var(--gap-3);
+  padding: 0.35rem 0.6rem;
+  border-radius: var(--r-ctl);
+  background: repeating-linear-gradient(
+    135deg,
+    var(--chrome) 0 10px,
+    var(--chrome-dim) 10px 20px
+  );
+  box-shadow: var(--inset);
+  font-family: var(--font-mono);
+  font-size: var(--step-chrome-sm);
+  color: var(--ink-faint);
+}
+
 .edu {
   margin-top: var(--gap-4);
   padding: var(--gap-3);
@@ -1154,6 +1450,138 @@ html:not(.js) .doc {
   background: var(--accent-deep);
 }
 
+/* ============================================================
+   dinner.run
+   The one thing on this desktop that is not work. It reads as an
+   instrument panel rather than a game board: the field is recessed
+   into the window like a plotter bed, the blocks are unlit until
+   they have been measured, and the only colour is the accent on the
+   block that turned out to be right.
+   ============================================================ */
+
+/* The board is JS-built. Without it, the article is the piece of writing it
+   already is, and a dead empty box would be worse than none. */
+html:not(.js) .dinner {
+  display: none;
+}
+
+.win--game .win__body {
+  padding-top: var(--gap-3);
+}
+
+.dinner {
+  margin: var(--gap-4) 0 var(--gap-5);
+}
+
+.dinner__hud {
+  display: flex;
+  gap: var(--gap-4);
+  align-items: baseline;
+  padding: 0.4rem 0.6rem;
+  border-radius: var(--r-ctl) var(--r-ctl) 0 0;
+  background: var(--chrome);
+  box-shadow: var(--raise);
+}
+.dinner__stat {
+  display: flex;
+  gap: 0.4rem;
+  align-items: baseline;
+}
+.dinner__k {
+  font-size: var(--step-chrome-sm);
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.dinner__stat .num {
+  font-size: var(--step-chrome-lg);
+  color: var(--ink);
+}
+
+/* 8 x 6 blocks. The aspect ratio is the grid's, so blocks stay square and the
+   contours are never stretched out of true. */
+.dinner__board {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  background: var(--chrome);
+  box-shadow: var(--inset);
+}
+.dinner__field,
+.dinner__grid {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.dinner__grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: repeat(6, 1fr);
+}
+/* Rows exist for the grid role, not for the layout. */
+.dinner__grid [role="row"] {
+  display: contents;
+}
+
+.spot {
+  display: grid;
+  place-items: center;
+  margin: 1px;
+  border-radius: 2px;
+  background: transparent;
+  cursor: pointer;
+  transition: background var(--dur-snap);
+}
+.spot:hover {
+  background: rgb(67 56 245 / 0.1);
+}
+.spot[aria-disabled="true"] {
+  cursor: default;
+}
+.spot[aria-disabled="true"]:hover {
+  background: transparent;
+}
+
+/* A measured block. #1b1a20 on #eceae4 is 14.3:1. */
+.spot.is-known {
+  background: rgb(252 251 247 / 0.82);
+  box-shadow: var(--raise);
+}
+.spot__v {
+  font-size: var(--step-chrome-sm);
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* The block that was actually best, marked only once the week is over.
+   #4338f5 on #eceae4 is 5.6:1. */
+.spot.is-best {
+  background: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-deep);
+}
+/* #ffffff on #4338f5 is 6.7:1. */
+.spot.is-best .spot__v {
+  color: var(--accent-ink);
+}
+
+.dinner__say {
+  min-height: 2.6em;
+  margin-top: var(--gap-2);
+  font-size: var(--step-body);
+  color: var(--ink-muted);
+}
+.dinner__foot {
+  margin-top: var(--gap-2);
+}
+.dinner__foot .btn {
+  background: var(--chrome);
+  color: var(--ink);
+  box-shadow: var(--raise);
+}
+.dinner__foot .btn:hover {
+  background: var(--chrome-dim);
+}
+
 /* Documents are invisible until promoted into a window (JS mode only). */
 html.js .docs {
   display: none;
@@ -1173,6 +1601,14 @@ html.js .docs {
   }
   .menu__trigger {
     padding-inline: 0.4rem;
+  }
+  /* The bar is 30px tall, so the clock cannot grow to a thumb-sized target.
+     Extend its hit area past its face instead; nothing sits beside it here,
+     because the two links are hidden above. */
+  .menubar__clock::before {
+    content: "";
+    position: absolute;
+    inset: -6px -10px;
   }
 
   .desk {
@@ -1289,6 +1725,13 @@ html.js .docs {
   }
   .lock.is-waking {
     transform: none;
+  }
+  /* The emitted rings are the whole point of the dot's animation; with motion
+     off they are not worth keeping as a static artefact. The solid core still
+     carries the status. */
+  .dot::before,
+  .dot::after {
+    display: none;
   }
   .lock__id {
     filter: none;
