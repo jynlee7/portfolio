@@ -117,11 +117,36 @@ compositor, and the map repaints once per step and only when something was
 actually discovered. An idle open window requests zero frames. Its contract is
 `GAME.md`.
 
+The window gestures and the command palette spend no part of the budget either.
+Zoom, resize and minimise are direct manipulation — geometry written once per
+event, nothing tweened by script — and the palette is a single 140ms fade. Both
+were measured at zero `requestAnimationFrame` calls over three idle seconds
+with a document window and the game window open.
+
+## Chrome that is not on the desk
+
+The **command palette** is the one modal surface here. Windows are deliberately
+non-modal, because they are windows; the palette is a prompt, so it takes the
+machine until it is answered. It is built from the same material as everything
+else — an opaque bone panel, 1px chiseled bevel, 5px fillet, a text well that is
+inset rather than outlined — specifically so it does not arrive as the floating
+glass command bar every product ships. Indigo marks exactly one row, the active
+one, which is the accent's whole job.
+
+Windows gained zoom, resize and minimise **without gaining a single title-bar
+button.** The bar stays near-black with one close control. A macOS traffic-light
+trio is the consumer-desktop ornament this rendition exists to refuse, so zoom
+is a double-click on the bar, resize is a milled corner grip — two 1px chamfers,
+not the three diagonal pips the web draws — and minimise is a click on the dock
+item the window is already represented by. The dock's running dot hollows out
+rather than disappearing, because "put away" and "not open" are different facts.
+
 ## Composition
 
 The desktop is not a scroll. The nameplate and desktop items share one flow
 column on the left, so a longer pitch pushes the icons down instead of landing
-on them; widgets occupy a right rail; the dock floats bottom-centre.
+on them; widgets occupy a right rail; the dock floats bottom-centre and is the
+only thing down there.
 
 Windows cascade from a fixed origin clear of both the nameplate and the rail,
 and their max-height accounts for the cascade offset so the last one in a stack
@@ -131,13 +156,30 @@ Content lives in the document as `<article class="doc">` and is **moved** into
 a window frame on open, never cloned. There is exactly one copy of every fact,
 so the windowed view and the no-JS page cannot disagree.
 
+A folder is one of those articles whose content is its own listing, so the file
+system costs the window manager nothing: rows are `<button data-open>` and open
+their file the same way the desktop does. The listing takes the document's
+register — the spec table's hairlines and columns — not the menubar's, and
+hovers to the panel face rather than the accent, because these rows carry icons
+the accent would swallow. The one accent in a listing is the dot saying a file
+is already open on the desk, which is the dock's running-dot claim, restated
+where you can see the file and its window at once.
+
 Mobile is an iOS home screen, not a shrunken desktop: a 4-column tile grid,
 widgets stacked, windows become full-height sheets.
 
 ## Rules
 
 - Never add a widget, icon, or document for something that is not true. The
-  rail holds current roles and live Berkeley weather; that is all there is.
+  rail holds current roles and live Berkeley weather; that is all there is. A
+  folder may only list files that already exist as documents — an empty slot in
+  a listing is an invented file.
+- **A folder's rows are launchers, so they obey the launcher rule.** Every row
+  is a real `<button data-open>` or an `<a href>` and nothing else in a listing
+  responds to the pointer — a row that lights up and opens nothing promises a
+  click this machine cannot honour. Without JS the listing is dropped rather
+  than left as dead controls, and the files it named are already rendered in
+  full directly beneath the folder.
 - Monospace only on measured values.
 - **Every clock on this machine tells the truth by default.** The bar clock can
   be switched to Berkeley time — Pacific plus ten, the hour every class here

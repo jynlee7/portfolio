@@ -6,7 +6,10 @@ Cannot be done without him. Do not invent substitutes.
 
 ### 1. Two project screenshots — the most visible gap
 
-Both projects render a striped placeholder well instead of an image.
+Both projects render a striped placeholder well instead of an image. Each one
+now has its own document — `doc-clinical-shot` and `doc-chessblitz-shot`, the
+`screenshot.png` listed in each folder — so the well is a file that reads "not
+yet" in its folder rather than a gap inside the writeup.
 
 - **Clinical Intervention Simulator** — 21:9. The Streamlit dashboard, or the
   Tableau view.
@@ -32,14 +35,23 @@ The featured project uses `class="shot"` (21:9); the second uses
 
 ### 2. Per-repo Source URLs
 
-Both `data-slot="project-repo"` links point at `github.com/jynlee7`, the
+All four `data-slot="project-repo"` links point at `github.com/jynlee7`, the
 profile, because the individual repo URLs are unknown. Someone clicking
-"Source" expects to land on code. Two occurrences in `index.html`.
+"Source" expects to land on code.
+
+Four occurrences in `index.html`, in two pairs — each project carries the URL
+twice, once as the `source` alias row in its folder listing and once as the
+`Source` row in its `readme.md`. That is the one place on this site where a
+fact is written twice: a readme without a link to its code is a worse readme,
+and a folder whose listing omits the source is a worse folder. Change them
+together, per project.
 
 ### 3. A third project
 
 The user said "three projects not yet." Two are in. A third would need a
-`doc-*` article, a desktop icon, a dock item, and a `Work` menu entry.
+`doc--folder` article with its `.filelist`, the `doc-*-readme` and
+`doc-*-shot` articles ordered directly beneath it, a desktop icon, a dock
+item, and a `Work` menu entry.
 
 ### 4. The places in `spots.map` — blocking
 
@@ -55,7 +67,20 @@ map is drawn for; fewer is fine.
 
 **Do not write this list for him.**
 
-### 5. Phone number
+### 5. Any more tools for the list in `about.txt`
+
+The tools ship as one `Tools` row in `about.txt`'s spec table: Claude, Stitch,
+Gemini, VS Code, Git — the five Jayden named. If there are others he works in
+daily, they go in that row and nowhere else.
+
+They previously had their own floating tray above the dock, with an engraved
+mark per tool. It was removed: a tool list is the most category-generic thing
+a portfolio can show, it cannot be guessed which of Git or VS Code
+differentiates anyone, and as chrome it ended up louder than the dock while
+being the one thing on the desk that could not be clicked. The engraved marks
+are in git history if the tray is ever wanted back.
+
+### 6. Phone number
 
 On the résumé, deliberately not on the page. Add it only if he wants recruiters
 calling directly.

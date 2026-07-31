@@ -44,7 +44,7 @@ node scripts/field.mjs   # regenerate the three wallpapers
 ## Layout of the code
 
 ```
-index.html          sprite · lock · menubar · desk · dock · docs
+index.html          sprite · lock · menubar · desk · dock · docs (folders+files)
 src/tokens.css      all design tokens, with measured contrast in comments
 src/style.css       everything else; direction contract in the header comment
 src/main.ts         boot order
@@ -52,7 +52,10 @@ src/os/lock.ts      initLock, mountLockField, relock
 src/os/menubar.ts   initMenubar (menus, wallpaper switch, bar clock)
 src/os/desktop.ts   initLaunchers, initDock (magnification, running dots)
 src/os/arrange.ts   initArrange, tidy (draggable icons, persistence)
-src/os/windows.ts   openDoc, closeDoc, closeAll, initWindowKeys
+src/os/windows.ts   openDoc, closeDoc, closeAll, minimize, initWindowKeys,
+                    restoreWindows (zoom, resize, MRU cycling, jl.win)
+src/os/palette.ts   initPalette (⌘K; index derived from the DOM, never authored)
+src/os/status.ts    initStatus, say (the desktop's one live region)
 src/os/widgets.ts   initWeather (Open-Meteo, Berkeley)
 src/os/flow.ts      initFlow (pointer-driven live wallpaper)
 src/os/spots.ts     initSpots (spots.map — the walk-around game; no loop)
@@ -95,13 +98,56 @@ visibly jump on load.
 **Every launcher is a real `<button data-open>`.** Double-click is an addition
 on top of the keyboard path, never the only way in.
 
+**Folders are documents whose content is their own listing.** `doc--folder`
+articles hold a `.filelist` of real `<button data-open>` rows; the files they
+list are ordinary `<article class="doc">` elements sitting beside them on the
+shelf, so opening one goes through the same `openDoc` move as everything else
+and the window manager knows nothing about hierarchy. A file belongs to one
+folder and appears in no other listing, and the desktop shows only top-level
+items — that is the whole containment rule.
+
+Two things follow that are easy to break. **Order the files directly beneath
+their folder in `index.html`**: without JS the listing is hidden (its rows are
+controls that cannot fire) and the folder heading has to introduce the files
+that follow it in the flow. And **the dock opens folders, not the writeups
+inside them** — pointing it at `*-readme` was tried and reverted, because three
+of the six dock items then wear the same page glyph and the row stops being
+readable at a glance.
+
 **Motion budget.** One authored moment (the pointer deforming the field).
 Everything else is 90–220ms utility. Any loop must cost zero frames at rest and
 must not start under reduced motion, on a coarse pointer, or on a hidden tab.
 
-**Storage keys:** `jl.woke` (sessionStorage, lock dismissed) · `jl.desk`
-(wallpaper) · `jl.icons` (icon positions) · `jl.bt` (Berkeley-time toggle) ·
-`jl.spots` (found places and walker position).
+**Storage keys:** `jl.woke` (sessionStorage, lock dismissed) · `jl.win`
+(sessionStorage, open windows and their geometry) · `jl.desk` (wallpaper) ·
+`jl.icons` (icon positions) · `jl.bt` (Berkeley-time toggle) · `jl.spots`
+(found places and walker position).
+
+`jl.win` is session-scoped on purpose, unlike `jl.icons` and `jl.desk`. A
+returning visitor wants the desk they arranged; they do not want five windows
+restored in front of them on a cold visit, which is clutter aimed at exactly
+the person who has ninety seconds and is looking for one PDF. Session scope
+keeps a reload — or a bounce out to the résumé and back — intact, and gives the
+layout the same lifetime as `jl.woke`, so the lock screen and the windows can
+never disagree about whether this is a new visit.
+
+**The palette's index is derived, never authored.** `src/os/palette.ts` reads
+its rows out of the live DOM every time it opens: documents from `article.doc`,
+commands from the menubar's own `[data-action]` and `[data-desk]` items, mail
+from the dock's link. Nothing in that file knows the name of a single document.
+Adding a document to `index.html` puts it in the palette; there is no list to
+update, and no list that can drift or invent an entry.
+
+**Shortcuts the browser owns are not bound.** `⌘W` (close tab) and `⌘M`
+(macOS minimise) never reliably reach the page, so nothing here uses them.
+Escape closes the frontmost window, ⌘`/Ctrl+` cycles, ⌘K opens the palette, and
+minimising is a click on the window's own dock item — the one gesture that
+needs no chord at all. Any new binding must clear the same bar.
+
+**Escape is layered.** The palette stops it (it is modal), an open menu stops
+it (and returns focus to its trigger), and only then does the window manager
+see it and close the frontmost window. A new Escape handler must place itself
+in that order deliberately or it will close a window somebody was not closing.
 
 **The game has its own contract: read `GAME.md` before touching it.** Short
 version: `spots.map` never touches the wallpaper, has no `requestAnimationFrame`

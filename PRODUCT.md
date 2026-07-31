@@ -84,6 +84,13 @@ Projects, both real:
 Hard numbers available and used: 300,000+ mass-spec files, 18 metaproteomics
 datasets, 36 MGF spectral files, 300 patient scenarios, 8 engineers led.
 
+Tools named by Jayden on 26 Jul 2026: **Claude, Stitch, Gemini, VS Code,
+Git** — carried as the `Tools` row in `about.txt`, after the floating tray
+that used to hold them was removed. These are the tools he works *in*, which is a
+different list from the technologies on the résumé's Skills line and from the
+per-project `Stack` rows. Do not merge the three, and do not add a sixth tool
+he has not named.
+
 **Still absent:** project screenshots, per-repo GitHub URLs, an OG image, and a
 third project. Do not invent any of them. There are no live deployed URLs for
 either project, so the page links to source only.
