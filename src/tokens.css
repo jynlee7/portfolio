@@ -156,14 +156,16 @@
      the ink rather than greyed, so they stay in the same family as the
      contours. Measured against the darkest backdrop stop with the glow, the
      lock scrim and an areal allowance for the hairline contours that cross
-     them: dim 5.20:1, quiet 4.51:1. Both clear AA for small text. Neither may
+     them: dim 5.36:1, quiet 4.80:1. Both clear AA for small text. Neither may
      be lightened without re-measuring — the ground under them is not flat. */
-  --on-desk-dim: #524f5c;
-  --on-desk-quiet: #5b5866;
+  --on-desk-dim: #4b4855;
+  --on-desk-quiet: #524f5c;
   --on-desk-shadow: 0 1px 0 rgb(255 255 255 / 0.55);
   /* Lock-screen edge scrim. Full strength only where the clock and the
-     identity sit; the middle of the screen is left alone. */
-  --desk-scrim: rgb(246 244 238 / 0.55);
+     identity sit; the middle of the screen is left alone. Kept as light as
+     the measurements above allow — a heavier one buys contrast by washing
+     out the contours, which are the other half of what the screen says. */
+  --desk-scrim: rgb(246 244 238 / 0.32);
   --veil: rgb(246 244 238 / 0.82);
   --veil-edge: rgb(255 255 255 / 0.7);
 }
@@ -172,11 +174,11 @@
   --on-desk: #ffffff;
   /* Tinted from the desk's own hue, never greyed — grey text on a saturated
      ground reads as dirty. Worst case is blueprint, whose bed is lightest:
-     dim 5.43:1, quiet 4.86:1. */
-  --on-desk-dim: #cfcbe0;
-  --on-desk-quiet: #c4c0d8;
+     dim 5.14:1, quiet 4.58:1. */
+  --on-desk-dim: #d6d3e6;
+  --on-desk-quiet: #cbc7de;
   --on-desk-shadow: 0 1px 3px rgb(10 10 20 / 0.55);
-  --desk-scrim: rgb(16 15 32 / 0.45);
+  --desk-scrim: rgb(16 15 32 / 0.3);
   --veil: rgb(30 30 42 / 0.62);
   --veil-edge: rgb(255 255 255 / 0.18);
 }

@@ -34,9 +34,11 @@ export function initLock(): void {
   lock.hidden = false;
   startClock();
 
-  // Focus the way in so keyboard and screen-reader visitors land on it rather
-  // than tabbing past the skip link to find it.
-  document.getElementById("lock-enter")?.focus({ preventScroll: true });
+  // Deliberately no autofocus. Chromium treats a programmatic focus() as
+  // keyboard-initiated and paints the :focus-visible ring, which drew a box
+  // around the hint and turned the one line that says "this is not a button"
+  // into a button. Nothing is lost: any keypress wakes the machine, and Tab
+  // reaches the hint immediately.
 
   const wake = () => {
     if (lock.classList.contains("is-waking")) return;

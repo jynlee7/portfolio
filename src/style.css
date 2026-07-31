@@ -13,13 +13,16 @@
    accent, host monospace on measured values only. Wallpaper is
    a generated contour map of a two-minimum loss surface.
 
-   STORY — A hiring manager wakes the machine, reads the name,
-   role and pitch on the lock screen, opens resume.pdf or a
-   project folder, and leaves with the PDF.
+   STORY — A hiring manager is curious enough to wake the
+   machine, then reads the name, role and pitch on the desk,
+   opens resume.pdf or a project folder, and leaves with the
+   PDF.
 
-   FIRST VIEWPORT — Lock screen: oversized clock top, name and
-   one-line pitch beneath it, "Open desktop" and a résumé link
-   side by side. Any key or click wakes it.
+   FIRST VIEWPORT — Lock screen: date and an oversized clock at
+   the top, the contour field resolving into itself across the
+   empty middle, and low on the screen the name, the role, and
+   one concrete line about the work. No controls: the whole
+   surface is the door, and any key or click wakes it.
 
    FORM — Desktop OS, pinned by the user's brief. Rendition is
    the scientific workstation the work was actually done on,
@@ -323,13 +326,6 @@ html:not(.js) .doc {
   color: var(--on-desk);
   text-shadow: var(--on-desk-shadow);
   animation: lock-pop 620ms var(--ease-out) 520ms both;
-}
-
-.lock__mark {
-  display: block;
-  width: 46px;
-  margin: 0 auto 0.9rem;
-  color: var(--on-desk);
 }
 
 .lock__name {

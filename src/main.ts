@@ -21,10 +21,11 @@ void initWeather();
 // The pointer deforms the contour field on both surfaces that show it.
 initFlow(document.getElementById("desk"));
 
-// On the lock screen the field first resolves level by level, then the live
-// canvas takes it over. Waiting for the entrance to finish keeps the two from
-// animating the same contours at once; if the field never mounts, the canvas
-// still attaches and simply draws over the CSS wallpaper instead.
+// On the lock screen the field arrives one contour level at a time first.
+// Handing it to the pointer only once that has played keeps the two moments
+// sequential — otherwise the first mouse move slams the finished field down
+// on top of an entrance that is still running. Somebody who wakes the machine
+// mid-entrance takes the lock out of the document, so check before attaching.
 const lock = document.getElementById("lock");
 if (lock) {
   void mountLockField(lock).then(() => {

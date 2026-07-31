@@ -131,55 +131,6 @@
           />
         </symbol>
 
-        <!-- The identity mark: one well, read off the same field as the
-             wallpaper. Rings drift and rotate as they climb out, so it reads
-             as a contour plot of something asymmetric rather than a target.
-             Indigo is earned by depth here exactly as it is on the desk. -->
-        <symbol id="i-well" viewBox="0 0 48 48">
-          <g fill="none" stroke-linecap="round">
-            <ellipse
-              cx="21.6"
-              cy="22.4"
-              rx="22"
-              ry="17.4"
-              stroke="currentColor"
-              stroke-width="1"
-              stroke-opacity="0.3"
-              transform="rotate(-14 21.6 22.4)"
-            />
-            <ellipse
-              cx="22.3"
-              cy="23.2"
-              rx="17.2"
-              ry="13.6"
-              stroke="currentColor"
-              stroke-width="1.15"
-              stroke-opacity="0.42"
-              transform="rotate(-11 22.3 23.2)"
-            />
-            <ellipse
-              cx="23"
-              cy="24"
-              rx="12.4"
-              ry="9.9"
-              stroke="var(--accent)"
-              stroke-width="1.35"
-              stroke-opacity="0.6"
-              transform="rotate(-8 23 24)"
-            />
-            <ellipse
-              cx="23.6"
-              cy="24.7"
-              rx="7.6"
-              ry="6.1"
-              stroke="var(--accent)"
-              stroke-width="1.6"
-              stroke-opacity="0.82"
-              transform="rotate(-5 23.6 24.7)"
-            />
-          </g>
-          <ellipse cx="24.1" cy="25.3" rx="3.1" ry="2.5" fill="var(--accent)" />
-        </symbol>
       </defs>
     </svg>
 
@@ -208,14 +159,18 @@
         <p class="lock__clock num" id="lock-clock" aria-hidden="true">--:--</p>
       </div>
 
+      <!-- No avatar or monogram here. The field behind this block is already
+           a plot of concentric wells; a second ring glyph on top of it read
+           as a smudge and said nothing the field was not saying better. -->
       <div class="lock__id">
-        <span class="lock__mark" aria-hidden="true">
-          <svg viewBox="0 0 48 48"><use href="#i-well" /></svg>
-        </span>
         <p class="lock__name">Jayden Lee</p>
         <p class="lock__role">Machine learning · UC Berkeley</p>
+        <!-- True, and from the PNNL work. It carries the field it came from
+             without naming it, which the previous line did not: that one
+             asked the reader to already know what a local minimum is, and a
+             first screen that needs a footnote is a puzzle, not a hook. -->
         <p class="lock__idea">
-          That&#8217;s a loss surface behind this. Two minima, one of them wrong.
+          Most of it starts as three hundred thousand files nobody has opened.
         </p>
       </div>
 
