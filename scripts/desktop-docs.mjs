@@ -5,6 +5,44 @@ const esc = (value) => String(value).replace(/[&<>"']/g, (char) => ({ "&": "&amp
 const paragraph = (text) => `<p>${esc(text)}</p>`;
 const row = (key, value) => `<div><dt>${esc(key)}</dt><dd>${esc(value)}</dd></div>`;
 
+const MONTHS = { Jan: "January", Feb: "February", Mar: "March", Apr: "April", May: "May", Jun: "June", Jul: "July", Aug: "August", Sep: "September", Oct: "October", Nov: "November", Dec: "December" };
+
+/** "Sep 2026 — Present" → "September 2026": when a role's period began. */
+function since(period) {
+  const [month, year] = period.split(" — ")[0].split(" ");
+  return [MONTHS[month] ?? month, year].filter(Boolean).join(" ");
+}
+
+/**
+ * The desktop's two mentions of the current role — the nameplate's status
+ * line and the Now widget — rendered at `<!-- @portfolio-part id -->` markers
+ * from the same role the homepage calls current, so changing it in
+ * content/portfolio.mjs changes them too. With no current role both render
+ * nothing, rather than keep calling a finished one current.
+ */
+export function renderDesktopPart(id) {
+  const current = roles.find((role) => role.current);
+  if (id === "status") {
+    return current ? `<p class="nameplate__status">
+          <span class="dot" aria-hidden="true"></span>
+          Currently at ${esc(current.organization)}
+        </p>` : "";
+  }
+  if (id === "now") {
+    return current ? `<div class="widget widget--now">
+          <p class="widget__title">Now</p>
+          <ul class="nowlist">
+            <li>
+              <span class="nowlist__what">${esc(current.title)}</span>
+              <span class="nowlist__where">${esc(current.organization)}</span>
+            </li>
+          </ul>
+          <p class="widget__foot">Since ${esc(since(current.period))}.</p>
+        </div>` : "";
+  }
+  throw new Error(`Unknown desktop part: ${id}`);
+}
+
 export function renderDesktopDoc(id) {
   if (id === "about") {
     return `<article class="doc" id="doc-about" data-title="about.txt" data-meta="plain text">

@@ -80,7 +80,9 @@ scripts/portfolio.mjs
                     renders the portfolio's header/main/footer from it
 scripts/desktop-docs.mjs
                     renders the desktop's about/experience/project/résumé
-                    documents from it, at <!-- @portfolio-doc id --> markers
+                    documents from it, at <!-- @portfolio-doc id --> markers,
+                    and the nameplate status line and Now widget from the
+                    current role, at <!-- @portfolio-part id --> markers
 scripts/test-portfolio.mjs
                     Playwright acceptance checks for both surfaces (see below)
 src/portfolio/      main.ts (menu, hash→details, Back) · scenes.ts (one shared
@@ -229,13 +231,17 @@ npm run build                                             # includes tsc
 node ~/.claude/skills/impeccable/scripts/detect.mjs index.html desktop/index.html \
   src/style.css src/tokens.css src/portfolio/style.css src/portfolio/scenes.css
 npx vite preview --port 4173 &                            # then:
-node scripts/test-portfolio.mjs                           # 21 checks, both surfaces
+node scripts/test-portfolio.mjs                           # 22 checks, both surfaces
 ```
 
 The detector prints nothing and exits 0 when clean. The acceptance script
-uses gstack's Playwright and compares `public/resume.pdf` byte-for-byte with
-`RESUME_SOURCE` (default: `~/Downloads/resumes/Lee_Jayden_Resume_10202026.pdf`,
-the source shipped on 28 Oct 2026); set that env var when the résumé changes.
+uses the project's own Playwright (a devDependency pinned to 1.62.1; run
+`npx playwright install chromium` once on a new machine) and compares
+`public/resume.pdf` byte-for-byte with `RESUME_SOURCE` (default:
+`~/Downloads/resumes/Lee_Jayden_Resume_10202026.pdf`, the source shipped on
+28 Oct 2026); set that env var when the résumé changes. With the variable
+unset and the default file absent, as on a fresh checkout, that one check
+reports SKIP instead of failing; with it set, a missing file fails.
 
 ## Design workflow
 

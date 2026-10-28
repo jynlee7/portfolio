@@ -8,7 +8,6 @@ export const profile = {
   name: "Jayden Lee",
   discipline: "Data science · UC Berkeley",
   introduction: "I'm a junior studying Data Science at UC Berkeley, working at the intersection of machine learning, software, and sport.",
-  current: "Currently at SwingVision",
   email: "jeyl@berkeley.edu",
   github: "https://github.com/jynlee7",
   linkedin: "https://www.linkedin.com/in/jaydenelee",

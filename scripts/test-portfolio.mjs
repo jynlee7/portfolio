@@ -2,20 +2,26 @@
  * Browser acceptance checks for the portfolio and the desktop under it.
  * Run against a production preview after `npm run build`:
  *   PORTFOLIO_URL=http://127.0.0.1:4173 node scripts/test-portfolio.mjs
- * Uses a separately installed Playwright; no browser tooling ships in the app.
+ * Playwright is a devDependency (never shipped to the page); a machine that
+ * has not run it before needs `npx playwright install chromium` once.
  */
 import assert from "node:assert/strict";
+import { existsSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
-import { pathToFileURL } from "node:url";
+import { homedir } from "node:os";
+import { join } from "node:path";
+import { chromium } from "playwright";
 
-const playwright = process.env.PLAYWRIGHT_MODULE
-  ?? "/Users/leej741/.claude/skills/gstack/node_modules/playwright/index.mjs";
-const { chromium } = await import(pathToFileURL(playwright).href);
 const base = process.env.PORTFOLIO_URL ?? "http://127.0.0.1:4173";
 const evidence = process.env.PORTFOLIO_EVIDENCE ?? "/tmp/pw-portfolio-evidence";
+// public/resume.pdf is compared byte for byte with the PDF Jayden supplied,
+// which lives outside the repo. RESUME_SOURCE names it, and a missing file
+// there fails. Unset, the path the current résumé came from is tried, and a
+// checkout without it skips that one check instead of failing it.
 const resumeSource = process.env.RESUME_SOURCE
-  ?? "/Users/leej741/Downloads/resumes/Lee_Jayden_Resume_10202026.pdf";
+  ?? join(homedir(), "Downloads/resumes/Lee_Jayden_Resume_10202026.pdf");
+const resumeRequired = Boolean(process.env.RESUME_SOURCE);
 await mkdir(evidence, { recursive: true });
 const results = [];
 const measurements = {};
@@ -38,6 +44,24 @@ async function check(name, run) {
     results.push({ name, status: "fail", ms: Date.now() - start, error: error.message });
     console.error(`FAIL ${name}: ${error.message}`);
   }
+}
+
+function skip(name, reason) {
+  results.push({ name, status: "skip", reason });
+  console.log(`SKIP ${name}: ${reason}`);
+}
+
+/** Resolves with scrollY once it has held still for ~20 frames. */
+function settledScroll(page) {
+  return page.evaluate(() => new Promise((done) => {
+    let last = scrollY;
+    let still = 0;
+    const tick = () => {
+      if (scrollY !== last) { last = scrollY; still = 0; } else if (++still > 20) return done(scrollY);
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }));
 }
 
 async function withPage(options, run, setup) {
@@ -144,7 +168,9 @@ async function framesDuringRest(page, ms = 650) {
 }
 
 try {
-  await check("Résumé PDF exactly matches the supplied source", async () => {
+  if (!resumeRequired && !existsSync(resumeSource)) {
+    skip("Résumé PDF exactly matches the supplied source", `${resumeSource} not found; set RESUME_SOURCE to compare`);
+  } else await check("Résumé PDF exactly matches the supplied source", async () => {
     const [source, shipped] = await Promise.all([
       readFile(resumeSource),
       fetch(new URL("/resume.pdf", base)).then(async (response) => {
@@ -196,6 +222,25 @@ try {
     await page.waitForFunction(() => location.hash === "#clinical");
     assert.ok(await page.locator("#clinical").evaluate((el) => el.open));
     return { hashes: ["clinical", "bearings", "site", "chessblitz"] };
+  }));
+
+  // Without reduced motion the jump is a smooth scroll, still at its start
+  // when navigate() first records the entry, so Forward is the real test.
+  await check("Back then Forward returns to where a smooth jump landed", () => withPage({}, async (page, { errors }) => {
+    await load(page);
+    await page.locator('#portfolio-nav a[href="#experience"]').click();
+    await page.waitForFunction(() => location.hash === "#experience");
+    const landed = await settledScroll(page);
+    assert.ok(landed > 400, `The jump did not scroll (scrollY ${landed})`);
+    await page.goBack();
+    await page.waitForFunction(() => location.hash === "");
+    assert.ok(await settledScroll(page) < 10, "Back did not return to the top");
+    await page.goForward();
+    await page.waitForFunction(() => location.hash === "#experience");
+    const restored = await settledScroll(page);
+    assert.ok(Math.abs(restored - landed) <= 2, `Forward restored scrollY ${restored}, expected ${landed}`);
+    assert.deepEqual(errors, []);
+    return { landed, restored };
   }));
 
   await check("Phone navigation, touch targets, and Escape focus return", () => withPage({
@@ -451,6 +496,7 @@ try {
   await browser.close();
   const report = { url: base, date: new Date().toISOString(), results, measurements };
   await writeFile(`${evidence}/report.json`, JSON.stringify(report, null, 2));
-  console.log(`\n${results.filter((r) => r.status === "pass").length}/${results.length} checks passed. Evidence: ${evidence}/report.json`);
+  const skipped = results.filter((r) => r.status === "skip").length;
+  console.log(`\n${results.filter((r) => r.status === "pass").length}/${results.length - skipped} checks passed${skipped ? `, ${skipped} skipped` : ""}. Evidence: ${evidence}/report.json`);
   if (results.some((r) => r.status === "fail")) process.exitCode = 1;
 }

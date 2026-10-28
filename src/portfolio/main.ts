@@ -113,6 +113,17 @@ for (const details of projectDetails) {
 }
 
 history.scrollRestoration = "manual";
+
+// navigate() records its new entry while the smooth scroll is still at its
+// starting point, so the entry's position is recorded again once scrolling
+// settles. Otherwise Back then Forward returns to where the jump began, not
+// to the section it landed on (or wherever the reader scrolled after).
+let settling = 0;
+window.addEventListener("scroll", () => {
+  clearTimeout(settling);
+  settling = setTimeout(() => history.replaceState(snapshot(), ""), 150);
+}, { passive: true });
+
 let restoringPop = false;
 window.addEventListener("popstate", (event: PopStateEvent) => {
   restoringPop = true;

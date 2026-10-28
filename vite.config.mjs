@@ -2,7 +2,7 @@ import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { renderDoc } from "./scripts/doc.mjs";
 import { renderPortfolio } from "./scripts/portfolio.mjs";
-import { renderDesktopDoc } from "./scripts/desktop-docs.mjs";
+import { renderDesktopDoc, renderDesktopPart } from "./scripts/desktop-docs.mjs";
 
 /** Documents written as prose rather than markup. id → source file. */
 const WRITTEN = {
@@ -83,7 +83,9 @@ export default {
           if (html.includes("<!-- @portfolio -->")) {
             html = html.replace("<!-- @portfolio -->", renderPortfolio());
           }
-          return html.replace(/<!--\s*@portfolio-doc ([\w-]+)\s*-->/g, (_marker, id) => renderDesktopDoc(id));
+          return html
+            .replace(/<!--\s*@portfolio-doc ([\w-]+)\s*-->/g, (_marker, id) => renderDesktopDoc(id))
+            .replace(/<!--\s*@portfolio-part ([\w-]+)\s*-->/g, (_marker, id) => renderDesktopPart(id));
         },
       },
     },
