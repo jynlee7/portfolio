@@ -1,0 +1,62 @@
+.scene__mount {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  touch-action: pan-y;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.scene__fallback,
+.scene__canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.scene__fallback { pointer-events: none; }
+.scene__canvas { opacity: 0; }
+.scene__mount.is-ready { cursor: grab; }
+.scene__mount.is-ready .scene__canvas { opacity: 1; }
+.scene__mount.is-ready .scene__fallback { visibility: hidden; }
+.scene__mount.is-dragging { cursor: grabbing; }
+
+.scene__controls {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  visibility: hidden;
+}
+
+.has-interactive-scene .scene__controls { visibility: visible; }
+
+.scene__controls button {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 160ms ease-out, color 160ms ease-out;
+}
+
+.scene__controls button:hover { background: #fff8; }
+.scene__controls button:active { background: #fff; }
+.scene__controls button:focus-visible { outline: 3px solid #5145cd; outline-offset: 3px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .scene__canvas { display: none; }
+  .scene__mount.is-ready .scene__fallback { visibility: visible; }
+  .scene__controls { visibility: hidden !important; }
+  .scene__controls button { transition: none; }
+}

@@ -7,7 +7,7 @@
  * desktop nobody using a keyboard can open at all.
  */
 
-import { openDoc, isOpen, onWindowsChange } from "./windows";
+import { openDoc } from "./windows";
 
 export function initLaunchers(): void {
   for (const el of document.querySelectorAll<HTMLElement>("[data-open]")) {
@@ -85,12 +85,4 @@ export function initDock(): void {
 
   dock.addEventListener("pointerleave", clear);
   reduced.addEventListener("change", clear);
-
-  // Running indicators reflect real window state.
-  onWindowsChange(() => {
-    for (const item of items) {
-      const id = item.dataset.open;
-      item.classList.toggle("is-running", Boolean(id && isOpen(id)));
-    }
-  });
 }

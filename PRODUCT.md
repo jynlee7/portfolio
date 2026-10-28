@@ -41,8 +41,9 @@ resume header link. May be opened on a shared screen during a hiring debrief.
 ## Capabilities and Constraints
 
 - Static site. Vite build, deployed to Vercel.
-- No domain purchased yet — will run on a `.vercel.app` subdomain initially,
-  so the URL itself carries no signal and the page must.
+- Canonical URL is `jaydenelee.com` — the apex, with `www` redirecting to it.
+  One URL, because it gets pasted into a resume header and a LinkedIn field
+  and those must not disagree.
 - Must be genuinely fast and legible on a phone.
 - Resume PDF is a first-class destination, not a footer afterthought.
 
@@ -58,46 +59,23 @@ Explicit constraint from the user: the result must not read as AI-generated.
 
 ## Evidence on Hand
 
-Owner is **Jayden Lee** — jeyl@berkeley.edu, github.com/jynlee7,
-linkedin.com/in/jynlee7. B.A. Data Science and B.A. Computer Science at UC
-Berkeley, GPA 3.63.
+**Source of truth: `content/portfolio.mjs`**, compiled into both the portfolio
+and the desktop at build time. Its source of record is `public/resume.pdf`, a
+copy of `Lee_Jayden_Resume_10202026.pdf` shipped on 28 Oct 2026. Re-copy on
+update; it does not sync. `scripts/test-portfolio.mjs` checks the copy
+byte-for-byte and checks every role's organisation and title on the page.
 
-Source of record: `~/berk/jl26__ML_.pdf`, copied to `public/resume.pdf`
-on 24 Jul 2026. Re-copy on update; it does not sync.
+As of that résumé: B.A. Data Science, Applied Mathematics emphasis, UC
+Berkeley, GPA 3.7, expected May 2028. Five roles — SwingVision (Data Analyst
+Intern, Sep 2026–present), CalCompute, MatX (AI Software Engineer, contract),
+Cal Athletics (contract), PNNL — and three projects: bearings, Foresight
+(the Clinical Intervention Simulator), and this website. ChessBlitz stays on
+the page from an earlier résumé, as the "Also on the workbench" entry.
 
-Roles, all real and on the page:
-
-- Machine Learning Researcher, Cal Athletics (contract), Feb 2026–present
-- Machine Learning Consultant, MatX (contract), Dec 2025–present — leads 8 engineers
-- Business Analyst, Oakland Roots Sports Club (contract), Sep–Dec 2025
-- Modeling & Simulation Intern, Pacific Northwest National Laboratory, Jun 2024–May 2025
-- Computational Biology Intern, Pacific Northwest National Laboratory, Jun–Aug 2023
-
-Projects, both real:
-
-- **Clinical Intervention Simulator** — 1st place, 7th Annual Datathon at
-  Berkeley, over 50 teams and 200+ participants. Monte Carlo over 300 patient
-  scenarios, Random Forest, Streamlit.
-- **ChessBlitz** — open source, in use at Berkeley Chess School. Flask,
-  Supabase, OpenRouter, React.
-
-Hard numbers available and used: 300,000+ mass-spec files, 18 metaproteomics
-datasets, 36 MGF spectral files, 300 patient scenarios, 8 engineers led.
-
-Tools named by Jayden on 26 Jul 2026: **Claude, Stitch, Gemini, VS Code,
-Git** — carried as the `Tools` row in `about.txt`, after the floating tray
-that used to hold them was removed. These are the tools he works *in*, which is a
-different list from the technologies on the résumé's Skills line and from the
-per-project `Stack` rows. Do not merge the three, and do not add a sixth tool
-he has not named.
-
-**Still absent:** project screenshots, per-repo GitHub URLs, an OG image, and a
-third project. Do not invent any of them. There are no live deployed URLs for
-either project, so the page links to source only.
-
-`principles.txt` exists as a scaffold in `content/principles.md` and is marked
-`Draft: yes`. Jayden writes it; do not write his principles for him. Formatting,
-trimming and structure are the help to give once there is real text there.
+The August-era notes that used to be here ("MatX is gone", "Nothing is
+currently active", Oakland Roots, the Now widget's one line) are **superseded**
+by the October résumé. They are preserved in `docs/PRODUCT_HISTORY.md`; do not
+restore any of them from there without a résumé that says so.
 
 ## Product Principles
 

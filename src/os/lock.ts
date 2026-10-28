@@ -26,6 +26,19 @@ export function initLock(): void {
        over. */
   }
 
+  // A deep link (/desktop/#resume, from an email or an application) is a visitor
+  // who already chose a door. Making them wake the machine first would put
+  // the window they asked for behind a screen they did not.
+  const target = location.hash.slice(1);
+  if (target && document.getElementById(`doc-${target}`)) {
+    woken = true;
+    try {
+      sessionStorage.setItem(KEY, "1");
+    } catch {
+      /* ignore */
+    }
+  }
+
   if (woken) {
     lock.remove();
     return;
@@ -119,7 +132,20 @@ export async function mountLockField(lock: HTMLElement): Promise<void> {
   const levels = [...slot.querySelectorAll<SVGPathElement>("svg > g > path")];
   if (levels.length === 0) return;
 
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  // A visitor who came through the portfolio's peek (src/portfolio/peek.ts)
+  // arrives with this exact field already covering the screen. Raising it
+  // from nothing would blank the contours they were just looking at and
+  // draw them again, so they get it at rest. One-shot: a reload plays the
+  // entrance as usual.
+  let through = false;
+  try {
+    through = sessionStorage.getItem("jl.through") === "1";
+    sessionStorage.removeItem("jl.through");
+  } catch {
+    /* ignore */
+  }
+
+  if (through || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
     for (const level of levels) level.style.opacity = "1";
     return;
   }

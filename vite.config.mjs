@@ -1,22 +1,26 @@
 import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { renderDoc } from "./scripts/doc.mjs";
-import { renderSpots } from "./scripts/spots.mjs";
-import { SLOTS } from "./src/game/neighborhood.ts";
+import { renderPortfolio } from "./scripts/portfolio.mjs";
+import { renderDesktopDoc, renderDesktopPart } from "./scripts/desktop-docs.mjs";
 
 /** Documents written as prose rather than markup. id → source file. */
 const WRITTEN = {
-  principles: "content/principles.md",
+  // principles.txt is OFF the shipped page as of 25 Aug 2026, because
+  // content/principles.md is still the scaffold — "Replace this lede with two
+  // or three sentences", and a WORKFLOW section addressed to Jayden. That text
+  // was live on jaydenelee.com for nineteen days. A document that tells a
+  // hiring manager how to write itself is worse than no document.
+  //
+  // Nothing was deleted: the prose file, the `@doc principles` marker in
+  // index.html, and the window width in src/os/windows.ts all stay put. With
+  // no entry here the marker compiles to nothing and the article never exists,
+  // so the palette (which reads the DOM) drops it too.
+  //
+  // To bring it back once the file is real: uncomment this line and the two
+  // launchers in index.html marked with the same date. Nothing else.
+  // principles: "content/principles.md",
 };
-
-/**
- * The places in spots.map, compiled into the game's article at its own marker.
- *
- * Separate from WRITTEN because this is not a whole document — it is the list
- * inside one, and the article around it (the heading, the prose, the mount the
- * canvas goes in) is hand-authored in index.html.
- */
-const SPOTS = "content/spots.md";
 
 /**
  * Compile the written documents into index.html at its `<!-- @doc id -->`
@@ -28,7 +32,7 @@ const SPOTS = "content/spots.md";
  * visitor with JavaScript off still gets the whole document.
  */
 function writtenDocs() {
-  const sources = [...Object.values(WRITTEN), SPOTS].map((p) => resolve(p));
+  const sources = Object.values(WRITTEN).map((p) => resolve(p));
 
   return {
     name: "written-docs",
@@ -52,22 +56,6 @@ function writtenDocs() {
           html = html.replace(marker, article);
         }
 
-        const spotsMarker = /[ \t]*<!--\s*@spots\s*-->/;
-        if (spotsMarker.test(html)) {
-          if (!existsSync(SPOTS)) {
-            this.warn?.(`written-docs: ${SPOTS} is missing; the map will have no places`);
-          } else {
-            const { html: list, warnings } = renderSpots(
-              readFileSync(SPOTS, "utf8"),
-              SLOTS.map((s) => s.id),
-            );
-            for (const warning of warnings) {
-              console.warn(`\n  ${SPOTS}: ${warning}\n`);
-            }
-            html = html.replace(spotsMarker, list);
-          }
-        }
-
         return html;
       },
     },
@@ -86,5 +74,26 @@ function writtenDocs() {
 }
 
 export default {
-  plugins: [writtenDocs()],
+  plugins: [
+    {
+      name: "shared-portfolio-content",
+      transformIndexHtml: {
+        order: "pre",
+        handler(html) {
+          if (html.includes("<!-- @portfolio -->")) {
+            html = html.replace("<!-- @portfolio -->", renderPortfolio());
+          }
+          return html
+            .replace(/<!--\s*@portfolio-doc ([\w-]+)\s*-->/g, (_marker, id) => renderDesktopDoc(id))
+            .replace(/<!--\s*@portfolio-part ([\w-]+)\s*-->/g, (_marker, id) => renderDesktopPart(id));
+        },
+      },
+    },
+    writtenDocs(),
+  ],
+  build: {
+    rolldownOptions: {
+      input: { portfolio: resolve("index.html"), desktop: resolve("desktop/index.html") },
+    },
+  },
 };

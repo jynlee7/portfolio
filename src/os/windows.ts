@@ -78,10 +78,6 @@ const WIDTH: Record<string, string> = {
   experience: "44rem",
   clinical: "46rem",
   chessblitz: "46rem",
-  // Wider than the documents: the plan is 28 cells across with the readout
-  // beside it, and the blocks stop reading as buildings once a cell is under
-  // about 20px.
-  spots: "56rem",
 };
 
 export function openDoc(id: string): void {
@@ -120,7 +116,6 @@ export function openDoc(id: string): void {
   body.className = "win__body";
 
   if (article.classList.contains("doc--pdf")) win.classList.add("win--pdf");
-  if (article.classList.contains("doc--game")) win.classList.add("win--game");
 
   win.append(bar, body);
   body.append(article);
