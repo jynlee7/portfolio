@@ -26,6 +26,19 @@ export function initLock(): void {
        over. */
   }
 
+  // A deep link (/desktop/#rift, from the portfolio's playground) is a visitor
+  // who already chose a door. Making them wake the machine first would put
+  // the window they asked for behind a screen they did not.
+  const target = location.hash.slice(1);
+  if (target && document.getElementById(`doc-${target}`)) {
+    woken = true;
+    try {
+      sessionStorage.setItem(KEY, "1");
+    } catch {
+      /* ignore */
+    }
+  }
+
   if (woken) {
     lock.remove();
     return;

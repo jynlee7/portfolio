@@ -1,0 +1,630 @@
+<!doctype html>
+<html lang="en" data-desk="lab">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Jayden Lee · Desktop playground</title>
+    <meta
+      name="description"
+      content="An interactive desktop playground by Jayden Lee. Explore the portfolio, games, and contour field."
+    />
+    <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@800,500&f[]=switzer@400,500,600&display=swap"
+    />
+    <!-- The desktop is an enhancement. Without this class the stylesheet
+         renders every document as a plain vertical page, so a script failure
+         costs the visitor the metaphor, never the content. -->
+    <script>
+      document.documentElement.classList.add("js");
+    </script>
+  </head>
+
+  <body>
+    <a class="desktop-return" href="/">← Back to portfolio</a>
+    <a class="skip" href="#docs">Skip to content</a>
+
+    <!-- ============================================================
+         ICON SPRITE
+         One grammar: 2px strokes on a 32-unit grid, flat geometric
+         fills, indigo reserved for the one part of each object that
+         identifies it. Drawn here rather than pulled from a set so
+         the folder, the page and the plot look like the same machine.
+         ============================================================ -->
+    <svg class="sprite" aria-hidden="true" focusable="false">
+      <defs>
+        <symbol id="i-folder" viewBox="0 0 40 34">
+          <path
+            d="M1.5 5.5A2 2 0 0 1 3.5 3.5h10.2a2 2 0 0 1 1.6.8l2.1 2.8h21.1"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="0"
+          />
+          <path
+            d="M2 6a2 2 0 0 1 2-2h10.4l3 4H36a2 2 0 0 1 2 2v3H2z"
+            fill="var(--accent-deep)"
+          />
+          <path
+            d="M2 10h36a2 2 0 0 1 2 2v18a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2z"
+            fill="var(--accent)"
+          />
+          <path d="M2 13h36" stroke="rgb(255 255 255 / .28)" stroke-width="1" />
+        </symbol>
+
+        <!-- this-site: a window, because the project is the window manager
+             you are looking at. One pale control at the left of the bar,
+             which is exactly how many controls the real frames carry — the
+             glyph is a scale model, not a stock browser mark. It exists so
+             the dock does not run three identical folders in a row. -->
+        <symbol id="i-win" viewBox="0 0 40 34">
+          <rect
+            x="2"
+            y="3"
+            width="36"
+            height="28"
+            rx="2.5"
+            fill="#fbfaf7"
+            stroke="#8d8a80"
+            stroke-width="1.4"
+          />
+          <path
+            d="M2.7 5.5a2 2 0 0 1 2-2h30.6a2 2 0 0 1 2 2V12H2.7z"
+            fill="var(--accent)"
+          />
+          <rect x="6" y="6.6" width="2.8" height="2.8" rx="0.6" fill="rgb(255 255 255 / .72)" />
+          <g stroke="#9a978d" stroke-width="1.6" stroke-linecap="round">
+            <path d="M7 19h26" />
+            <path d="M7 24h17" />
+          </g>
+        </symbol>
+
+        <!-- Page silhouette shared by every document icon. -->
+        <symbol id="i-page" viewBox="0 0 32 40">
+          <path
+            d="M2 3a2 2 0 0 1 2-2h15l11 11v25a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2z"
+            fill="#fbfaf7"
+            stroke="#8d8a80"
+            stroke-width="1.4"
+          />
+          <path
+            d="M19 1v9a2 2 0 0 0 2 2h9"
+            fill="none"
+            stroke="#8d8a80"
+            stroke-width="1.4"
+          />
+        </symbol>
+
+        <symbol id="i-pdf" viewBox="0 0 32 40">
+          <use href="#i-page" />
+          <rect x="2" y="21" width="24" height="10" rx="1.5" fill="var(--accent)" />
+          <text
+            x="14"
+            y="28.4"
+            text-anchor="middle"
+            font-family="ui-monospace, Menlo, monospace"
+            font-size="7"
+            font-weight="700"
+            fill="#fff"
+            letter-spacing="0.4"
+          >
+            PDF
+          </text>
+        </symbol>
+
+        <!-- experience.log: a page carrying a step plot, because the file is
+             a record of things that happened in sequence. -->
+        <symbol id="i-log" viewBox="0 0 32 40">
+          <use href="#i-page" />
+          <path
+            d="M7 30h4v-5h4v-7h4v-4h5"
+            fill="none"
+            stroke="var(--accent)"
+            stroke-width="2"
+            stroke-linejoin="round"
+            stroke-linecap="round"
+          />
+          <circle cx="24" cy="14" r="2" fill="var(--accent)" />
+        </symbol>
+
+        <symbol id="i-txt" viewBox="0 0 32 40">
+          <use href="#i-page" />
+          <g stroke="#9a978d" stroke-width="1.6" stroke-linecap="round">
+            <path d="M7 20h18" />
+            <path d="M7 25h18" />
+            <path d="M7 30h11" />
+          </g>
+          <path d="M7 15h7" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round" />
+        </symbol>
+
+
+        <symbol id="i-mail" viewBox="0 0 40 32">
+          <rect
+            x="2"
+            y="3"
+            width="36"
+            height="26"
+            rx="2.5"
+            fill="#fbfaf7"
+            stroke="#8d8a80"
+            stroke-width="1.4"
+          />
+          <path
+            d="M3.5 5.5 20 18 36.5 5.5"
+            fill="none"
+            stroke="var(--accent)"
+            stroke-width="2.2"
+            stroke-linejoin="round"
+          />
+        </symbol>
+
+        <!-- rift.exe: a miniature of what's actually drawn inside the game
+             rather than a generic gamepad or joystick glyph — a hexagon for
+             the boss/arena shape src/os/rift.ts draws enemies and the field
+             in, and the same disc-plus-facing-tick the player is rendered
+             as on the canvas itself. -->
+        <symbol id="i-rift" viewBox="0 0 40 34">
+          <rect
+            x="2"
+            y="3"
+            width="36"
+            height="28"
+            rx="2.5"
+            fill="#fbfaf7"
+            stroke="#8d8a80"
+            stroke-width="1.4"
+          />
+          <path
+            d="M20 8 28 12.5 28 21.5 20 26 12 21.5 12 12.5Z"
+            fill="none"
+            stroke="#8d8a80"
+            stroke-width="1.4"
+            stroke-linejoin="round"
+          />
+          <circle cx="16" cy="15.5" r="2.6" fill="var(--accent-deep)" />
+          <path
+            d="M16 15.5 21 13"
+            stroke="var(--accent-deep)"
+            stroke-width="1.6"
+            stroke-linecap="round"
+          />
+        </symbol>
+
+        <!-- Dock tiles: the tools Jayden builds with. Brand marks, so they
+             keep their own colours instead of the sprite's indigo grammar.
+             Display only — none of them launches anything. Glyph paths for
+             Claude and OpenAI are Simple Icons' (CC0); the Lovable heart is
+             drawn here. -->
+        <linearGradient id="g-lovable" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#ff8a1f" />
+          <stop offset=".5" stop-color="#ff3d8b" />
+          <stop offset="1" stop-color="#5a6cff" />
+        </linearGradient>
+        <symbol id="i-app-lovable" viewBox="0 0 40 40">
+          <rect width="40" height="40" rx="6" fill="#fbfaf7" />
+          <path d="M20 32.5C9.5 25.4 6 19.6 7.6 14.6 9.2 9.6 15.6 8.3 20 13.4 24.4 8.3 30.8 9.6 32.4 14.6 34 19.6 30.5 25.4 20 32.5Z" fill="url(#g-lovable)" />
+        </symbol>
+        <symbol id="i-app-codex" viewBox="0 0 40 40">
+          <rect width="40" height="40" rx="6" fill="#141414" />
+          <path transform="translate(9 9) scale(.9167)" d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.872zm16.5963 3.8558L13.1038 8.364 15.1192 7.2a.0757.0757 0 0 1 .071 0l4.8303 2.7913a4.4944 4.4944 0 0 1-.6765 8.1042v-5.6772a.79.79 0 0 0-.407-.667zm2.0107-3.0231l-.142-.0852-4.7735-2.7818a.7759.7759 0 0 0-.7854 0L9.409 9.2297V6.8974a.0662.0662 0 0 1 .0284-.0615l4.8303-2.7866a4.4992 4.4992 0 0 1 6.6802 4.66zM8.3065 12.863l-2.02-1.1638a.0804.0804 0 0 1-.038-.0567V6.0742a4.4992 4.4992 0 0 1 7.3757-3.4537l-.142.0805L8.704 5.459a.7948.7948 0 0 0-.3927.6813zm1.0976-2.3654l2.602-1.4998 2.6069 1.4998v2.9994l-2.5974 1.4997-2.6067-1.4997Z" fill="#fff" />
+        </symbol>
+        <symbol id="i-app-claude" viewBox="0 0 40 40">
+          <rect width="40" height="40" rx="6" fill="#d97757" />
+          <path transform="translate(9 9) scale(.9167)" d="m4.7144 15.9555 4.7174-2.6471.079-.2307-.079-.1275h-.2307l-.7893-.0486-2.6956-.0729-2.3375-.0971-2.2646-.1214-.5707-.1215-.5343-.7042.0546-.3522.4797-.3218.686.0608 1.5179.1032 2.2767.1578 1.6514.0972 2.4468.255h.3886l.0546-.1579-.1336-.0971-.1032-.0972L6.973 9.8356l-2.55-1.6879-1.3356-.9714-.7225-.4918-.3643-.4614-.1578-1.0078.6557-.7225.8803.0607.2246.0607.8925.686 1.9064 1.4754 2.4893 1.8336.3643.3035.1457-.1032.0182-.0728-.164-.2733-1.3539-2.4467-1.445-2.4893-.6435-1.032-.17-.6194c-.0607-.255-.1032-.4674-.1032-.7285L6.287.1335 6.6997 0l.9957.1336.419.3642.6192 1.4147 1.0018 2.2282 1.5543 3.0296.4553.8985.2429.8318.091.255h.1579v-.1457l.1275-1.706.2368-2.0947.2307-2.6957.0789-.7589.3764-.9107.7468-.4918.5828.2793.4797.686-.0668.4433-.2853 1.8517-.5586 2.9021-.3643 1.9429h.2125l.2429-.2429.9835-1.3053 1.6514-2.0643.7286-.8196.85-.9046.5464-.4311h1.0321l.759 1.1293-.34 1.1657-1.0625 1.3478-.8804 1.1414-1.2628 1.7-.7893 1.36.0729.1093.1882-.0183 2.8535-.607 1.5421-.2794 1.8396-.3157.8318.3886.091.3946-.3278.8075-1.967.4857-2.3072.4614-3.4364.8136-.0425.0304.0486.0607 1.5482.1457.6618.0364h1.621l3.0175.2247.7892.522.4736.6376-.079.4857-1.2142.6193-1.6393-.3886-3.825-.9107-1.3113-.3279h-.1822v.1093l1.0929 1.0686 2.0035 1.8092 2.5075 2.3314.1275.5768-.3218.4554-.34-.0486-2.2039-1.6575-.85-.7468-1.9246-1.621h-.1275v.17l.4432.6496 2.3436 3.5214.1214 1.0807-.17.3521-.6071.2125-.6679-.1214-1.3721-1.9246L14.38 17.959l-1.1414-1.9428-.1397.079-.674 7.2552-.3156.3703-.7286.2793-.6071-.4614-.3218-.7468.3218-1.4753.3886-1.9246.3157-1.53.2853-1.9004.17-.6314-.0121-.0425-.1397.0182-1.4328 1.9672-2.1796 2.9446-1.7243 1.8456-.4128.164-.7164-.3704.0667-.6618.4008-.5889 2.386-3.0357 1.4389-1.882.929-1.0868-.0062-.1579h-.0546l-6.3385 4.1164-1.1293.1457-.4857-.4554.0608-.7467.2307-.2429 1.9064-1.3114Z" fill="#faf9f5" />
+        </symbol>
+      </defs>
+    </svg>
+
+    <!-- ============================================================
+         LOCK SCREEN
+         The whole first viewport, and the whole thing is the door —
+         no buttons on it, because a machine you have to be told how
+         to open is not one you want to use.
+
+         It carries only what a stranger needs to know before they
+         decide to look: the time this machine keeps, whose it is,
+         and one line that is worth being curious about. Everything
+         else — résumé, projects, mail — is one wake away in the
+         dock, the menubar and on the desk itself.
+
+         `hidden` by default: only the script that can dismiss it is
+         allowed to show it.
+         ============================================================ -->
+    <div class="lock" id="lock" hidden>
+      <!-- The wallpaper, inlined so its contours can arrive one level at a
+           time. Falls back to the CSS background if the fetch never lands. -->
+      <div class="lock__field" id="lock-field" aria-hidden="true"></div>
+
+      <div class="lock__top">
+        <p class="lock__date" id="lock-date" aria-hidden="true"></p>
+        <p class="lock__clock num" id="lock-clock" aria-hidden="true">--:--</p>
+      </div>
+
+      <!-- No avatar or monogram here. The field behind this block is already
+           a plot of concentric wells; a second ring glyph on top of it read
+           as a smudge and said nothing the field was not saying better. -->
+      <div class="lock__id">
+        <p class="lock__name">Jayden Lee</p>
+        <p class="lock__role">Machine learning · UC Berkeley</p>
+        <!-- True, and from the PNNL work. It carries the field it came from
+             without naming it, which the previous line did not: that one
+             asked the reader to already know what a local minimum is, and a
+             first screen that needs a footnote is a puzzle, not a hook. -->
+        <p class="lock__idea">
+          Most of it starts as three hundred thousand files nobody has opened.
+        </p>
+      </div>
+
+      <!-- A real button, styled as the quiet line it looks like: clicking the
+           screen anywhere works, but keyboard and screen-reader visitors need
+           something they can land on and press. -->
+      <button class="lock__hint" type="button" id="lock-enter">
+        Click anywhere to enter
+      </button>
+    </div>
+
+    <!-- ============================================================
+         MENUBAR
+         ============================================================ -->
+    <header class="menubar" id="menubar">
+      <div class="menubar__left">
+        <div class="menu" data-menu>
+          <button class="menu__trigger menu__trigger--brand" type="button" aria-expanded="false">
+            <span class="mark" aria-hidden="true">JL</span>
+            <span class="menu__brand-name">Jayden Lee</span>
+          </button>
+          <div class="menu__drop" role="menu">
+            <button type="button" role="menuitem" data-open="about">About this machine</button>
+            <!-- Principles… is hidden with the document, 25 Aug 2026. See
+                 vite.config.mjs. Restore this line when the prose is real.
+            <button type="button" role="menuitem" data-open="principles">Principles…</button>
+            -->
+            <button type="button" role="menuitem" data-open="resume">Résumé…</button>
+            <div class="menu__sep"></div>
+            <a role="menuitem" href="mailto:jeyl@berkeley.edu">Send mail<span class="menu__key">↗</span></a>
+            <div class="menu__sep"></div>
+            <button type="button" role="menuitem" data-action="lock">Lock screen</button>
+          </div>
+        </div>
+
+        <div class="menu" data-menu>
+          <button class="menu__trigger" type="button" aria-expanded="false">Work</button>
+          <div class="menu__drop" role="menu">
+            <button type="button" role="menuitem" data-open="bearings">bearings</button>
+            <button type="button" role="menuitem" data-open="clinical">Clinical Intervention Simulator</button>
+            <button type="button" role="menuitem" data-open="chessblitz">ChessBlitz</button>
+            <button type="button" role="menuitem" data-open="site">This website</button>
+            <div class="menu__sep"></div>
+            <button type="button" role="menuitem" data-open="experience">Experience</button>
+          </div>
+        </div>
+
+        <div class="menu" data-menu>
+          <button class="menu__trigger" type="button" aria-expanded="false">Play</button>
+          <div class="menu__drop" role="menu">
+            <button type="button" role="menuitem" data-open="spots">spots.map</button>
+            <div class="menu__sep"></div>
+            <button type="button" role="menuitem" data-action="spots-reset">Start the walk over</button>
+            <div class="menu__sep"></div>
+            <button type="button" role="menuitem" data-open="rift">rift.exe</button>
+            <div class="menu__sep"></div>
+            <button type="button" role="menuitem" data-action="rift-reset">Reset the rift</button>
+          </div>
+        </div>
+
+        <div class="menu" data-menu>
+          <button class="menu__trigger" type="button" aria-expanded="false">View</button>
+          <div class="menu__drop" role="menu">
+            <button type="button" role="menuitemradio" data-desk="lab">Lab<span class="menu__key">bone</span></button>
+            <button type="button" role="menuitemradio" data-desk="slate">Slate<span class="menu__key">grey</span></button>
+            <button type="button" role="menuitemradio" data-desk="blueprint">Blueprint<span class="menu__key">indigo</span></button>
+            <div class="menu__sep"></div>
+            <button type="button" role="menuitem" data-action="tidy">Tidy desktop</button>
+            <button type="button" role="menuitem" data-action="close-all">Close all windows</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="menubar__right">
+        <a class="menubar__link menubar__link--home" href="/">Portfolio</a>
+        <a class="menubar__link" href="https://github.com/jynlee7" aria-label="GitHub">GitHub</a>
+        <a class="menubar__link" href="https://linkedin.com/in/jaydenelee/" aria-label="LinkedIn">LinkedIn</a>
+        <!-- The bar clock keeps two times. Pacific is the honest one and the
+             default; clicking switches it to Berkeley time, which every class
+             on this campus starts ten minutes into. The `BT` mark holds its
+             width while hidden so the toggle cannot shove the bar around. -->
+        <button
+          class="menubar__clock"
+          type="button"
+          id="bar-clock"
+          aria-pressed="false"
+          aria-describedby="bar-clock-desc"
+        >
+          <span class="num" id="bar-time">--:--</span>
+          <span class="menubar__bt" aria-hidden="true">BT</span>
+          <span class="tip" id="bar-tip" aria-hidden="true"></span>
+        </button>
+        <span class="sr-only" id="bar-clock-desc"
+          >Berkeley time — ten minutes past the hour, when lecture actually
+          starts.</span
+        >
+      </div>
+    </header>
+
+    <!-- ============================================================
+         DESKTOP
+         ============================================================ -->
+    <main class="desk" id="desk">
+      <!-- The nameplate and the desktop items share one flow column, so a
+           longer pitch pushes the icons down instead of landing on top of
+           them. -->
+      <div class="deskcol">
+      <div class="nameplate">
+        <p class="nameplate__status">
+          <span class="dot" aria-hidden="true"></span>
+          Currently at SwingVision
+        </p>
+        <h1 class="nameplate__name">Jayden Lee</h1>
+        <p class="nameplate__role">
+          Junior · UC Berkeley, Data Science
+        </p>
+        <p class="nameplate__pitch">
+          ML systems for messy, real-world data: fan behavior at Cal Athletics,
+          LLM benchmarks at MatX, proteomics at a national lab.
+        </p>
+      </div>
+
+      <!-- Desktop items. Buttons, so they are focusable and openable with the
+           keyboard; the double-click affordance is an addition, not the only
+           way in. -->
+      <div class="icons" id="icons" role="list">
+        <button class="icon" type="button" role="listitem" data-open="clinical">
+          <span class="icon__art"><svg viewBox="0 0 40 34"><use href="#i-folder" /></svg></span>
+          <span class="icon__label">clinical-sim</span>
+        </button>
+
+        <button class="icon" type="button" role="listitem" data-open="chessblitz">
+          <span class="icon__art"><svg viewBox="0 0 40 34"><use href="#i-folder" /></svg></span>
+          <span class="icon__label">chessblitz</span>
+        </button>
+
+        <button class="icon" type="button" role="listitem" data-open="site">
+          <span class="icon__art"><svg viewBox="0 0 40 34"><use href="#i-win" /></svg></span>
+          <span class="icon__label">this-site</span>
+        </button>
+
+        <button class="icon" type="button" role="listitem" data-open="experience">
+          <span class="icon__art icon__art--page"><svg viewBox="0 0 32 40"><use href="#i-log" /></svg></span>
+          <span class="icon__label">experience.log</span>
+        </button>
+
+        <button class="icon" type="button" role="listitem" data-open="resume">
+          <span class="icon__art icon__art--page"><svg viewBox="0 0 32 40"><use href="#i-pdf" /></svg></span>
+          <span class="icon__label">resume.pdf</span>
+        </button>
+
+        <button class="icon" type="button" role="listitem" data-open="about">
+          <span class="icon__art icon__art--page"><svg viewBox="0 0 32 40"><use href="#i-txt" /></svg></span>
+          <span class="icon__label">about.txt</span>
+        </button>
+
+        <!-- The one icon on the desk that isn't a work artifact — placed
+             last, after everything the scan path in PRODUCT.md actually
+             cares about, so it never competes with the résumé for a
+             ninety-second visitor's attention. -->
+        <button class="icon" type="button" role="listitem" data-open="rift">
+          <span class="icon__art"><svg viewBox="0 0 40 34"><use href="#i-rift" /></svg></span>
+          <span class="icon__label">rift.exe</span>
+        </button>
+
+        <!-- Written in content/principles.md, not here. Deliberately absent
+             from the dock: the dock's job is the work artifacts, the game and
+             the mail link, and principles.txt is a document you read once.
+
+             Hidden 25 Aug 2026 while the prose is still the scaffold — see
+             vite.config.mjs. Restore this button with the entry there.
+        <button class="icon" type="button" role="listitem" data-open="principles">
+          <span class="icon__art icon__art--page"><svg viewBox="0 0 32 40"><use href="#i-txt" /></svg></span>
+          <span class="icon__label">principles.txt</span>
+        </button>
+        -->
+
+      </div>
+      </div>
+
+      <!-- Widget rail. Two widgets, both true: the machine's own clock and
+           the weather where Jayden actually is. -->
+      <aside class="rail" id="rail" aria-label="Desktop widgets">
+        <!-- "Now" means now, and today it holds exactly one thing. Both
+             contracts ended, and a widget that keeps calling a finished role
+             current is the one lie a hiring manager can catch without leaving
+             the page. The degree came out too: it is a fact about Jayden, not
+             a post he holds, and it is already in about.txt and
+             experience.log. One live line, one dated line under it. -->
+        <div class="widget widget--now">
+          <p class="widget__title">Now</p>
+          <ul class="nowlist">
+            <li>
+              <span class="nowlist__what">Data Analyst Intern</span>
+              <span class="nowlist__where">SwingVision</span>
+            </li>
+          </ul>
+          <p class="widget__foot">Since September 2026.</p>
+        </div>
+
+        <div class="widget widget--wx" id="wx">
+          <p class="widget__title">Berkeley</p>
+          <p class="wx__temp num"><span id="wx-temp">—</span>°<span class="wx__unit">F</span></p>
+          <p class="wx__cond" id="wx-cond">Loading…</p>
+        </div>
+
+        <!-- The game's only launcher, and deliberately the quietest thing on
+             the rail: the plan, two numbers, and no line of explanation. It is
+             the same block plan src/game/neighborhood.ts draws, at 1/20th the
+             size, so the tile is a small picture of the actual place rather
+             than a generic map glyph. Opening it is wired by initLaunchers,
+             which binds every [data-open] that is not a desktop icon. -->
+        <button class="widget widget--spots" type="button" data-open="spots" aria-label="Open spots.map">
+          <span class="widget__title">Spots</span>
+          <svg class="spots__mini" viewBox="0 0 28 18" aria-hidden="true" focusable="false">
+            <g fill="var(--chrome-dim)" stroke="var(--bevel-dark)" stroke-width="0.4">
+              <rect x="2" y="2" width="6" height="4" />
+              <rect x="10" y="2" width="6" height="4" />
+              <rect x="18" y="2" width="8" height="4" />
+              <rect x="2" y="8" width="6" height="4" />
+              <rect x="10" y="8" width="6" height="4" />
+              <rect x="18" y="8" width="8" height="4" />
+              <rect x="2" y="14" width="6" height="2" />
+              <rect x="10" y="14" width="6" height="2" />
+              <rect x="18" y="14" width="8" height="2" />
+            </g>
+            <rect x="10" y="4" width="1" height="1" fill="var(--accent)" />
+          </svg>
+          <span class="spots__tally">
+            <span class="num" id="spots-found">0</span>
+            <span class="spots__of">of</span>
+            <span class="num" id="spots-total">0</span>
+          </span>
+        </button>
+      </aside>
+    </main>
+
+    <!-- ============================================================
+         DOCK
+         ============================================================ -->
+    <!-- The dock is the tool stack, not a launcher: documents open from the
+         desk and the menubar. The tiles are role="img" rather than
+         buttons because they do nothing, and a control that does nothing is
+         a lie to a keyboard user. Mail stays past the separator — it is the
+         one dock item that acts. -->
+    <aside class="dock" id="dock" aria-label="Tools I build with">
+      <ul class="dock__list">
+        <li><span class="dockitem dockitem--app" role="img" aria-label="Lovable" data-label="Lovable"><svg viewBox="0 0 40 40"><use href="#i-app-lovable" /></svg></span></li>
+        <li><span class="dockitem dockitem--app" role="img" aria-label="Codex" data-label="Codex"><svg viewBox="0 0 40 40"><use href="#i-app-codex" /></svg></span></li>
+        <li><span class="dockitem dockitem--app" role="img" aria-label="Claude Code" data-label="Claude Code"><svg viewBox="0 0 40 40"><use href="#i-app-claude" /></svg></span></li>
+        <li class="dock__sep" aria-hidden="true"></li>
+        <li><a class="dockitem" href="mailto:jeyl@berkeley.edu" data-label="jeyl@berkeley.edu"><svg viewBox="0 0 40 32"><use href="#i-mail" /></svg></a></li>
+      </ul>
+    </aside>
+
+    <!-- ============================================================
+         DOCUMENTS
+         The real content. Each <article> is moved into a window frame
+         when opened, so there is exactly one copy of every fact.
+         ============================================================ -->
+    <div class="docs" id="docs">
+      <!-- ---------------- principles.txt ----------------
+           Compiled from content/principles.md at build time by the
+           written-docs plugin in vite.config.mjs. Edit the prose there;
+           this marker is replaced with the whole <article>.
+
+           Compiling to nothing since 25 Aug 2026: the plugin's WRITTEN map has
+           no `principles` entry while the prose is still the scaffold, so this
+           marker is inert and no article is emitted. The marker stays exactly
+           where it is so restoring the document is one uncommented line. -->
+      <!-- @doc principles -->
+
+      <!-- ---------------- about.txt ---------------- -->
+      <!-- @portfolio-doc about -->
+
+      <!-- ---------------- clinical-sim ---------------- -->
+      <!-- @portfolio-doc bearings -->
+      <!-- @portfolio-doc clinical -->
+
+      <!-- ---------------- chessblitz ---------------- -->
+      <!-- @portfolio-doc chessblitz -->
+
+      <!-- ---------------- this-site ----------------
+           The one project on this page a reader can audit without leaving
+           it, so it makes no claim the window around it does not already
+           demonstrate. No screenshot well: a picture of this page, on this
+           page, would be the tell that the writeup had nothing to show. -->
+      <!-- @portfolio-doc site -->
+
+      <!-- ---------------- experience.log ---------------- -->
+      <!-- @portfolio-doc experience -->
+
+      <!-- ---------------- resume.pdf ---------------- -->
+      <!-- @portfolio-doc resume -->
+
+      <!-- ---------------- spots.map ----------------
+           The map is built by src/os/spots.ts into the empty .plan mount, and
+           the list of places is compiled into the @spots marker from
+           content/spots.md at build time. Without JS the mount is hidden and
+           the list is simply a list, which is what it is — the game is a way
+           of reading it one at a time, not a substitute for it. -->
+      <article class="doc doc--game" id="doc-spots" data-title="spots.map" data-meta="one neighborhood">
+        <h2 class="doc__h1">spots.map</h2>
+        <p class="doc__lede">
+          A few blocks of Berkeley, and what I ate on them. Walk it and the
+          places open one at a time.
+        </p>
+
+        <!-- @spots -->
+
+        <div class="plan"></div>
+
+        <p>
+          Every place on this map is somewhere I actually went, written up in
+          one file I edit by hand. Nothing here is generated and there are no
+          filler entries — where I have not written anything, the storefront
+          stands empty and the map says so rather than inventing a restaurant
+          to fill the gap. That constraint is most of why it is worth walking.
+        </p>
+        <p>
+          It is a map rather than a list because a list gets skimmed. Twelve
+          names and twelve one-line reviews are four seconds of scrolling and
+          nothing retained. Making you walk two blocks to the next one buys
+          each place the few seconds it takes to actually read it, which is the
+          only thing I wanted from the format.
+        </p>
+        <p>
+          There is no score, no timer and no way to lose, and it does not ask
+          you to come back tomorrow. Walking is one keypress per block, the map
+          redraws only when you find something, and nothing on this page
+          animates while you are standing still.
+        </p>
+      </article>
+
+      <!-- ---------------- rift.exe ----------------
+           The one other requestAnimationFrame loop on this desktop besides
+           the pointer-driven field, and it runs only while a run is actually
+           being played — see RIFT.md before touching src/os/rift.ts or the
+           cadence anything under src/game/rift/ fires on.
+
+           Opens through the .win--full variant of the window frame (see the
+           doc--full relay in src/os/windows.ts and the "rift.exe" block in
+           src/style.css) instead of the ordinary cascaded window everything
+           else on this desktop uses, which is why it needs its own prose
+           here rather than the .win--game modifier spots.map uses. -->
+      <article class="doc doc--full" id="doc-rift" data-title="rift.exe" data-meta="10 waves + boss">
+        <h2 class="doc__h1">rift.exe</h2>
+        <p class="doc__lede">
+          A fullscreen skirmish on the same loss surface the wallpaper draws.
+          Dodge skillshots, cast your own, and clear ten waves and the boss
+          waiting behind them.
+        </p>
+
+        <div class="rift"></div>
+
+        <p>
+          Everything in it is original: one playable unit with its own kit,
+          an original roster of enemies, and fourteen augments named for the
+          field itself. Nothing here is licensed art, a borrowed name, or a
+          call to Riot's own API — the arena is drawn from the same code that
+          draws this desktop's wallpaper.
+        </p>
+        <p>
+          A run is ten waves and a boss, about three to five minutes, with an
+          ending you can actually reach: win or die, then it is over. Level up
+          on every wave clear, and pick from three augments at levels two,
+          four, six and eight.
+        </p>
+      </article>
+
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

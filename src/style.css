@@ -117,6 +117,29 @@ svg {
   top: 0.5rem;
 }
 
+/* The way back to the portfolio. Once the desktop is running the menubar
+   carries it, so here it is a skip link: first in the tab order, out of
+   sight until focused. Without JS there is no menubar, and it is simply the
+   first line of the page. */
+.desktop-return {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 999;
+  padding: 0.6rem 1rem;
+  background: var(--page);
+  box-shadow: var(--shadow-float);
+}
+.desktop-return:focus {
+  left: 0.5rem;
+  top: 0.5rem;
+}
+html:not(.js) .desktop-return {
+  position: static;
+  display: block;
+  box-shadow: none;
+}
+
 /* Available to assistive technology, absent from the layout. Used where a
    control's visible label is a value and the description has to arrive some
    other way. */
@@ -443,6 +466,7 @@ html:not(.js) .doc {
 .menubar__clock {
   position: relative;
   display: inline-flex;
+  white-space: nowrap;
   align-items: center;
   gap: 0.3rem;
   padding: 3px 0.4rem;
@@ -1035,6 +1059,16 @@ html:not(.js) .doc {
   opacity: 1;
 }
 
+/* Tool tiles: display only, so no pointer cursor promising an action. They
+   keep magnification and the tooltip — the name is the whole point of them. */
+.dockitem--app {
+  cursor: default;
+}
+.dockitem--app svg {
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 1px rgb(20 18 14 / 0.12);
+}
+
 /* Running indicator — honest: it means a window for this document is open. */
 .dockitem.is-running::before {
   content: "";
@@ -1153,6 +1187,32 @@ html:not(.js) .doc {
 /* The PDF window is a viewer: no padding, the document fills it. */
 .win--pdf .win__body {
   padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Fullscreen — a variant of .win, not a second modal layer. .desk is already
+   position:fixed with no transform, so a fixed child of it resolves against
+   the viewport exactly the way the <780px bottom sheet below already relies
+   on; this is that same trick at every width, for the one surface on this
+   desktop besides the lock screen that takes the whole viewport. Everything
+   else about being a window — the bar, the close control, is-front, the
+   dock's running dot — is unchanged. Reused by rift.exe. */
+.win--full {
+  position: fixed;
+  inset: var(--menubar-h) 0 0 0;
+  width: auto;
+  max-width: none;
+  max-height: none;
+  border-radius: 0;
+}
+.win--full .win__bar {
+  border-radius: 0;
+  cursor: default;
+}
+.win--full .win__body {
+  padding: 0;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
@@ -1279,6 +1339,31 @@ html:not(.js) .doc {
   font-size: var(--step-chrome-lg);
   color: var(--accent-deep);
   font-weight: 500;
+}
+
+/* The takeaway a role left behind, in Jayden's own words off the résumé.
+   Italic because it is the one line in this list that is opinion rather than
+   record, and the label is inline rather than an eyebrow above it so the
+   sentence still reads as part of the entry. No rule, no tint, no card: it
+   sits inside the role it belongs to and borrows that block's separation. */
+.role__take {
+  margin-top: 0.5rem;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.55rem;
+  align-items: baseline;
+  font-size: var(--step-chrome-lg);
+  font-style: italic;
+  color: var(--ink-muted);
+  max-width: var(--measure-text);
+}
+.role__take-k {
+  font-size: var(--step-chrome-sm);
+  font-style: normal;
+  font-weight: 600;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--ink-faint);
 }
 
 /* ---- Principles ----
@@ -1410,6 +1495,14 @@ html:not(.js) .doc {
   margin-top: 0.2rem;
   font-size: var(--step-chrome-lg);
   color: var(--ink-muted);
+}
+/* Coursework. One step quieter than the note above it, because it is the
+   line a reader scans for a keyword rather than reads. */
+.edu__course {
+  margin-top: 0.45rem;
+  font-size: var(--step-chrome);
+  line-height: 1.5;
+  color: var(--ink-faint);
 }
 
 /* ---- PDF viewer ---- */
@@ -1792,12 +1885,278 @@ html.js .docs {
 }
 
 /* ============================================================
+   rift.exe
+   A fullscreen skirmish on the same loss surface the wallpaper draws —
+   literally: the arena floor is src/field/core.ts's field, sampled at rest
+   and painted once per run and on resize, never per frame. This is the
+   desktop's other requestAnimationFrame loop besides the pointer-driven
+   field, and it is scoped as tightly: it runs only while a run is actively
+   being played, and an idle or paused window costs the same zero frames as
+   spots.map. See RIFT.md.
+   ============================================================ */
+
+/* Scoped to the fullscreen frame, not the bare article class: this same
+   article also sits on the doc shelf (JS mode, before it's ever opened) and
+   in the readable html:not(.js) page, where it must lay out as an ordinary
+   document, not as game chrome. */
+.win--full .doc--full {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+.win--full .rift {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+/* No game to draw without JS; the paragraphs around the mount carry the
+   no-JS reader instead, same split spots.map's .plan makes. */
+html:not(.js) .rift {
+  display: none;
+}
+
+.rift__frame {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  outline: none;
+}
+
+.rift__bg,
+.rift__fx {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+/* Purely a backdrop; pointermove/pointerdown are read off .rift__frame. */
+.rift__bg {
+  pointer-events: none;
+}
+
+/* Chrome floating over the arena — the same material and the same reason
+   the menubar and dock are translucent, so text stays legible over a busy,
+   theme-varying field. --on-desk / --on-desk-dim / --on-desk-quiet are
+   already measured against that field's darkest stop for exactly this use
+   (see tokens.css); nothing here is a new colour pairing. */
+.rift__hud {
+  position: absolute;
+  top: var(--gap-3);
+  left: var(--gap-3);
+  right: var(--gap-3);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--gap-3);
+  padding: 0.4rem 0.7rem;
+  border-radius: var(--r-ctl);
+  background: var(--veil);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  box-shadow: inset 0 0 0 1px var(--veil-edge);
+  color: var(--on-desk);
+  text-shadow: var(--on-desk-shadow);
+  font-size: var(--step-chrome);
+}
+.rift__wave,
+.rift__level {
+  white-space: nowrap;
+}
+.rift__hpbar {
+  position: relative;
+  flex: 1;
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  /* Structural chrome, not text: same translucent-black-on-light idiom
+     .win__close already uses (rgb(255 255 255 / .16) there, inverted here). */
+  background: rgb(0 0 0 / 0.18);
+}
+.rift__hpfill {
+  width: 100%;
+  height: 100%;
+  transform-origin: left center;
+  /* scaleX, not width — animating width/height thrashes layout. rift.ts sets
+     the transform, never the box size. */
+  transition: transform var(--dur-quick);
+  /* The run's own accent — "the active path" is your health here. */
+  background: var(--accent);
+}
+.rift__abilities {
+  display: flex;
+  gap: 0.3rem;
+}
+.rift__ab {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--r-ctl);
+  font-family: var(--font-mono);
+  font-size: var(--step-chrome-sm);
+  color: var(--on-desk-quiet);
+  background: rgb(0 0 0 / 0.14);
+  opacity: 0.55;
+  transition: opacity var(--dur-quick);
+}
+.rift__ab.is-ready {
+  opacity: 1;
+  color: var(--on-desk);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.rift__bossbar {
+  position: absolute;
+  top: calc(var(--gap-3) + 2.4rem);
+  left: 50%;
+  translate: -50% 0;
+  z-index: 1;
+  width: min(28rem, 60%);
+  height: 6px;
+  border-radius: 3px;
+  overflow: hidden;
+  background: rgb(0 0 0 / 0.24);
+}
+.rift__bossfill {
+  width: 100%;
+  height: 100%;
+  transform-origin: left center;
+  transition: transform var(--dur-quick);
+  background: var(--ink);
+}
+
+/* Panels — the same opaque bone-panel material every surface here uses,
+   never the floating glass a modal usually gets. DESIGN.md names the
+   command palette as the one deliberate exception to "windows are
+   non-modal"; these panels are this game's equivalent of that exception,
+   so they take the palette's material rather than the menubar's veil. */
+.rift__panel {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gap-2);
+  width: min(26rem, calc(100% - 2 * var(--gap-4)));
+  max-height: calc(100% - 2 * var(--gap-4));
+  overflow-y: auto;
+  padding: var(--gap-4);
+  text-align: center;
+  background: var(--chrome);
+  border-radius: var(--r-win);
+  box-shadow: var(--raise), var(--shadow-win);
+}
+/* [hidden] is a plain author class here, so its `display:flex` above beats
+   the UA stylesheet's [hidden]{display:none} on origin alone, specificity
+   aside — this rule has to say so explicitly or every panel stacks at once. */
+.rift__panel[hidden] {
+  display: none;
+}
+.rift__panel-h {
+  font-family: var(--font-display);
+  font-size: var(--step-h2);
+  font-weight: 800;
+  color: var(--ink);
+}
+.rift__panel-p {
+  font-size: var(--step-body);
+  color: var(--ink-muted);
+}
+.rift__scheme {
+  display: flex;
+  gap: 0.4rem;
+}
+.rift__schemebtn {
+  padding: 0.4rem 0.7rem;
+  border-radius: var(--r-ctl);
+  font-size: var(--step-chrome);
+  color: var(--ink);
+  background: var(--chrome-dim);
+  box-shadow: var(--raise);
+  cursor: pointer;
+  transition: background var(--dur-quick);
+}
+.rift__schemebtn[aria-pressed="true"] {
+  background: var(--accent-wash);
+  box-shadow: var(--inset);
+  color: var(--accent-deep);
+}
+.rift__calm {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: var(--step-chrome);
+  color: var(--ink-muted);
+}
+.rift__best {
+  font-size: var(--step-chrome);
+  color: var(--ink-faint);
+}
+.rift__touch-notice {
+  display: none;
+  font-size: var(--step-chrome);
+  color: var(--ink-faint);
+}
+
+.rift__offers {
+  display: grid;
+  gap: var(--gap-2);
+  width: 100%;
+}
+.rift__offer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.6rem 0.8rem;
+  text-align: left;
+  border-radius: var(--r-ctl);
+  background: var(--chrome-dim);
+  box-shadow: var(--raise);
+  cursor: pointer;
+  transition: background var(--dur-quick);
+}
+.rift__offer:hover,
+.rift__offer:focus-visible {
+  background: var(--accent-wash);
+}
+.rift__offer-name {
+  font-weight: 600;
+  color: var(--ink);
+}
+.rift__offer-desc {
+  font-size: var(--step-chrome);
+  color: var(--ink-muted);
+}
+
+@media (pointer: coarse) {
+  /* No keyboard on a phone: touch controls are the one M4 milestone this
+     build does not ship yet. WASD is unreachable, so the toggle is pointless
+     here — click-to-move is the only scheme that can work — and the notice
+     says so plainly rather than presenting a keyboard-shaped screen that
+     does nothing when tapped. */
+  .rift__panel--start .rift__scheme {
+    display: none;
+  }
+  .rift__touch-notice {
+    display: block;
+  }
+}
+
+/* ============================================================
    MOBILE — an iOS home screen, not a shrunken desktop.
    Windows become full-height sheets.
    ============================================================ */
 
 @media (max-width: 780px) {
-  .menubar__link {
+  /* GitHub and LinkedIn are in about.txt. The way back to the portfolio is
+     not anywhere else, so it stays. */
+  .menubar__link:not(.menubar__link--home) {
     display: none;
   }
   .menubar {
@@ -1807,12 +2166,27 @@ html.js .docs {
     padding-inline: 0.4rem;
   }
   /* The bar is 30px tall, so the clock cannot grow to a thumb-sized target.
-     Extend its hit area past its face instead; nothing sits beside it here,
-     because the two links are hidden above. */
+     Extend its hit area past its face instead. The Portfolio link is the
+     only thing beside it here, a 16px gap away, so 10px of reach cannot
+     land on it. */
   .menubar__clock::before {
     content: "";
     position: absolute;
     inset: -6px -10px;
+  }
+
+  /* Below 400px the bar cannot hold the name, three menus, the way home and
+     the clock. The JL mark stays as the menu's face; the name stays as its
+     accessible label. */
+  @media (max-width: 400px) {
+    .menu__brand-name {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
   }
 
   .desk {
@@ -1836,13 +2210,16 @@ html.js .docs {
   .icons {
     display: grid;
     margin-top: var(--gap-5);
-    grid-template-columns: repeat(4, 1fr);
+    /* minmax(0, …): a bare 1fr will not shrink below "experience.log", which
+       pushed the grid 30px past a 320px screen. */
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: var(--gap-4) var(--gap-1);
   }
   /* Narrow columns: let a long filename take two lines rather than truncate. */
   .icon__label {
     white-space: normal;
     overflow: visible;
+    overflow-wrap: anywhere;
   }
 
   .rail {

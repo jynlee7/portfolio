@@ -3,10 +3,25 @@ import { resolve } from "node:path";
 import { renderDoc } from "./scripts/doc.mjs";
 import { renderSpots } from "./scripts/spots.mjs";
 import { SLOTS } from "./src/game/neighborhood.ts";
+import { renderPortfolio } from "./scripts/portfolio.mjs";
+import { renderDesktopDoc } from "./scripts/desktop-docs.mjs";
 
 /** Documents written as prose rather than markup. id → source file. */
 const WRITTEN = {
-  principles: "content/principles.md",
+  // principles.txt is OFF the shipped page as of 25 Aug 2026, because
+  // content/principles.md is still the scaffold — "Replace this lede with two
+  // or three sentences", and a WORKFLOW section addressed to Jayden. That text
+  // was live on jaydenelee.com for nineteen days. A document that tells a
+  // hiring manager how to write itself is worse than no document.
+  //
+  // Nothing was deleted: the prose file, the `@doc principles` marker in
+  // index.html, and the window width in src/os/windows.ts all stay put. With
+  // no entry here the marker compiles to nothing and the article never exists,
+  // so the palette (which reads the DOM) drops it too.
+  //
+  // To bring it back once the file is real: uncomment this line and the two
+  // launchers in index.html marked with the same date. Nothing else.
+  // principles: "content/principles.md",
 };
 
 /**
@@ -86,5 +101,24 @@ function writtenDocs() {
 }
 
 export default {
-  plugins: [writtenDocs()],
+  plugins: [
+    {
+      name: "shared-portfolio-content",
+      transformIndexHtml: {
+        order: "pre",
+        handler(html) {
+          if (html.includes("<!-- @portfolio -->")) {
+            html = html.replace("<!-- @portfolio -->", renderPortfolio());
+          }
+          return html.replace(/<!--\s*@portfolio-doc ([\w-]+)\s*-->/g, (_marker, id) => renderDesktopDoc(id));
+        },
+      },
+    },
+    writtenDocs(),
+  ],
+  build: {
+    rolldownOptions: {
+      input: { portfolio: resolve("index.html"), desktop: resolve("desktop/index.html") },
+    },
+  },
 };

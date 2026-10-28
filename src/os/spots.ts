@@ -5,11 +5,11 @@
  * the thing most likely to be undone by accident:
  *
  * There is no requestAnimationFrame loop in this file, and there must never be
- * one. DESIGN.md spends the whole motion budget on the pointer deforming the
- * wallpaper field. Walking is a discrete grid step; the walker is a DOM element
- * moved by writing --cx/--cy, which a CSS transform transition animates on the
- * compositor; the canvas repaints once per step and only when something was
- * actually discovered. An idle open window requests zero frames.
+ * one. docs/DESKTOP_DESIGN.md spends the whole motion budget on the pointer
+ * deforming the wallpaper field. Walking is a discrete grid step; the walker
+ * is a DOM element moved by writing --cx/--cy, which a CSS transform
+ * transition animates on the compositor; the canvas repaints once per step and
+ * only when something was actually discovered. An idle open window requests zero frames.
  *
  * The places are not in here either. They are compiled out of content/spots.md
  * into an <ol class="spots"> inside the article, and this file *moves* the
