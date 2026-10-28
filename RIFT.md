@@ -26,7 +26,11 @@ alone: win or die, then the run is over.
 The arena floor is not a backdrop drawn to look like the wallpaper — it *is*
 the wallpaper's field. `src/os/rift.ts` imports `sampleGrid`,
 `marchingSquares`, and the theme tables straight out of `src/field/core.ts`
-and paints the resting surface once per run and on resize. The boss is named
+and paints the resting surface once per run and on resize. Unlike the
+wallpaper, which covers its window and crops the field, the arena is always
+fitted whole inside the window, with the backdrop filling the margins and a
+1px frame on its edge: the player can walk to every edge and enemies spawn on
+them, so no part of it may be off screen. The boss is named
 for the saddle point between the field's two minima for the same reason: this
 game is not generic, it is built on the one thing that makes this specific
 site's wallpaper the thing it is.
@@ -179,8 +183,14 @@ Two schemes, chosen on the start screen and remembered:
 | Move | `W A S D`, held | Click a point; walks there, then stops |
 | Aim | Live cursor position | Nearest enemy, automatically |
 | Auto-attack | Held on left mouse button | Always on |
-| `Q W E R` | Cast toward the aim point | Cast toward the aim point |
+| Cast | `Q F E R`, toward the aim point | `Q W E R`, toward the aim point |
 | Stop | (release keys) | `S` |
+
+The W slot (Barrier Mine) is cast with `F` under WASD, because `W` already
+means "up" there; a key cannot be both, and until 28 Oct 2026 movement won
+and the mine could never be cast. The slots keep their Q/W/E/R names in the
+sim and in this file, but the HUD's keycaps and the start screen's controls
+line both print the key that is actually bound in the chosen scheme.
 
 Click-to-move is a deliberate simplification of the textbook MOBA
 right-click-to-move / left-click-attack-move split: real click-to-move is
@@ -193,9 +203,11 @@ scheme can.
 
 Keys bind to `.rift__frame`, never to `document` — the reason is identical to
 `GAME.md` §6's for `spots.map`: a document-level handler would fight the
-desktop and the browser's own shortcuts. `Q`/`W`/`E`/`R` are edge-triggered
+desktop and the browser's own shortcuts. Cast keys are edge-triggered
 (consumed once per press via `event.repeat`), not level-triggered, so holding
-a key does not spam a cast every frame.
+a key does not spam a cast every frame. Pausing forgets every held key and
+button: keyup only reaches the frame while it has focus, so a key released
+after the pause took focus away would otherwise stay down through Resume.
 
 **Touch is not built.** `PRODUCT.md` says visitors are often on a phone, and
 `spots.map`'s D-pad is the standing precedent that touch controls are not

@@ -47,6 +47,23 @@ const STEP_MS = 1000 / 60;
 const MAX_FRAME_MS = 250;
 
 type Scheme = "wasd" | "click";
+type Slot = "q" | "w" | "e" | "r";
+
+const SLOTS: readonly Slot[] = ["q", "w", "e", "r"];
+
+/** The key that casts each ability slot. Under WASD, W already means "up",
+ *  so the W slot (Barrier Mine) moves to F; click-to-move leaves W free. */
+const CAST_KEYS: Record<Scheme, Record<Slot, string>> = {
+  wasd: { q: "q", w: "f", e: "e", r: "r" },
+  click: { q: "q", w: "w", e: "e", r: "r" },
+};
+
+const castKeys = (s: Scheme): string => SLOTS.map((slot) => CAST_KEYS[s][slot].toUpperCase()).join(" ");
+
+const CONTROLS: Record<Scheme, string> = {
+  wasd: `W A S D to move, hold the mouse to attack, ${castKeys("wasd")} to cast.`,
+  click: `Click to walk, S to stop. Attacks are automatic; ${castKeys("click")} to cast.`,
+};
 
 type Saved = { bestWave: number; bestMs: number; scheme: Scheme; calm: boolean };
 
@@ -62,6 +79,7 @@ let panelPick: HTMLElement | null = null;
 let panelPause: HTMLElement | null = null;
 let panelEnd: HTMLElement | null = null;
 let offersBox: HTMLElement | null = null;
+let keysLine: HTMLElement | null = null;
 let hud: HTMLElement | null = null;
 let hpFill: HTMLElement | null = null;
 let bossBar: HTMLElement | null = null;
@@ -78,10 +96,15 @@ let calm = false;
 let best: { wave: number; ms: number } | null = null;
 let runStartMs = 0;
 
-/* --- Geometry: arena <-> pixel, same "cover" trick as flow.ts ------------- */
+/* --- Geometry: arena <-> pixel ---------------------------------------------
+   flow.ts can "cover" its window and crop the field, because the wallpaper is
+   only looked at. The arena is played in: the player walks to its edges and
+   enemies spawn on them, so the whole of it is always fitted inside the
+   window ("contain"), and a window of another shape gets margins instead of
+   hiding part of the fight. */
 
 let dpr = 1;
-let cover = 1;
+let fit = 1;
 let offX = 0;
 let offY = 0;
 
@@ -98,9 +121,9 @@ function measure(): void {
     c.style.height = `${rect.height}px`;
   }
 
-  cover = Math.max(rect.width / ARENA.w, rect.height / ARENA.h);
-  offX = (rect.width - ARENA.w * cover) / 2;
-  offY = (rect.height - ARENA.h * cover) / 2;
+  fit = Math.min(rect.width / ARENA.w, rect.height / ARENA.h);
+  offX = (rect.width - ARENA.w * fit) / 2;
+  offY = (rect.height - ARENA.h * fit) / 2;
 
   paintArena();
   if (state) renderFrame(state);
@@ -110,8 +133,8 @@ function toArena(clientX: number, clientY: number): Vec {
   if (!mount) return { x: ARENA.w / 2, y: ARENA.h / 2 };
   const rect = mount.getBoundingClientRect();
   return {
-    x: (clientX - rect.left - offX) / cover,
-    y: (clientY - rect.top - offY) / cover,
+    x: (clientX - rect.left - offX) / fit,
+    y: (clientY - rect.top - offY) / fit,
   };
 }
 
@@ -139,12 +162,14 @@ function paintArena(): void {
 
   bgCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
   bgCtx.clearRect(0, 0, w, h);
-  bgCtx.setTransform(cover * dpr, 0, 0, cover * dpr, offX * dpr, offY * dpr);
+  bgCtx.setTransform(fit * dpr, 0, 0, fit * dpr, offX * dpr, offY * dpr);
 
+  // The backdrop runs edge to edge, so the margins a fitted arena leaves read
+  // as paper around the plot rather than as a hole in the window.
   const backdrop = bgCtx.createLinearGradient(0, 0, FRAME.w * 0.6, FRAME.h);
   for (const stop of t.backdrop) backdrop.addColorStop(stop.offset, stop.color);
   bgCtx.fillStyle = backdrop;
-  bgCtx.fillRect(0, 0, FRAME.w, FRAME.h);
+  bgCtx.fillRect(-offX / fit, -offY / fit, w / fit, h / fit);
 
   const project = (c: number, r: number): [number, number] => [
     (c / (BG_COLS - 1)) * 2 * ASPECT - ASPECT,
@@ -170,6 +195,14 @@ function paintArena(): void {
     bgCtx.stroke();
   }
   bgCtx.globalAlpha = 1;
+
+  // The arena's edge is a wall, so it is drawn as the plot frame rather than
+  // left to wherever the contours happen to stop. 1px of the shallow stroke,
+  // measured at 3.72:1 or better against every backdrop stop of every theme
+  // (slate's lightest stop is the floor).
+  bgCtx.strokeStyle = t.strokeShallow;
+  bgCtx.lineWidth = 1 / fit;
+  bgCtx.strokeRect(0, 0, FRAME.w, FRAME.h);
 }
 
 /* --- Entity + fx layer: redrawn once per rendered frame ------------------ */
@@ -194,7 +227,7 @@ function renderFrame(s: RiftState): void {
 
   fxCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
   fxCtx.clearRect(0, 0, w, h);
-  fxCtx.setTransform(cover * dpr, 0, 0, cover * dpr, offX * dpr, offY * dpr);
+  fxCtx.setTransform(fit * dpr, 0, 0, fit * dpr, offX * dpr, offY * dpr);
   fxCtx.lineCap = "round";
   fxCtx.lineJoin = "round";
 
@@ -326,10 +359,10 @@ function updateHud(s: RiftState): void {
     // scaleX, not width: animating box size thrashes layout.
     hpFill.style.transform = `scaleX(${pct})`;
   }
-  for (const key of ["q", "w", "e", "r"] as const) {
-    const el = hud.querySelector<HTMLElement>(`[data-ab="${key}"]`);
+  for (const slot of SLOTS) {
+    const el = hud.querySelector<HTMLElement>(`[data-ab="${slot}"]`);
     if (!el) continue;
-    const ready = s.player.cooldowns[key] <= 0;
+    const ready = s.player.cooldowns[slot] <= 0;
     el.classList.toggle("is-ready", ready);
   }
 
@@ -338,6 +371,16 @@ function updateHud(s: RiftState): void {
   if (boss && bossFill) {
     bossFill.style.transform = `scaleX(${Math.max(0, boss.hp / boss.maxHp)})`;
   }
+}
+
+/** The HUD's keycaps and the start screen's controls line follow the scheme,
+ *  so neither ever names a key that does not cast. */
+function labelControls(): void {
+  for (const slot of SLOTS) {
+    const el = hud?.querySelector<HTMLElement>(`[data-ab="${slot}"]`);
+    if (el) el.textContent = CAST_KEYS[scheme][slot].toUpperCase();
+  }
+  if (keysLine) keysLine.textContent = CONTROLS[scheme];
 }
 
 function note(text: string): void {
@@ -388,6 +431,15 @@ function collectIntent(): Intent {
   return intent;
 }
 
+/** Forget every key and button the frame thinks is down. Keyup only reaches
+ *  the frame while it has focus, so a key released after a pause took focus
+ *  away would otherwise stay held through the resume. */
+function releaseInput(): void {
+  held.clear();
+  mouseDown = false;
+  pendingCast.q = pendingCast.w = pendingCast.e = pendingCast.r = false;
+}
+
 function nearestEnemy(s: RiftState, from: Vec): Enemy | null {
   let nearest: Enemy | null = null;
   let nearestD = Infinity;
@@ -428,8 +480,9 @@ function bindInput(): void {
       event.preventDefault();
       return;
     }
-    if (!event.repeat && "qwer".includes(key)) {
-      pendingCast[key as "q" | "w" | "e" | "r"] = true;
+    const slot = SLOTS.find((s) => CAST_KEYS[scheme][s] === key);
+    if (!event.repeat && slot) {
+      pendingCast[slot] = true;
       event.preventDefault();
     }
   });
@@ -520,6 +573,7 @@ function pause(): void {
   if (!state || state.status !== "running") return;
   paused = true;
   stopLoop();
+  releaseInput();
   showPanel(panelPause);
   note("Paused.");
 }
@@ -596,8 +650,7 @@ function beginRun(): void {
   state = createRun(Date.now() >>> 0);
   paused = false;
   moveTarget = null;
-  mouseDown = false;
-  held.clear();
+  releaseInput();
   runStartMs = performance.now();
   hidePanels();
   measure();
@@ -678,6 +731,7 @@ function build(root: HTMLElement): void {
           <button type="button" class="rift__schemebtn" data-scheme="wasd" aria-pressed="true">WASD + mouse</button>
           <button type="button" class="rift__schemebtn" data-scheme="click" aria-pressed="false">Click to move</button>
         </div>
+        <p class="rift__keys" data-keys></p>
         <p class="rift__touch-notice">
           This arena wants a keyboard and a pointer — touch controls aren't
           built yet. Tapping still walks and auto-attacks, but Q/W/E/R have
@@ -724,12 +778,14 @@ function build(root: HTMLElement): void {
   panelPause = root.querySelector<HTMLElement>("[data-panel-pause]");
   panelEnd = root.querySelector<HTMLElement>("[data-panel-end]");
   offersBox = root.querySelector<HTMLElement>("[data-offers]");
+  keysLine = root.querySelector<HTMLElement>("[data-keys]");
 
   const schemeButtons = root.querySelectorAll<HTMLButtonElement>("[data-scheme]");
   for (const btn of schemeButtons) {
     btn.addEventListener("click", () => {
       scheme = btn.dataset.scheme as Scheme;
       for (const b of schemeButtons) b.setAttribute("aria-pressed", String(b === btn));
+      labelControls();
       persist();
     });
   }
@@ -748,6 +804,7 @@ function build(root: HTMLElement): void {
   root.querySelector("[data-again]")?.addEventListener("click", beginRun);
 
   for (const b of schemeButtons) b.setAttribute("aria-pressed", String(b.dataset.scheme === scheme));
+  labelControls();
 
   const bestEl = root.querySelector<HTMLElement>("[data-best]");
   if (best && bestEl) {

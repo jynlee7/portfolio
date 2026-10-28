@@ -2087,6 +2087,12 @@ html:not(.js) .rift {
   box-shadow: var(--inset);
   color: var(--accent-deep);
 }
+/* Rewritten by rift.ts whenever the scheme changes, so it always names the
+   keys that are actually bound. */
+.rift__keys {
+  font-size: var(--step-chrome);
+  color: var(--ink-muted);
+}
 .rift__calm {
   display: flex;
   align-items: center;
@@ -2140,7 +2146,8 @@ html:not(.js) .rift {
      here — click-to-move is the only scheme that can work — and the notice
      says so plainly rather than presenting a keyboard-shaped screen that
      does nothing when tapped. */
-  .rift__panel--start .rift__scheme {
+  .rift__panel--start .rift__scheme,
+  .rift__keys {
     display: none;
   }
   .rift__touch-notice {

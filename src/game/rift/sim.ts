@@ -501,7 +501,7 @@ function stepProjectiles(state: RiftState, dt: number): void {
 
     if (!dead && proj.side === "player") {
       for (const e of state.enemies) {
-        if (proj.hit.has(e.id)) continue;
+        if (e.hp <= 0 || proj.hit.has(e.id)) continue;
         if (dist(proj.pos, e.pos) <= proj.radius + e.radius) {
           e.hp -= proj.damage;
           proj.hit.add(e.id);
@@ -549,7 +549,7 @@ function stepTelegraphs(state: RiftState, dt: number): void {
     if (tg.resolve === "mine" && tg.shape.kind === "circle") {
       tg.liveMs -= dt;
       const { center, radius } = tg.shape;
-      const caught = state.enemies.filter((e) => dist(e.pos, center) <= radius);
+      const caught = state.enemies.filter((e) => e.hp > 0 && dist(e.pos, center) <= radius);
       if (caught.length > 0) {
         for (const e of caught) e.hp -= tg.damage;
         continue; // detonated and removed
@@ -594,6 +594,9 @@ function meleeContact(state: RiftState, e: Enemy, dt: number): void {
 
 function stepEnemies(state: RiftState, dt: number): void {
   for (const e of state.enemies) {
+    // Killed earlier this step and not culled until the end of it: a corpse
+    // takes no turn, or a rusher could land a hit after its own death.
+    if (e.hp <= 0) continue;
     if (e.kind === "boss") {
       stepBoss(state, e, dt);
       continue;
