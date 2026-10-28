@@ -132,7 +132,7 @@ export async function mountLockField(lock: HTMLElement): Promise<void> {
   const levels = [...slot.querySelectorAll<SVGPathElement>("svg > g > path")];
   if (levels.length === 0) return;
 
-  // A visitor who came through the portfolio's peek (src/portfolio/peek.ts)
+  // A visitor who came through the wall's crack (src/wall/main.ts)
   // arrives with this exact field already covering the screen. Raising it
   // from nothing would blank the contours they were just looking at and
   // draw them again, so they get it at rest. One-shot: a reload plays the

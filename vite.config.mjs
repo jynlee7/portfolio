@@ -1,7 +1,7 @@
 import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { renderDoc } from "./scripts/doc.mjs";
-import { renderPortfolio } from "./scripts/portfolio.mjs";
+import { renderWall } from "./scripts/wall.mjs";
 import { renderDesktopDoc, renderDesktopPart } from "./scripts/desktop-docs.mjs";
 
 /** Documents written as prose rather than markup. id → source file. */
@@ -80,8 +80,8 @@ export default {
       transformIndexHtml: {
         order: "pre",
         handler(html) {
-          if (html.includes("<!-- @portfolio -->")) {
-            html = html.replace("<!-- @portfolio -->", renderPortfolio());
+          if (html.includes("<!-- @wall -->")) {
+            html = html.replace("<!-- @wall -->", renderWall());
           }
           return html
             .replace(/<!--\s*@portfolio-doc ([\w-]+)\s*-->/g, (_marker, id) => renderDesktopDoc(id))
@@ -93,7 +93,7 @@ export default {
   ],
   build: {
     rolldownOptions: {
-      input: { portfolio: resolve("index.html"), desktop: resolve("desktop/index.html") },
+      input: { wall: resolve("index.html"), desktop: resolve("desktop/index.html") },
     },
   },
 };

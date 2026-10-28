@@ -2,115 +2,115 @@
 
 <!-- impeccable:design-schema 1 -->
 
-This is the contract for **the portfolio at `/`**. The desktop at `/desktop/`
-is a different design with its own contract, `docs/DESKTOP_DESIGN.md`; none of
-its rules (bevels, 3–5px radii, monospace on measured values, one authored
-motion) apply here, and none of these apply there.
+This is the contract for **the wall at `/`**. The desktop at `/desktop/` is a
+different design with its own contract, `docs/DESKTOP_DESIGN.md`; none of its
+rules (bevels, 3–5px radii, monospace on measured values) apply here, and none
+of these apply there.
 
-The split was approved on 2 Oct 2026 (`REDESIGN_PLAN.md`,
-`docs/PORTFOLIO_IMPLEMENTATION.md`) and shipped on 28 Oct 2026, after the user
-called the desktop-as-front-door "cool but very bland" with "a lot of
-friction". The desktop is kept, unchanged in spirit, as Jayden's own machine
-under the page, which shows itself to a visitor who stays (see "The computer
-under the page" below).
+On 28 Oct 2026 the user asked for the editorial portfolio that had been at
+`/` since that morning to come down: "current portfolio should be under works
+so remove all the slop and just say under works but you can check out my
+'desktop' have the desktop be 'inside' the walls and there is a small crack
+that the user can click". The portfolio is on branch
+`archive/portfolio-editorial` exactly as it ran. Its direction is in the
+history of this file.
 
 ## Direction contract
 
-**THESIS.** Jayden's work is visible on arrival; exploration adds depth. No
-entry gesture, no restored windows, no interface to learn before the résumé.
+**THESIS.** The site is being rebuilt and says so in four words. The desktop
+is still running inside the wall, and a crack in the plaster is the way in.
+It refuses the "coming soon" card, the progress bar and the countdown.
 
-**OWN-WORLD.** Cool paper (`#f4f5f0`), ink (`#202320`), one indigo action
-colour (`#4338f5`, the same indigo the desktop uses, so the two surfaces read
-as one person's). Oversized Cabinet Grotesk for display, Switzer for reading.
-Each role and project carries its own lit, three-dimensional illustration in
-its own domain colour — tennis, a knowledge graph, a compute rack, a stadium,
-a helix, a Berkeley map, branching simulation paths, the contour field.
+**OWN-WORLD.** Freshly skimmed plaster, still drying: pale pink where it has
+dried, brown-pink where it is wet, faint trowel ridges, grit. Warm graphite
+ink (`#2b211e`). A pencil (`#3d3432`) for the arrow and the ring around the
+crack. The only cool colour anywhere is the desktop's bone-and-indigo field,
+seen through the crack.
 
-**STORY.** A recruiter reads the name, the current role, and one sentence;
-downloads the résumé or scrolls into the work. An engineer opens "Behind the
-build". Somebody who stays twenty seconds finds a computer under the page.
+**STORY.** A visitor reads that the site is under works, sees that the
+desktop can still be reached, and goes through the crack. Someone who only
+wants the résumé finds it on the sign at the foot of the wall.
 
-**FIRST VIEWPORT.** Name, a one-sentence introduction, the current role, the
-résumé button, and the tennis scene. The work section starts at the edge of
-the first screen on a desktop, so the scroll is obvious.
+**FIRST VIEWPORT.** "Under works." in Tanker at the upper left, the aside
+under it, a pencil arrow down to a small crack right of centre, and the sign
+(name, résumé, email) along the foot. The crack is the primary action.
 
-**FORM.** An open editorial page: asymmetric project grid, alternating role
-rows, an about block, a contact block. Ordinary scrolling, ordinary anchors.
-Nothing on the page links to `/desktop/`.
+**FORM.** A wall. Pinned by the user; not rolled.
+
+## Materials
+
+- **Plaster** (`scripts/wall.mjs`, `#plaster`). One SVG filter over a
+  `#e8ccbf` ground: fractal noise thresholded into wet patches of `#c99482`
+  behind a crinkled drying front; a stretched noise for burnish; fine grit.
+  Over it, a 1400 × 900 tile of trowel ridges (thin arcs lit on top, a pixel
+  of shadow under each), and a light gradient falling from the upper left.
+  All of it is in CSS pixels, so the texture is the same scale on every
+  screen and the wall grows rather than stretches. It scrolls with what is
+  written on it.
+- **Type.** Tanker (Fontshare) for the notice, at most 6rem, `multiply`, so
+  the patches show through the paint. Switzer for the aside and the sign.
+  No other faces.
+- **The crack** (`scripts/wall.mjs`, `crack()`). Drawn at build time from a
+  seeded centreline into a 300 × 130 box: hairline at both ends, open only
+  through the middle, and spalled at one point, where a flake has come away.
+  Hairlines are filled tapers, not strokes, so they thin to nothing. The upper
+  lip shadows the opening; the lower lip catches the light. It scales with
+  `--k` (1, 0.8 under 600px, 0.72 under 360px), and the arrow scales with it,
+  so the arrow's tip always lands just short of the spall.
+- **The pencil ring.** A loop drawn the way a hand closes one, overshooting
+  where it started, the way a surveyor rings a crack. It draws on hover and on
+  keyboard focus, and it is the crack's focus indicator.
+
+## The desktop behind the wall
+
+The field inside the crack is the desktop's own wallpaper (`/field-lab.svg`,
+or whichever the visitor chose there, from `jl.desk`), placed where the lock
+screen paints it: `center / cover` of the viewport. Without JavaScript it is
+framed on its deepest well instead, so the rings show.
+
+**Going in** (`src/wall/main.ts`). Clicking the crack sets `jl.through`,
+then:
+
+1. 0–150 ms: cracks run out from the spall to past the edges of the screen.
+2. Three bursts open the hole from the spall, stretched along the crack at
+   first: a chip at 80 ms, a hand-sized hole at 230 ms, and from 380 ms the
+   wall giving way, accelerating, until the hole is bigger than the screen
+   (680 ms). Each burst throws off flat plaster flakes that fall under
+   gravity. The hole's edge is faceted, with a rim of gypsum and the wall's
+   thickness shadowing the field along it.
+3. At 850 ms the page navigates. The lock screen reads `jl.through` and keeps
+   its field at rest, so it arrives as the thing already showing.
+
+Back from the desktop restores this page from the bfcache with the wall
+mended.
 
 ## Rules
 
-- **Every fact comes from `content/portfolio.mjs`.** The homepage
-  (`scripts/portfolio.mjs`) and the desktop's documents
-  (`scripts/desktop-docs.mjs`) both compile it into static HTML at build
-  time. Never type a role, date, or number into markup.
-- **Readable with JavaScript off.** Details are native `<details>`; navigation
-  is real anchors; the résumé is a plain link. `src/portfolio/main.ts` only
-  enhances: the phone menu, opening a disclosure from its hash, and Back.
-- **Illustrations are labelled as illustrations.** Every scene's caption says
-  so, and none of them depicts a product screenshot or a measured dataset.
-  Each has a static SVG in `public/scenes/` that stays visible when WebGL,
-  JavaScript, or motion is unavailable.
-- **The 3D costs nothing at rest.** One shared WebGL context renders into 2D
-  canvases on demand: on first view, on drag, on a rotate button. No frame is
-  requested while nothing moves, offscreen, on a hidden tab, or under reduced
-  motion — and under reduced motion Three.js is never downloaded.
-- **The homepage never loads desktop code.** Two Vite entries
-  (`index.html`, `desktop/index.html`); `scripts/test-portfolio.mjs` asserts
-  no `/src/os/` request on `/`.
-- **Touch targets ≥44px** for every control, including the scene buttons.
-
-## The computer under the page
-
-`src/portfolio/peek.ts`, `src/portfolio/peek.css`. Added 28 Oct 2026 at the
-user's direction: the desktop "would later appear if the user stayed a little
-bit longer and it would open up some bits on the screen and you would be able
-to enter."
-
-- **When.** After 20 s of the tab actually being visible (`DWELL`; the timer
-  pauses on a hidden tab). Once seen in a visit it returns 1.2 s after a
-  reload; once closed it stays closed for the visit (`jl.peek`).
-- **What.** A corner of the page comes apart in 16 × 8 square bits, each
-  turning over to show the desktop's contour field underneath, framed on its
-  deepest well. While only bits show there is no shadow: they are holes in
-  the page. Then the desktop's own window chrome closes around them — the
-  near-black bar, a monospace filename (`field-lab.svg`, the wallpaper it is
-  showing), the bone panel and bevel — and it gets a window's shadow. Those
-  desktop materials appear nowhere else on the portfolio, so the window reads
-  as a piece of the other machine.
-- **Going in.** "Go in" turns the whole viewport over the same way, spreading
-  from the window, onto the field exactly as the lock screen paints it
-  (`center / cover`), then navigates. The lock keeps that field at rest
-  instead of replaying its entrance (`jl.through`, one-shot), so there is no
-  seam.
-- **Phones** (≤600px). A card that tall sits on the résumé button, so it is a
-  strip across the bottom: four rows of bits sized to the screen.
-- **Motion budget.** This is the portfolio's one authored moment: CSS
-  keyframes on transforms, run once, ~750 ms in and ~620 ms going in, zero
-  frames at rest. Each bit carries its own perspective; one shared perspective
-  turns the far bits into venetian-blind slats. Under reduced motion the
-  window is simply there and "Go in" is an ordinary link.
-- **It must never block the primary task.** Small, dismissable (✕ or Escape),
-  never focus-stealing, announced once through a polite status region.
+- **Every fact comes from `content/portfolio.mjs`.** The sign's name, email
+  and résumé path are rendered from it at build time; never type them.
+- **Readable with JavaScript off.** The crack is a real link to `/desktop/`,
+  the résumé a plain link to the PDF. The script only adds the break, the
+  live wallpaper choice, and prefetching `/desktop/` on intent (pointer
+  enter, focus, touch).
+- **Nothing moves at rest.** No frame is requested until the crack is
+  clicked. Under reduced motion the crack is an ordinary link and the ring
+  draws without transition.
+- **The wall never loads desktop code.** Two Vite entries; the field
+  constants it needs are copied, not imported, and
+  `scripts/test-portfolio.mjs` asserts no `/src/os/` request on `/`.
+- **One way in.** The crack is the only link to `/desktop/` on the page.
+- **Touch targets ≥44px.** The crack's link is its whole box (at least
+  216 × 94); the sign's links are 44px tall.
 
 ## Measured contrast
 
-On `--paper` `#f4f5f0` (WCAG 2.x relative luminance, measured 28 Oct 2026):
+Measured 28 Oct 2026 against screenshots of the wall with its text hidden, at
+1440 × 900, 1920 × 1080 and 390 × 844, on the plaster's darkest 0.1% of
+pixels (`rgb(179 133 119)` at worst). WCAG 2.x.
 
-| Token | Value | Ratio |
+| Pair | Darkest 0.1% | Median |
 | --- | --- | --- |
-| `--ink` | `#202320` | 14.49:1 |
-| `--muted` | `#60655e` | 5.44:1 |
-| `--accent` as text | `#4338f5` | 6.14:1 |
-| White on `--accent` (primary button) | `#ffffff` | 6.72:1 |
+| Ink `#2b211e` (all text) | 4.88:1 | 7.04–7.90:1 |
+| Pencil `#3d3432` (focus ring, non-text) | 3.77:1 | 5.43–6.09:1 |
 
-The peek's desktop materials, measured the same day:
-
-| Pair | Ratio |
-| --- | --- |
-| `#f3f1ec` on `#22212a` (title) | 14.1:1 |
-| `#a5a1b0` on `#22212a` (meta) | 6.3:1 |
-| `#1b1a20` on `#eceae4` (text) | 15.1:1 |
-| `#ffffff` on `#4338f5` (Go in) | 6.72:1 |
-
-Change a colour, re-measure, update this table.
+Change a colour or the plaster filter, re-measure, update this table.

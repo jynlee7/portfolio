@@ -1,8 +1,10 @@
 # portfolio
 
-Personal site for Jayden Lee — a desktop the visitor operates rather than a page
-they scroll. Lock screen, menu bar, dock, and documents that open as draggable
-windows, over a contour field that deforms under the pointer.
+Personal site for Jayden Lee. The front page is under works: a plaster wall
+with a small crack in it, and behind the crack, at `/desktop/`, a desktop the
+visitor operates rather than a page they scroll. Lock screen, menu bar, dock,
+and documents that open as draggable windows, over a contour field that
+deforms under the pointer.
 
 Static site. Vite and TypeScript, no framework, no runtime dependencies.
 
@@ -20,7 +22,8 @@ Node 20 or newer.
 ## How it fits together
 
 ```
-index.html        every document, as plain semantic HTML
+index.html        the wall; scripts/wall.mjs renders it, src/wall/ breaks it
+desktop/index.html every document, as plain semantic HTML
 src/main.ts       boots the desktop and handles /#deeplinks
 src/os/           lock screen, menu bar, dock, window manager, widgets
 src/field/core.ts the contour field — one module, two renderers
@@ -31,7 +34,7 @@ public/           résumé PDF, wallpapers, favicon
 
 Two decisions worth knowing before changing anything:
 
-**The desktop is an enhancement.** Documents live in `index.html` as ordinary
+**The desktop is an enhancement.** Documents live in `desktop/index.html` as ordinary
 articles. A script in the `<head>` adds a `js` class, and only then does the
 stylesheet arrange them into a desktop. If the script fails, the visitor gets a
 plain vertical page with every fact intact — they lose the metaphor, never the
@@ -57,4 +60,4 @@ identical bytes.
 ## License
 
 [Apache 2.0](LICENSE). The code is reusable; the résumé, project write-ups, and
-personal details in `index.html` and `public/` are not.
+personal details in `content/`, `desktop/index.html` and `public/` are not.

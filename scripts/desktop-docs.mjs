@@ -16,7 +16,7 @@ function since(period) {
 /**
  * The desktop's two mentions of the current role — the nameplate's status
  * line and the Now widget — rendered at `<!-- @portfolio-part id -->` markers
- * from the same role the homepage calls current, so changing it in
+ * from the role content/portfolio.mjs marks current, so changing it in
  * content/portfolio.mjs changes them too. With no current role both render
  * nothing, rather than keep calling a finished one current.
  */

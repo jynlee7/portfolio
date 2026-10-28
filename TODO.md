@@ -1,9 +1,13 @@
 # TODO
 
-## Read first — 28 Oct 2026
+## Read first — 28 Oct 2026 (evening)
 
-The homepage is now the portfolio (`/`), and the desktop moved to `/desktop/`.
-Much of this file was written when `index.html` *was* the desktop:
+The homepage (`/`) is now **the wall**: "Under works.", a sign with the
+résumé and email, and a crack the desktop shows through; clicking it breaks
+the wall onto `/desktop/` (DESIGN.md). The editorial portfolio that was at `/`
+that morning is on branch `archive/portfolio-editorial`, and with it went the
+peek, the Three.js scenes and `public/scenes/`. Much of this file was written
+when `index.html` *was* the desktop:
 
 - Anything below that says "in `index.html`" about the lock, menubar, dock,
   folders or windows now means **`desktop/index.html`**.
@@ -13,39 +17,33 @@ Much of this file was written when `index.html` *was* the desktop:
   the places list for spots) lives in the issue, not here.
 - **Item 1 (screenshots) has changed shape.** The striped screenshot wells are
   gone: the desktop's project documents are generated from
-  `content/portfolio.mjs` by `scripts/desktop-docs.mjs`, and the portfolio
-  uses labelled illustrations. Real screenshots would still beat both. They
-  would go into `content/portfolio.mjs` as a field, rendered by both scripts.
+  `content/portfolio.mjs` by `scripts/desktop-docs.mjs`. Real screenshots
+  would go into that file as a field.
 - **The résumé note under Housekeeping is superseded.** `public/resume.pdf` is
-  now a copy of `~/Downloads/resumes/Lee_Jayden_Resume_10202026.pdf`. Its size
-  is read at build time, and every fact on both surfaces, graduation date
-  included, lives once in `content/portfolio.mjs`.
+  now a copy of `~/Downloads/resumes/JaydenLeeResume.pdf` (26 Oct 2026). Its
+  size is read at build time, and every fact, graduation date included, lives
+  once in `content/portfolio.mjs`.
 
-### Open on the portfolio
+### Open on the wall
 
+- [ ] **The rebuilt portfolio.** The wall stands until there is something to
+      take its place. Whatever replaces it starts from `content/portfolio.mjs`
+      and gets its own direction; the archived editorial page is a record of
+      what was rejected, not a starting point.
 - [ ] **Ship it.** Production still serves the desktop at `/` until this is
       deployed. Deploys run `vercel --prod` from the working tree (see Live),
       so deploy from a clean checkout of the merged `main`, not from a dirty
       tree.
-- [ ] **Three.js weight.** 737 kB raw / 187 kB gzip, fetched as soon as the
-      hero scene is on screen (never under reduced motion, never on `/desktop/`).
-      Measured, not optimised. If load time matters more than the hero spin,
-      defer the import to first interaction or `requestIdleCallback`.
-- [ ] **Real-device pass on a phone.** Scenes take `touch-action: pan-y` and
-      capture only horizontal drags, so vertical scroll should never stick on a
-      scene. `scripts/test-portfolio.mjs` emulates touch and reduced motion; a
-      thumb has not tried it.
-- [ ] **Open Graph image** (below) should now be a portfolio composition, not
+- [ ] **Real-device pass.** Tap the crack on a phone and watch the break;
+      check the plaster filter renders on Safari (iOS and macOS) and on a 5K
+      screen, where an SVG filter that large is most likely to be clipped.
+      `scripts/test-portfolio.mjs` emulates touch and reduced motion in
+      Chromium only.
+- [ ] **Open Graph image** (below) should now be the wall with its crack, not
       the desktop's field.
-- [ ] **Tune the peek's 20 seconds with Jayden.** `DWELL` in
-      `src/portfolio/peek.ts`. It is the only way into the desktop from `/`
-      now — the Playground section and the "Explore the desktop" link came
-      out on 28 Oct 2026 so the desktop is found, not advertised. If he wants
-      an always-there door back, the old section is in git history
-      (`4f8c1f2`, `scripts/portfolio.mjs`).
-- [ ] **Watch the peek on a real phone.** The strip sits at the bottom of the
-      screen; check it never covers the résumé button on a short phone held
-      at the top of the page, and that the bits turn over smoothly.
+- [ ] **The menubar's "Portfolio" link** leads out to the wall. If Jayden
+      wants it to say something else while the site is under works, it is
+      one line in `desktop/index.html`.
 - [ ] **The menubar's way home on phones.** Below 400px the brand menu shows
       only its JL mark so that "Portfolio" and the clock fit. Revisit if the
       bar gains another item.

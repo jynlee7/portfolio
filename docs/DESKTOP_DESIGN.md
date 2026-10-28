@@ -4,7 +4,7 @@
 
 > **Scope: `/desktop/` only, since 28 Oct 2026.** This was `DESIGN.md` when
 > the desktop was the whole site. It remains the desktop's contract word for
-> word; the portfolio at `/` has its own in the root `DESIGN.md`. Where this
+> word; the wall at `/` has its own in the root `DESIGN.md`. Where this
 > file says "the first viewport" or "the visitor", read "the desktop's".
 
 ## Direction contract

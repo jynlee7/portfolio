@@ -76,6 +76,7 @@ const WIDTH: Record<string, string> = {
   about: "38rem",
   principles: "40rem",
   experience: "44rem",
+  lea: "46rem",
   clinical: "46rem",
   chessblitz: "46rem",
 };

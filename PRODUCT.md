@@ -59,22 +59,27 @@ Explicit constraint from the user: the result must not read as AI-generated.
 
 ## Evidence on Hand
 
-**Source of truth: `content/portfolio.mjs`**, compiled into both the portfolio
-and the desktop at build time. Its source of record is `public/resume.pdf`, a
-copy of `Lee_Jayden_Resume_10202026.pdf` shipped on 28 Oct 2026. Re-copy on
-update; it does not sync. `scripts/test-portfolio.mjs` checks the copy
-byte-for-byte and checks every role's organisation and title on the page.
+**Source of truth: `content/portfolio.mjs`**, compiled into the desktop's
+documents and the wall's sign at build time. Its source of record is
+`public/resume.pdf`, a copy of `JaydenLeeResume.pdf` (dated 26 Oct 2026),
+shipped on 28 Oct 2026. Re-copy on update; it does not sync.
+`scripts/test-portfolio.mjs` checks the copy byte-for-byte and checks every
+role's organisation and title on the desktop's experience log.
 
 As of that résumé: B.A. Data Science, Applied Mathematics emphasis, UC
 Berkeley, GPA 3.7, expected May 2028. Five roles — SwingVision (Data Analyst
 Intern, Sep 2026–present), CalCompute, MatX (AI Software Engineer, contract),
-Cal Athletics (contract), PNNL — and three projects: bearings, Foresight
-(the Clinical Intervention Simulator), and this website. ChessBlitz stays on
-the page from an earlier résumé, as the "Also on the workbench" entry.
+Cal Athletics (contract), PNNL — and three projects: Lea (LiDAR Enabled
+Assistant), Foresight (the Clinical Intervention Simulator), and this website.
+bearings and ChessBlitz stay on the desktop from earlier résumés.
+
+The 26 Oct résumé changed two claims, and the site follows it: SwingVision is
+"100+ hours of sports data" with no percentage (the earlier "50%" and "50+
+hours" are gone), and CalCompute no longer counts sources and references.
 
 The August-era notes that used to be here ("MatX is gone", "Nothing is
 currently active", Oakland Roots, the Now widget's one line) are **superseded**
-by the October résumé. They are preserved in `docs/PRODUCT_HISTORY.md`; do not
+by the October résumés. They are preserved in `docs/PRODUCT_HISTORY.md`; do not
 restore any of them from there without a résumé that says so.
 
 ## Product Principles

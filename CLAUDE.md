@@ -5,26 +5,27 @@ right one before touching any UI:
 
 | URL | What it is | Contract |
 | --- | --- | --- |
-| `/` | **The portfolio.** An editorial page: hero, work, experience, about, contact. | `DESIGN.md` |
+| `/` | **The wall.** "Under works.", a sign with the résumé, and a crack in the plaster with the desktop behind it. | `DESIGN.md` |
 | `/desktop/` | **Jayden's desktop.** The original OS — lock screen, menubar, windows, dock. | `docs/DESKTOP_DESIGN.md` |
 
 ## What this is
 
-Since 28 Oct 2026 the homepage is a portfolio a hiring manager can read without
-learning an interface: no lock screen, résumé one click from the first
-viewport, every project summary visible without opening anything. Each role
-and project has its own Three.js illustration with a static SVG fallback.
+Since the evening of 28 Oct 2026 the homepage is a wall: freshly skimmed
+plaster that says "Under works.", with the résumé and email on a sign at its
+foot and a small crack through which the desktop's contour field shows. Click
+the crack and the wall breaks open onto the desktop's lock screen
+(`src/wall/main.ts`; DESIGN.md, "The desktop behind the wall"). The editorial
+portfolio that was at `/` that morning came down at the user's request ("remove
+all the slop and just say under works"); it is on branch
+`archive/portfolio-editorial` exactly as it ran. Do not restore it piecemeal.
 
-The desktop is still here, at `/desktop/`, as the playground: a portfolio
+The desktop is at `/desktop/`: a portfolio
 built as a **desktop operating system** in the rendition of a **scientific
 workstation** — opaque bone panels, 1px chiseled bevels, 3–5px radii, indigo
 as the only accent, host monospace on measured values only, over a generated
-contour map of a two-minimum loss surface. **Nothing on the portfolio links
-to it.** After 20 s on the page, a corner comes apart in bits to show the
-desktop's field underneath, and "Go in" turns the whole screen over into it
-(`src/portfolio/peek.ts`; DESIGN.md, "The computer under the page"). Direct
-URLs (`/desktop/`, `/desktop/#resume`) still work, and its menubar carries a
-**Portfolio** link home at every width.
+contour map of a two-minimum loss surface. **The crack is the wall's only link
+to it.** Direct URLs (`/desktop/`, `/desktop/#resume`) still work, and its
+menubar carries a **Portfolio** link back out to the wall at every width.
 
 **The desktop's two games are deferred** (28 Oct 2026, issue #4): `rift.exe`
 and `spots.map` came out of the tree, with their contracts (`RIFT.md`,
@@ -38,10 +39,10 @@ and still governs `/desktop/`. It does not govern `/`.
 ## Stack
 
 Vite 8 + vanilla TypeScript, multi-page (`index.html` and `desktop/index.html`
-are separate Rolldown inputs). No framework, no UI library, no CSS framework.
-One runtime dependency: `three`, imported dynamically by the portfolio's
-scenes and never by the desktop. Node v25.3.0 (runs `.ts` imports natively,
-which the wallpaper generator and `vite.config.mjs` rely on).
+are separate Rolldown inputs). No framework, no UI library, no CSS framework,
+no runtime dependencies (`three` left with the editorial portfolio). Node
+v25.3.0 (runs `.ts` imports natively, which the wallpaper generator and
+`vite.config.mjs` rely on).
 
 ```
 npm run dev      # vite, localhost:5173 (/ and /desktop/)
@@ -61,10 +62,11 @@ node scripts/field.mjs   # regenerate the three wallpapers
 3. **Never fabricate anything about Jayden.** No invented metrics, repo URLs,
    live demo links, awards, testimonials, or logos. Unknown values ship as a
    visible placeholder plus an entry in `TODO.md`. Every URL on this page comes
-   from a document Jayden wrote — as of 12 Aug 2026 that means `clinical-sim`
-   links its Deepnote app and `chessblitz` links its GitLab repo, both taken
-   verbatim off the résumé; `this-site` still has no repo row, because the
-   résumé lists the site, not its source.
+   from a document Jayden wrote — as of 28 Oct 2026 that means `lea` links
+   its Devpost page (26 Oct résumé), `clinical-sim` its Deepnote app (the
+   10202026 résumé; the 26 Oct one omits it) and `chessblitz` its GitLab repo;
+   `this-site` still has no repo row, because the résumé lists the site, not
+   its source.
 4. **Do not clone the reference portfolios.** Two desktop-portfolio references
    were supplied as briefs. Take the metaphor, never the ornaments — their
    award badges in particular would be fabricated credentials.
@@ -72,12 +74,12 @@ node scripts/field.mjs   # regenerate the three wallpapers
 ## Layout of the code
 
 ```
-index.html          the portfolio's shell; <!-- @portfolio --> is filled at build
+index.html          the wall's shell; <!-- @wall --> is filled at build
 content/portfolio.mjs
                     every fact on both surfaces — roles, projects, profile.
                     Sourced from public/resume.pdf; never type a fact into markup
-scripts/portfolio.mjs
-                    renders the portfolio's header/main/footer from it
+scripts/wall.mjs    renders the wall: plaster filter, notice, the crack (drawn
+                    from a seeded centreline), the sign from content/
 scripts/desktop-docs.mjs
                     renders the desktop's about/experience/project/résumé
                     documents from it, at <!-- @portfolio-doc id --> markers,
@@ -85,11 +87,8 @@ scripts/desktop-docs.mjs
                     current role, at <!-- @portfolio-part id --> markers
 scripts/test-portfolio.mjs
                     Playwright acceptance checks for both surfaces (see below)
-src/portfolio/      main.ts (menu, hash→details, Back) · scenes.ts (one shared
-                    WebGL context, zero frames at rest) · scene-models.ts ·
-                    peek.ts + peek.css (the desktop showing through) ·
-                    style.css · scenes.css
-public/scenes/      the static SVG fallback for every scene
+src/wall/           main.ts (aligns the field behind the crack, the break,
+                    prefetch on intent) · wall.css
 
 desktop/index.html  sprite · lock · menubar · desk · dock · docs (folders+files)
 src/tokens.css      the desktop's design tokens, measured contrast in comments
@@ -162,10 +161,10 @@ must not start under reduced motion, on a coarse pointer, or on a hidden tab.
 
 **Storage keys:** `jl.woke` (sessionStorage, lock dismissed) · `jl.win`
 (sessionStorage, open windows and their geometry) · `jl.desk` (wallpaper) ·
-`jl.icons` (icon positions) · `jl.bt` (Berkeley-time toggle) · `jl.peek`
-(sessionStorage, portfolio:
-`seen` or `shut`) · `jl.through` (sessionStorage, one-shot: arrived through
-the peek, so the lock keeps its field at rest).
+`jl.icons` (icon positions) · `jl.bt` (Berkeley-time toggle) · `jl.through`
+(sessionStorage, one-shot: arrived through the wall's crack, so the lock keeps
+its field at rest). The wall also reads `jl.desk`, to show the visitor's
+wallpaper through the crack.
 
 `jl.win` is session-scoped on purpose, unlike `jl.icons` and `jl.desk`. A
 returning visitor wants the desk they arranged; they do not want five windows
@@ -200,7 +199,7 @@ Headless browser at `~/.claude/skills/gstack/browse/dist/browse`.
 ```bash
 B=~/.claude/skills/gstack/browse/dist/browse
 $B viewport 1440x900          # SEPARATE command — there is no --viewport flag
-$B goto "http://localhost:5173/?x=$RANDOM"           # the portfolio
+$B goto "http://localhost:5173/?x=$RANDOM"           # the wall
 $B goto "http://localhost:5173/desktop/?x=$RANDOM"   # the desktop, at its lock
 $B js "document.getElementById('lock').click(); 1"
 $B screenshot /tmp/shot.png   # full-page; only /tmp or the repo are writable
@@ -229,16 +228,16 @@ Before calling anything done:
 ```bash
 npm run build                                             # includes tsc
 node ~/.claude/skills/impeccable/scripts/detect.mjs index.html desktop/index.html \
-  src/style.css src/tokens.css src/portfolio/style.css src/portfolio/scenes.css
+  src/style.css src/tokens.css src/wall/wall.css
 npx vite preview --port 4173 &                            # then:
-node scripts/test-portfolio.mjs                           # 22 checks, both surfaces
+node scripts/test-portfolio.mjs                           # 18 checks, both surfaces
 ```
 
 The detector prints nothing and exits 0 when clean. The acceptance script
 uses the project's own Playwright (a devDependency pinned to 1.62.1; run
 `npx playwright install chromium` once on a new machine) and compares
 `public/resume.pdf` byte-for-byte with `RESUME_SOURCE` (default:
-`~/Downloads/resumes/Lee_Jayden_Resume_10202026.pdf`, the source shipped on
+`~/Downloads/resumes/JaydenLeeResume.pdf`, the 26 Oct résumé shipped on
 28 Oct 2026); set that env var when the résumé changes. With the variable
 unset and the default file absent, as on a fresh checkout, that one check
 reports SKIP instead of failing; with it set, a missing file fails.

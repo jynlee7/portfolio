@@ -1,0 +1,305 @@
+/* The wall at `/`. Contract: DESIGN.md. Markup: scripts/wall.mjs.
+   Contrast is measured against the darkest wet patch the plaster filter can
+   lay down, not the dry average; numbers in DESIGN.md. */
+
+:root {
+  --plaster: #e7cabd;
+  --ink: #2b211e;
+  --graphite: #3d3432;
+  --hair: #5a352c;
+  --display: "Tanker", "Arial Narrow", sans-serif;
+  --text: "Switzer", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --gutter: clamp(16px, 7vw, 112px);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  color: var(--ink);
+  background: var(--plaster);
+  font: 400 1rem/1.5 var(--text);
+  font-synthesis: none;
+  -webkit-text-size-adjust: 100%;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  position: relative;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 320px;
+  min-height: 100svh;
+  margin: 0;
+  overflow-x: hidden;
+}
+
+h1,
+p {
+  margin: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.22em;
+}
+
+a:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+
+::selection {
+  color: var(--ink);
+  background: #f6e7df;
+}
+
+/* --- The plaster ------------------------------------------------------- */
+
+/* The whole document is wall, so it scrolls with what is written on it on
+   the rare screen short enough to scroll at all. */
+.plaster {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* --- What is written on it --------------------------------------------- */
+
+.wall {
+  padding: clamp(56px, 19vh, 210px) var(--gutter) 48px;
+}
+
+.notice {
+  font: 400 clamp(4rem, 10.5vw, 6rem) / 0.88 var(--display);
+  letter-spacing: 0;
+  /* Paint, not a sticker: the plaster's patches show through the ink. */
+  mix-blend-mode: multiply;
+}
+
+.aside {
+  margin-top: 0.85em;
+  font-size: clamp(1.125rem, 1.7vw, 1.375rem);
+  line-height: 1.35;
+}
+
+/* --- The crack --------------------------------------------------------- */
+
+/* The crack and the arrow scale together by --k, from the 300 × 130 box
+   the crack is drawn in (scripts/wall.mjs), so the arrow always lands on the
+   spall: its tip sits 21 × 16 short of it. */
+.breakin {
+  --k: 1;
+  position: relative;
+  width: calc(300px * var(--k));
+  /* Never less than the arrow's own height, so it cannot reach the aside. */
+  margin: max(calc(104px * var(--k)), 11vh) 0 0 clamp(96px, 24vw, 440px);
+}
+
+.arrow {
+  position: absolute;
+  left: calc(-70px * var(--k));
+  top: calc(-90px * var(--k));
+  width: calc(190px * var(--k));
+  height: calc(160px * var(--k));
+  overflow: visible;
+  pointer-events: none;
+}
+
+.arrow path,
+.crack__loop {
+  fill: none;
+  stroke: var(--graphite);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.86;
+}
+
+.crack {
+  display: block;
+  width: calc(300px * var(--k));
+  height: calc(130px * var(--k));
+  border-radius: 40px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.crack svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.crack:focus-visible {
+  outline: none;
+}
+
+.crack__shade {
+  fill: #2a130d;
+  fill-opacity: 0.62;
+}
+
+.crack__lip {
+  fill: none;
+  stroke: #fbefe9;
+  stroke-opacity: 0.85;
+  stroke-width: 0.8;
+}
+
+.crack__hair {
+  fill: var(--hair);
+  fill-opacity: 0.88;
+}
+
+.crack__hair--lit {
+  fill: #fbefe9;
+  fill-opacity: 0.55;
+}
+
+/* A pencil loop, the way a surveyor rings a crack: drawn on hover and on
+   keyboard focus, so it is also the focus indicator. */
+.crack__loop {
+  /* Full strength: this is the focus indicator, 3.77:1 on the darkest
+     plaster measured (DESIGN.md). */
+  opacity: 1;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 420ms var(--ease-out);
+}
+
+.crack:hover .crack__loop,
+.crack:focus-visible .crack__loop {
+  stroke-dashoffset: 0;
+}
+
+/* --- The sign ---------------------------------------------------------- */
+
+.sign {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 28px;
+  padding: 20px var(--gutter) 28px;
+  font-size: 0.9375rem;
+}
+
+.sign a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+.sign p {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+}
+
+.sign__kind {
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+}
+
+/* --- Going in (src/wall/main.ts) --------------------------------------- */
+
+.breach {
+  position: fixed;
+  z-index: 10;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.breach svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.breach__run {
+  fill: none;
+  stroke: var(--hair);
+  stroke-width: 1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.8;
+}
+
+/* The broken face of the coat: gypsum, duller than the field behind it. */
+.breach__core {
+  fill: #e6d9cf;
+}
+
+/* The wall's thickness, shadowing the field along the edge of the hole. */
+.breach__edge {
+  fill: none;
+  stroke: #2a130d;
+  stroke-opacity: 0.42;
+  stroke-width: 2.5;
+}
+
+.breach__bit {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--size);
+  height: var(--size);
+  background: linear-gradient(transparent 55%, rgb(58 26 18 / 0.22)), var(--tone);
+  clip-path: var(--shape);
+  animation: breach-fall var(--fall) cubic-bezier(0.5, 0, 0.92, 0.6) both;
+}
+
+@keyframes breach-fall {
+  from {
+    transform: translate(var(--x), var(--y)) rotate(0);
+  }
+  to {
+    transform: translate(calc(var(--x) + var(--drift)), calc(var(--y) + 110vh)) rotate(var(--spin));
+  }
+}
+
+/* --- Phones ------------------------------------------------------------ */
+
+@media (max-width: 600px) {
+  .wall {
+    padding-top: clamp(56px, 14vh, 120px);
+  }
+
+  .breakin {
+    --k: 0.8;
+    margin-left: clamp(40px, 20vw, 120px);
+  }
+
+  .sign {
+    flex-direction: column;
+    gap: 0;
+  }
+}
+
+@media (max-width: 360px) {
+  .breakin {
+    --k: 0.72;
+    margin-left: 36px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .crack__loop {
+    transition: none;
+  }
+}
+
+@media print {
+  .plaster,
+  .breakin {
+    display: none;
+  }
+}

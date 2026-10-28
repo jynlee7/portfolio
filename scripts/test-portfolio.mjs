@@ -1,5 +1,5 @@
 /**
- * Browser acceptance checks for the portfolio and the desktop under it.
+ * Browser acceptance checks for the wall at `/` and the desktop inside it.
  * Run against a production preview after `npm run build`:
  *   PORTFOLIO_URL=http://127.0.0.1:4173 node scripts/test-portfolio.mjs
  * Playwright is a devDependency (never shipped to the page); a machine that
@@ -20,7 +20,7 @@ const evidence = process.env.PORTFOLIO_EVIDENCE ?? "/tmp/pw-portfolio-evidence";
 // there fails. Unset, the path the current résumé came from is tried, and a
 // checkout without it skips that one check instead of failing it.
 const resumeSource = process.env.RESUME_SOURCE
-  ?? join(homedir(), "Downloads/resumes/Lee_Jayden_Resume_10202026.pdf");
+  ?? join(homedir(), "Downloads/resumes/JaydenLeeResume.pdf");
 const resumeRequired = Boolean(process.env.RESUME_SOURCE);
 await mkdir(evidence, { recursive: true });
 const results = [];
@@ -49,19 +49,6 @@ async function check(name, run) {
 function skip(name, reason) {
   results.push({ name, status: "skip", reason });
   console.log(`SKIP ${name}: ${reason}`);
-}
-
-/** Resolves with scrollY once it has held still for ~20 frames. */
-function settledScroll(page) {
-  return page.evaluate(() => new Promise((done) => {
-    let last = scrollY;
-    let still = 0;
-    const tick = () => {
-      if (scrollY !== last) { last = scrollY; still = 0; } else if (++still > 20) return done(scrollY);
-      requestAnimationFrame(tick);
-    };
-    requestAnimationFrame(tick);
-  }));
 }
 
 async function withPage(options, run, setup) {
@@ -93,7 +80,9 @@ async function assertNoOverflow(page) {
     width: innerWidth,
     document: document.documentElement.scrollWidth,
     body: document.body.scrollWidth,
+    // SVG internals are skipped: the field inside the crack is clipped to it.
     offenders: [...document.querySelectorAll("main *, header *, footer *")].filter((el) => {
+      if (el.ownerSVGElement) return false;
       const box = el.getBoundingClientRect();
       return box.width > 0 && (box.right > innerWidth + 1 || box.left < -1);
     }).slice(0, 8).map((el) => `${el.tagName}.${el.className}`),
@@ -103,62 +92,50 @@ async function assertNoOverflow(page) {
   return dimensions;
 }
 
-async function assertFirstViewportResume(page) {
-  const actions = page.locator('a[href="/resume.pdf"]');
-  assert.ok(await actions.count(), "A direct résumé link is required");
-  const inViewport = await actions.evaluateAll((links) => links.some((link) => {
-    const box = link.getBoundingClientRect();
-    const style = getComputedStyle(link);
+/** The notice, the way in, and the sign, all inside the first viewport. */
+async function assertWall(page) {
+  assert.equal(await page.locator("h1").count(), 1);
+  assert.match(await page.locator("h1").innerText(), /under works/i);
+  assert.match(await page.locator("main").innerText(), /check out my desktop/i);
+  const visible = (selector) => page.locator(selector).evaluateAll((els) => els.some((el) => {
+    const box = el.getBoundingClientRect();
+    const style = getComputedStyle(el);
     return box.height >= 24 && box.top >= 0 && box.bottom <= innerHeight
       && box.left >= 0 && box.right <= innerWidth
       && style.visibility !== "hidden" && style.display !== "none";
   }));
-  assert.ok(inViewport, "Direct PDF action is not visible in the first viewport");
+  assert.ok(await visible('a.crack[href="/desktop/"]'), "The crack is not in the first viewport");
+  assert.ok(await visible('a[href="/resume.pdf"]'), "The résumé is not in the first viewport");
+  assert.ok(await visible('a[href="mailto:jeyl@berkeley.edu"]'), "The email is not in the first viewport");
+  assert.ok((await page.locator(".sign").innerText()).includes("Jayden Lee"));
 }
 
-async function assertFacts(page) {
-  assert.equal(await page.locator("h1").count(), 1);
-  const text = await page.locator("main").innerText();
-  assert.match(text, /junior[\s\S]*Data Science[\s\S]*UC Berkeley/i);
+/** Every role on the résumé, on the desktop's experience log. */
+async function assertDesktopFacts(page) {
+  const text = await page.locator("#doc-experience").innerText();
   for (const [organization, title] of expectedRoles) {
     assert.ok(text.includes(organization), `Missing organization: ${organization}`);
     assert.ok(text.includes(title), `Missing title: ${title}`);
   }
   assert.ok(!text.includes("Data Labeling Intern"), "Superseded SwingVision title is present");
-  for (const id of ["work", "experience", "about", "contact", "resume"]) {
-    assert.equal(await page.locator(`[id="${id}"]`).count(), 1, `Anchor #${id}`);
-  }
-  for (const kind of ["tennis", "knowledge", "compute", "stadium", "protein"]) {
-    assert.ok(await page.locator(`[data-scene="${kind}"]`).count(), `Missing ${kind} illustration`);
-  }
+  assert.ok(!/\b50%/.test(text), "The superseded 50% claim is present");
+  assert.ok(text.includes("100 hours"), "SwingVision should carry the 26 Oct résumé's hours");
+  const lea = page.locator("#doc-lea");
+  assert.equal(await lea.count(), 1, "Lea has no document");
+  assert.equal(await lea.locator('a[href="https://devpost.com/software/lea-lidar-enabled-assistant"]').count(), 1);
 }
 
-async function instrument(page, { noWebGL = false } = {}) {
-  await page.addInitScript(({ noWebGL }) => {
-    const stats = { frames: 0, requested: 0, contexts: 0, shifts: 0 };
+/** Counts animation frames, so "nothing moves at rest" is measured. */
+async function instrument(page) {
+  await page.addInitScript(() => {
+    const stats = { frames: 0, requested: 0 };
     window.__portfolioTest = stats;
     const originalRaf = window.requestAnimationFrame;
     window.requestAnimationFrame = (callback) => {
       stats.requested++;
       return originalRaf.call(window, (time) => { stats.frames++; callback(time); });
     };
-    const originalContext = HTMLCanvasElement.prototype.getContext;
-    const seen = new WeakSet();
-    HTMLCanvasElement.prototype.getContext = function (kind, ...args) {
-      if (kind === "webgl" || kind === "webgl2" || kind === "experimental-webgl") {
-        if (noWebGL) return null;
-        const context = originalContext.call(this, kind, ...args);
-        if (context && !seen.has(context)) { seen.add(context); stats.contexts++; }
-        return context;
-      }
-      return originalContext.call(this, kind, ...args);
-    };
-    try {
-      new PerformanceObserver((list) => {
-        for (const entry of list.getEntries()) if (!entry.hadRecentInput) stats.shifts += entry.value;
-      }).observe({ type: "layout-shift", buffered: true });
-    } catch { /* browser without layout-shift observer */ }
-  }, { noWebGL });
+  });
 }
 
 async function framesDuringRest(page, ms = 650) {
@@ -184,225 +161,145 @@ try {
   });
 
   for (const width of [320, 390, 768, 1024, 1440]) {
-    await check(`Readable portfolio at ${width}px, no overflow, résumé visible`, () => withPage({
-      viewport: { width, height: width < 768 ? 844 : 1000 },
+    await check(`The wall at ${width}px: notice, crack and sign in view, no overflow`, () => withPage({
+      viewport: { width, height: width < 768 ? 844 : width === 768 ? 1024 : 900 },
       reducedMotion: "reduce",
       ...(width < 768 ? { isMobile: true, hasTouch: true, deviceScaleFactor: 2 } : {}),
-    }, async (page, { errors }) => {
+    }, async (page, { errors, requests }) => {
       await load(page);
-      await assertFacts(page);
-      await assertFirstViewportResume(page);
+      await assertWall(page);
       const dimensions = await assertNoOverflow(page);
-      await page.screenshot({ path: `${evidence}/portfolio-${width}.png`, fullPage: true });
+      const crack = await page.locator(".crack").boundingBox();
+      assert.ok(crack.width >= 44 && crack.height >= 44, `Small crack target: ${JSON.stringify(crack)}`);
+      await page.screenshot({ path: `${evidence}/wall-${width}.png`, fullPage: true });
       assert.deepEqual(errors, []);
+      assert.ok(!requests.some((url) => /\/src\/os\/|\/assets\/desktop[-.]/.test(url)), "The wall requested desktop code");
       return dimensions;
     }));
   }
 
-  await check("Native details support click, direct hash, reload, and browser Back", () => withPage({ reducedMotion: "reduce" }, async (page) => {
+  await check("The crack frames the field exactly where the lock screen paints it", () => withPage({}, async (page, { errors }) => {
     await load(page);
-    for (const id of ["clinical", "bearings", "site", "chessblitz"]) {
-      const details = page.locator(`details#${id}`);
-      assert.equal(await details.count(), 1, `Missing native disclosure for ${id}`);
-      const summary = details.locator(":scope > summary");
-      assert.equal(await summary.count(), 1);
-      await summary.click();
-      await page.waitForFunction((id) => document.getElementById(id)?.open, id);
-      await summary.click();
-      assert.equal(await details.getAttribute("open"), null);
-      await load(page, `/#${id}`);
-      assert.ok(await details.evaluate((el) => el.open), `Direct hash did not open ${id}`);
-      await page.reload({ waitUntil: "networkidle" });
-      assert.ok(await details.evaluate((el) => el.open), `Reload did not retain ${id}`);
-    }
-    await load(page, "/#clinical");
-    await page.locator('a[href="#work"]').first().click();
-    await page.waitForFunction(() => location.hash === "#work");
-    await page.goBack();
-    await page.waitForFunction(() => location.hash === "#clinical");
-    assert.ok(await page.locator("#clinical").evaluate((el) => el.open));
-    return { hashes: ["clinical", "bearings", "site", "chessblitz"] };
-  }));
-
-  // Without reduced motion the jump is a smooth scroll, still at its start
-  // when navigate() first records the entry, so Forward is the real test.
-  await check("Back then Forward returns to where a smooth jump landed", () => withPage({}, async (page, { errors }) => {
-    await load(page);
-    await page.locator('#portfolio-nav a[href="#experience"]').click();
-    await page.waitForFunction(() => location.hash === "#experience");
-    const landed = await settledScroll(page);
-    assert.ok(landed > 400, `The jump did not scroll (scrollY ${landed})`);
-    await page.goBack();
-    await page.waitForFunction(() => location.hash === "");
-    assert.ok(await settledScroll(page) < 10, "Back did not return to the top");
-    await page.goForward();
-    await page.waitForFunction(() => location.hash === "#experience");
-    const restored = await settledScroll(page);
-    assert.ok(Math.abs(restored - landed) <= 2, `Forward restored scrollY ${restored}, expected ${landed}`);
-    assert.deepEqual(errors, []);
-    return { landed, restored };
-  }));
-
-  await check("Phone navigation, touch targets, and Escape focus return", () => withPage({
-    viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce",
-  }, async (page) => {
-    await load(page);
-    const toggle = page.locator("[data-menu-toggle]");
-    assert.ok(await toggle.isVisible());
-    assert.equal(await toggle.getAttribute("aria-expanded"), "false");
-    await toggle.tap();
-    assert.equal(await toggle.getAttribute("aria-expanded"), "true");
-    assert.ok(await page.locator('#portfolio-nav a[href="#experience"]').isVisible());
-    await page.keyboard.press("Escape");
-    assert.equal(await toggle.getAttribute("aria-expanded"), "false");
-    assert.ok(await toggle.evaluate((el) => document.activeElement === el));
-    await toggle.tap();
-    await page.locator('#portfolio-nav a[href="#experience"]').tap();
-    await page.waitForFunction(() => location.hash === "#experience");
-    assert.equal(await toggle.getAttribute("aria-expanded"), "false");
-    const box = await toggle.boundingBox();
-    assert.ok(box.width >= 44 && box.height >= 44, `Small menu target: ${JSON.stringify(box)}`);
-    await assertNoOverflow(page);
-  }));
-
-  await check("Keyboard skip link, disclosure, and accessible control names", () => withPage({ reducedMotion: "reduce" }, async (page) => {
-    await load(page);
-    await page.keyboard.press("Tab");
-    const first = page.locator(":focus");
-    assert.equal(await first.getAttribute("href"), "#main", "First Tab should reach skip link");
-    await page.keyboard.press("Enter");
-    await page.waitForFunction(() => document.activeElement?.id === "main");
-    const summary = page.locator("#clinical > summary");
-    await summary.focus();
-    await page.keyboard.press("Enter");
-    assert.ok(await page.locator("#clinical").evaluate((el) => el.open));
-    const unnamed = await page.locator("button, a[href], summary").evaluateAll((controls) => controls.filter((el) => {
-      if (!el.getClientRects().length || getComputedStyle(el).visibility === "hidden") return false;
-      const labelled = el.getAttribute("aria-labelledby")?.split(/\s+/).map((id) => document.getElementById(id)?.textContent).join(" ");
-      return !(el.getAttribute("aria-label") || labelled || el.textContent || el.querySelector("img")?.alt)?.trim();
-    }).map((el) => el.outerHTML));
-    assert.deepEqual(unnamed, []);
-    const focus = await summary.evaluate((el) => {
-      const style = getComputedStyle(el);
-      return { outline: style.outlineStyle, width: style.outlineWidth, shadow: style.boxShadow };
+    const placed = await page.evaluate(() => {
+      const svg = document.querySelector(".crack svg");
+      const view = svg.querySelector(".crack__field");
+      const box = svg.getBoundingClientRect();
+      const unit = box.width / svg.viewBox.baseVal.width;
+      const n = (name) => Number(view.getAttribute(name)) * unit;
+      return { x: box.left + n("x"), y: box.top + n("y"), w: n("width"), h: n("height"), href: view.getAttribute("href") };
     });
-    assert.ok((focus.outline !== "none" && focus.width !== "0px") || focus.shadow !== "none", `Missing focus treatment ${JSON.stringify(focus)}`);
+    const scale = Math.max(1440 / 1600, 1000 / 1000);
+    const expected = { x: (1440 - 1600 * scale) / 2, y: (1000 - 1000 * scale) / 2, w: 1600 * scale, h: 1000 * scale };
+    for (const key of ["x", "y", "w", "h"]) {
+      assert.ok(Math.abs(placed[key] - expected[key]) < 1, `Field ${key} is ${placed[key]}, the lock paints it at ${expected[key]}`);
+    }
+    assert.equal(placed.href, "/field-lab.svg");
+    assert.deepEqual(errors, []);
+    return placed;
   }));
 
-  await check("200% text zoom retains content and actions", () => withPage({ viewport: { width: 1440, height: 1000 }, reducedMotion: "reduce" }, async (page) => {
+  await check("The crack shows the wallpaper the visitor chose on the desktop", () => withPage({}, async (page) => {
+    await load(page);
+    assert.equal(await page.locator(".crack__field").getAttribute("href"), "/field-blueprint.svg");
+  }, (page) => page.addInitScript(() => localStorage.setItem("jl.desk", "blueprint"))));
+
+  await check("Nothing moves at rest, and the crack is the wall's only way in", () => withPage({}, async (page, { errors }) => {
+    await load(page);
+    await page.waitForTimeout(300);
+    assert.equal(await framesDuringRest(page), 0, "The wall requests frames at rest");
+    assert.equal(await page.locator('a[href^="/desktop"]').count(), 1, "Expected exactly one way to the desktop");
+    assert.deepEqual(errors, []);
+  }, (page) => instrument(page)));
+
+  await check("Hover and keyboard focus ring the crack in pencil", () => withPage({}, async (page) => {
+    await load(page);
+    const loop = page.locator(".crack__loop");
+    const drawn = () => loop.evaluate((el) => Number(getComputedStyle(el).strokeDashoffset.replace("px", "")));
+    assert.equal(await drawn(), 1, "The loop shows before anyone reaches for the crack");
+    await page.locator(".crack").hover();
+    await page.waitForTimeout(600);
+    assert.equal(await drawn(), 0, "Hover did not ring the crack");
+    await page.mouse.move(5, 5);
+    await page.waitForTimeout(600);
+    await page.keyboard.press("Tab");
+    assert.equal(await page.evaluate(() => document.activeElement?.className), "crack", "The crack should be first in the tab order");
+    await page.waitForTimeout(600);
+    assert.equal(await drawn(), 0, "Keyboard focus is invisible");
+    assert.equal(await page.locator(".crack").getAttribute("aria-label"), "My desktop");
+  }));
+
+  await check("Going in breaks the wall and lands on the lock with its field at rest", () => withPage({}, async (page, { errors }) => {
+    await load(page);
+    const crack = page.locator(".crack");
+    await crack.hover();
+    await crack.click({ noWaitAfter: true });
+    await page.locator(".breach").waitFor({ state: "attached" });
+    await page.waitForTimeout(260);
+    await page.screenshot({ path: `${evidence}/breach.png`, fullPage: false });
+    assert.ok(await page.locator(".breach__bit").count() > 0, "No plaster came away");
+    await page.waitForURL(new URL("/desktop/", base).href, { timeout: 4_000 });
+    await page.locator("#lock").waitFor({ state: "visible" });
+    // The lock read and cleared the one-shot hand-off, and its contours were
+    // already showing rather than raised from nothing.
+    assert.equal(await page.evaluate(() => sessionStorage.getItem("jl.through")), null);
+    const opacity = await page.locator("#lock svg > g > path").first().evaluate((el) => el.style.opacity);
+    assert.equal(opacity, "1", "The lock replayed its entrance after the wall broke");
+    await page.screenshot({ path: `${evidence}/breach-landed.png`, fullPage: false });
+    assert.deepEqual(errors, []);
+  }));
+
+  await check("Back from the desktop mends the wall", () => withPage({}, async (page) => {
+    await load(page);
+    await page.locator(".crack").click({ noWaitAfter: true });
+    await page.waitForURL(new URL("/desktop/", base).href, { timeout: 4_000 });
+    await page.goBack();
+    await page.waitForURL(new URL("/", base).href);
+    assert.equal(await page.locator(".breach").count(), 0, "The wall came back broken");
+  }));
+
+  await check("Under reduced motion the crack is an ordinary link", () => withPage({ reducedMotion: "reduce" }, async (page) => {
+    await load(page);
+    await page.locator(".crack").click();
+    await page.waitForURL(new URL("/desktop/", base).href);
+    assert.equal(await page.evaluate(() => document.querySelector(".breach")), null);
+  }));
+
+  await check("JavaScript off: the wall reads, and the crack and résumé still work", () => withPage({ javaScriptEnabled: false, viewport: { width: 390, height: 844 } }, async (page) => {
+    await load(page);
+    await assertWall(page);
+    await assertNoOverflow(page);
+    await page.screenshot({ path: `${evidence}/wall-no-js.png`, fullPage: true });
+    await page.locator(".crack").click();
+    await page.waitForURL(new URL("/desktop/", base).href);
+  }));
+
+  await check("200% text zoom keeps the notice, the crack and the sign", () => withPage({ viewport: { width: 1440, height: 900 }, reducedMotion: "reduce" }, async (page) => {
     await load(page);
     await page.evaluate(() => { document.documentElement.style.fontSize = "200%"; });
-    await assertFacts(page);
+    assert.match(await page.locator("h1").innerText(), /under works/i);
+    for (const selector of ['a.crack[href="/desktop/"]', 'a[href="/resume.pdf"]', 'a[href="mailto:jeyl@berkeley.edu"]']) {
+      assert.ok(await page.locator(selector).isVisible(), `${selector} is hidden at 200%`);
+    }
     await assertNoOverflow(page);
-    await page.screenshot({ path: `${evidence}/portfolio-text-zoom-200.png`, fullPage: true });
+    await page.screenshot({ path: `${evidence}/wall-text-zoom-200.png`, fullPage: true });
   }));
 
-  await check("JavaScript disabled preserves facts, navigation, PDF, and native disclosures", () => withPage({ javaScriptEnabled: false, viewport: { width: 390, height: 844 } }, async (page, { requests }) => {
-    await load(page);
-    await assertFacts(page);
-    await assertFirstViewportResume(page);
-    await assertNoOverflow(page);
-    const summary = page.locator("#clinical > summary");
-    await summary.click();
-    assert.ok(await page.locator("#clinical").evaluate((el) => el.open));
-    assert.ok(await page.locator('#portfolio-nav a[href="#experience"]').isVisible());
-    const images = await page.locator(".scene__fallback").evaluateAll((els) => els.map((img) => ({ src: img.src, loaded: img.complete && img.naturalWidth > 0 })));
-    assert.ok(images.length >= 5);
-    assert.ok(images.every((img) => img.loaded), JSON.stringify(images));
-    await page.screenshot({ path: `${evidence}/portfolio-no-js.png`, fullPage: true });
-    return { illustrations: images.length, scriptRequests: requests.filter((url) => /\.js(?:\?|$)/.test(url)) };
-  }));
-
-  await check("Reduced motion stays static and avoids WebGL and large 3D script downloads", () => withPage({ reducedMotion: "reduce" }, async (page, { errors }) => {
-    await load(page);
-    for (const scene of await page.locator("[data-scene]").all()) await scene.scrollIntoViewIfNeeded();
-    await page.waitForTimeout(250);
-    assert.equal(await framesDuringRest(page), 0);
-    const stats = await page.evaluate(() => window.__portfolioTest);
-    assert.equal(stats.contexts, 0, "Reduced motion created a WebGL context");
-    const scripts = await page.evaluate(() => performance.getEntriesByType("resource").filter((entry) => /\.js(?:\?|$)/.test(entry.name)).map((entry) => ({ url: entry.name, bytes: entry.decodedBodySize })));
-    assert.ok(scripts.every((script) => script.bytes < 200_000), `Large 3D script was loaded: ${JSON.stringify(scripts)}`);
-    assert.deepEqual(errors, []);
-    measurements.reducedMotion = { ...stats, scripts };
-  }, (page) => instrument(page)));
-
-  await check("Unavailable WebGL keeps local illustrations and all reading actions", () => withPage({}, async (page, { errors }) => {
-    await load(page);
-    await assertFacts(page);
-    for (const scene of await page.locator("[data-scene]").all()) {
-      await scene.scrollIntoViewIfNeeded();
-      const visible = await scene.locator(".scene__fallback").evaluate((img) => img.complete && img.naturalWidth > 0 && Number(getComputedStyle(img).opacity) > 0);
-      assert.ok(visible, "Fallback disappeared without WebGL");
-    }
-    assert.equal(await framesDuringRest(page), 0);
-    assert.deepEqual(errors, []);
-    await page.screenshot({ path: `${evidence}/portfolio-webgl-unavailable.png`, fullPage: true });
-  }, (page) => instrument(page, { noWebGL: true })));
-
-  await check("3D controls render on interaction, settle, share a context, and stop offscreen", () => withPage({}, async (page, { errors, requests }) => {
-    await load(page);
-    const figure = page.locator("figure.scene").first();
-    const left = figure.locator('[data-scene-rotate="left"]');
-    await left.waitFor({ state: "visible" });
-    for (const control of await figure.locator("button").all()) {
-      const box = await control.boundingBox();
-      assert.ok(box.width >= 44 && box.height >= 44, `Small 3D control ${JSON.stringify(box)}`);
-    }
-    await page.waitForTimeout(700);
-    assert.equal(await framesDuringRest(page), 0, "Scene animates at rest");
-    const before = await page.evaluate(() => window.__portfolioTest.frames);
-    await left.click();
-    await page.waitForTimeout(350);
-    const after = await page.evaluate(() => window.__portfolioTest.frames);
-    assert.ok(after > before, "Rotate control did not render a frame");
-    await figure.locator("[data-scene-reset]").focus();
-    await page.keyboard.press("Enter");
-    const mount = figure.locator("[data-scene]");
-    const box = await mount.boundingBox();
-    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-    await page.mouse.down();
-    await page.mouse.move(box.x + box.width / 2 + 55, box.y + box.height / 2 - 25, { steps: 6 });
-    await page.mouse.up();
-    await page.waitForTimeout(700);
-    assert.equal(await framesDuringRest(page), 0, "Scene did not settle after drag");
-    await page.screenshot({ path: `${evidence}/portfolio-3d-desktop.png`, fullPage: false });
-    for (const scene of await page.locator("[data-scene]").all()) {
-      await scene.scrollIntoViewIfNeeded();
-      await page.waitForTimeout(80);
-    }
-    await page.locator("#contact").scrollIntoViewIfNeeded();
-    await page.waitForTimeout(700);
-    assert.equal(await framesDuringRest(page), 0, "Offscreen scenes kept requesting frames");
-    const stats = await page.evaluate(() => window.__portfolioTest);
-    assert.equal(stats.contexts, 1, `Expected one shared WebGL context: ${JSON.stringify(stats)}`);
-    assert.deepEqual(errors, []);
-    assert.ok(!requests.some((url) => /\/src\/os\/|\/assets\/desktop[-.]/.test(url)), "Homepage requested desktop code");
-    const resources = await page.evaluate(() => performance.getEntriesByType("resource").map((entry) => ({ url: entry.name, bytes: entry.decodedBodySize, transfer: entry.transferSize, duration: entry.duration })));
-    measurements.interactive = { ...stats, resources };
-    return { contexts: stats.contexts, cls: stats.shifts, scriptBytes: resources.filter((r) => /\.js$/.test(r.url)).reduce((sum, r) => sum + r.bytes, 0) };
-  }, (page) => instrument(page)));
-
-  await check("Image failures leave essential content and project actions usable", () => withPage({ reducedMotion: "reduce" }, async (page) => {
-    await page.route("**/scenes/**", (route) => route.abort());
-    await load(page);
-    await assertFacts(page);
-    await assertFirstViewportResume(page);
-    await page.locator("#clinical > summary").click();
-    assert.ok(await page.locator("#clinical").evaluate((el) => el.open));
-    await assertNoOverflow(page);
+  await check("The desktop's documents carry the 26 Oct résumé", () => withPage({ javaScriptEnabled: false }, async (page) => {
+    await load(page, "/desktop/");
+    await assertDesktopFacts(page);
   }));
 
   await check("A desktop deep link skips the lock, opens its window, and leads home", () => withPage({ reducedMotion: "reduce" }, async (page, { errors }) => {
-    await load(page, "/desktop/#about");
+    await load(page, "/desktop/#lea");
     assert.equal(await page.locator("#lock").count(), 0, "A deep link should not land behind the lock screen");
-    await page.locator('.win[data-win="about"]').waitFor({ state: "visible" });
+    await page.locator('.win[data-win="lea"]').waitFor({ state: "visible" });
     const returnLink = page.locator(".menubar__link--home");
-    assert.ok(await returnLink.isVisible(), "Desktop needs a visible return to portfolio");
+    assert.ok(await returnLink.isVisible(), "Desktop needs a visible way back out");
     await page.screenshot({ path: `${evidence}/desktop-deep-link.png`, fullPage: false });
     assert.deepEqual(errors, []);
     await returnLink.click();
     await page.waitForURL(new URL("/", base).href);
-    assert.equal(await page.locator("h1").count(), 1);
+    assert.match(await page.locator("h1").innerText(), /under works/i);
   }));
 
   await check("Bare /desktop/ keeps its lock; the way home survives a phone width", () => withPage({
@@ -418,78 +315,6 @@ try {
     assert.ok(box.x + box.width <= 390, `Portfolio link overflows the bar: ${JSON.stringify(box)}`);
     await home.tap();
     await page.waitForURL(new URL("/", base).href);
-  }));
-
-  await check("The desktop stays hidden, then shows itself to a visitor who stays", () => withPage({}, async (page, { errors, requests }) => {
-    await page.clock.install();
-    await load(page);
-    assert.equal(await page.locator('a[href^="/desktop"]').count(), 0, "The portfolio links the desktop before it is found");
-    await page.clock.runFor(19_000);
-    assert.equal(await page.locator(".peek").count(), 0, "The desktop showed itself early");
-    await page.clock.runFor(1_500);
-    const peek = page.locator(".peek");
-    await peek.waitFor({ state: "visible" });
-    assert.equal(await peek.locator(".peek__bit").count(), 16 * 8);
-    assert.equal(await page.locator(".peek-status").textContent(), "There's a computer under this page.");
-    await page.clock.runFor(1_000);
-    await page.waitForTimeout(400);
-    assert.equal(await peek.getAttribute("data-state"), "open");
-    const enter = peek.getByRole("link", { name: "Go in" });
-    const box = await enter.boundingBox();
-    assert.ok(box.height >= 44, `Go in is ${box.height}px tall`);
-    assert.ok(box.x + box.width <= 1440 && box.y + box.height <= 1000, "Window runs off screen");
-    await page.screenshot({ path: `${evidence}/peek-open.png`, fullPage: false });
-    assert.ok(!requests.some((url) => /\/src\/os\/|\/assets\/desktop[-.]/.test(url)), "Finding the desktop loaded its code early");
-    await enter.click();
-    assert.ok(await page.locator(".peek-veil__bit").count() > 100, "The screen did not turn over");
-    await page.waitForTimeout(300);
-    await page.screenshot({ path: `${evidence}/peek-veil.png`, fullPage: false });
-    await page.clock.runFor(1_000);
-    await page.waitForURL(new URL("/desktop/", base).href);
-    await page.locator("#lock").waitFor({ state: "visible" });
-    assert.deepEqual(errors, []);
-  }));
-
-  await check("Closing the desktop keeps it closed; reduced motion opens it plainly", () => withPage({ reducedMotion: "reduce" }, async (page) => {
-    await page.clock.install();
-    await load(page);
-    await page.clock.runFor(20_500);
-    const peek = page.locator(".peek");
-    await peek.waitFor({ state: "visible" });
-    assert.equal(await peek.getAttribute("data-state"), "open", "Reduced motion should open without choreography");
-    await peek.getByRole("button", { name: "Close" }).focus();
-    await page.keyboard.press("Escape");
-    assert.equal(await page.locator(".peek").count(), 0);
-    assert.ok(await page.evaluate(() => document.activeElement?.id === "main"), "Focus fell out of the page");
-    await page.reload({ waitUntil: "networkidle" });
-    await page.clock.runFor(60_000);
-    assert.equal(await page.locator(".peek").count(), 0, "A closed desktop came back in the same visit");
-  }));
-
-  await check("Go in is an ordinary link under reduced motion", () => withPage({ reducedMotion: "reduce" }, async (page) => {
-    await page.clock.install();
-    await load(page);
-    await page.clock.runFor(20_500);
-    await page.locator(".peek").getByRole("link", { name: "Go in" }).click();
-    await page.waitForURL(new URL("/desktop/", base).href);
-    assert.equal(await page.locator(".peek-veil").count(), 0);
-  }));
-
-  await check("On a 320px phone the desktop is a short strip, not a card", () => withPage({
-    viewport: { width: 320, height: 640 }, isMobile: true, hasTouch: true, reducedMotion: "reduce",
-  }, async (page) => {
-    await page.clock.install();
-    await load(page);
-    await page.clock.runFor(20_500);
-    const peek = page.locator(".peek");
-    await peek.waitFor({ state: "visible" });
-    const box = await peek.boundingBox();
-    assert.ok(box.x >= 0 && box.x + box.width <= 320, `Window overflows: ${JSON.stringify(box)}`);
-    assert.ok(box.height <= 200, `The strip takes ${box.height}px of a 640px screen`);
-    assert.equal(await peek.locator(".peek__bit").count(), 16 * 4);
-    await assertNoOverflow(page);
-    await page.screenshot({ path: `${evidence}/peek-320.png`, fullPage: false });
-    await peek.getByRole("button", { name: "Close" }).tap();
   }));
 
 } finally {

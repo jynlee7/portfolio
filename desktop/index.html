@@ -259,10 +259,11 @@
         <div class="menu" data-menu>
           <button class="menu__trigger" type="button" aria-expanded="false">Work</button>
           <div class="menu__drop" role="menu">
-            <button type="button" role="menuitem" data-open="bearings">bearings</button>
+            <button type="button" role="menuitem" data-open="lea">Lea: LiDAR Enabled Assistant</button>
             <button type="button" role="menuitem" data-open="clinical">Clinical Intervention Simulator</button>
             <button type="button" role="menuitem" data-open="chessblitz">ChessBlitz</button>
             <button type="button" role="menuitem" data-open="site">This website</button>
+            <button type="button" role="menuitem" data-open="bearings">bearings</button>
             <div class="menu__sep"></div>
             <button type="button" role="menuitem" data-open="experience">Experience</button>
           </div>
@@ -331,6 +332,11 @@
            keyboard; the double-click affordance is an addition, not the only
            way in. -->
       <div class="icons" id="icons" role="list">
+        <button class="icon" type="button" role="listitem" data-open="lea">
+          <span class="icon__art"><svg viewBox="0 0 40 34"><use href="#i-folder" /></svg></span>
+          <span class="icon__label">lea</span>
+        </button>
+
         <button class="icon" type="button" role="listitem" data-open="clinical">
           <span class="icon__art"><svg viewBox="0 0 40 34"><use href="#i-folder" /></svg></span>
           <span class="icon__label">clinical-sim</span>
@@ -434,6 +440,9 @@
 
       <!-- ---------------- about.txt ---------------- -->
       <!-- @portfolio-doc about -->
+
+      <!-- ---------------- lea ---------------- -->
+      <!-- @portfolio-doc lea -->
 
       <!-- ---------------- clinical-sim ---------------- -->
       <!-- @portfolio-doc bearings -->
