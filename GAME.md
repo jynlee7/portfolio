@@ -1,9 +1,24 @@
 # GAME.md
 
-`spots.map` — the walk-around game on this desktop. This file is to the game
-what `DESIGN.md` is to the UI: the direction contract, not a description.
-Read it before touching anything under `src/game/`, `src/os/spots.ts`, or
-`content/spots.md`.
+`spots.map` — the walk-around game on this desktop. This file is to that game
+what `docs/DESKTOP_DESIGN.md` is to the desktop's UI (it was the root
+`DESIGN.md` until the portfolio took `/` on 28 Oct 2026): the direction
+contract, not a description.
+Read it before touching anything under `src/game/neighborhood.ts`,
+`src/os/spots.ts`, or `content/spots.md`.
+
+**This is `spots.map`'s contract specifically, not a repo-wide games
+contract.** A second game, `rift.exe`, was added later at the user's explicit
+direction with its own contract in `RIFT.md` — a real-time skirmish that
+*does* run a `requestAnimationFrame` loop, which is a deliberate, documented
+amendment to the "no game on this desktop has a loop" framing §1.1 states
+below. That framing was true when this was the only game here; it no longer
+generalizes to "every game," only to `spots.map` and to the rest of this
+desktop's chrome. See `RIFT.md`'s "The amendment" section for the full
+reasoning, and `docs/DESKTOP_DESIGN.md`'s Motion section for the budget accounting.
+Everything else in this file — never fabricate, no leaderboard, hand-authored
+rather than generated content — still describes `spots.map` exactly as
+written.
 
 ## What it is
 
@@ -39,10 +54,13 @@ Most of this file exists to hold the line on them.
 
 ### 1.1 Zero frames at rest
 
-`DESIGN.md` spends the entire motion budget on one authored moment — the
+`docs/DESKTOP_DESIGN.md` spends the entire motion budget on one authored moment — the
 pointer deforming the wallpaper field — and says `dinner.run` "is turn-based
 specifically so the budget survives it." A game loop would be a second authored
-moment, and there is no room for one.
+moment, and there was no room for one when this game was the only one on the
+desk. (`rift.exe` later earned its own loop by a different route — see the
+note at the top of this file — but that is a separate, explicitly amended
+budget, not a reason to relax anything below for `spots.map`.)
 
 **There is no `requestAnimationFrame` loop in this game.** Not a paused one, not
 a throttled one, not one that idles cheaply. None.
@@ -195,7 +213,7 @@ A slot id that no longer exists is dropped silently on load.
 **A plotter survey map. Not a game board, and emphatically not pixel art.**
 
 There is no sprite or tile language anywhere in this repo. Adding one would
-break the world `DESIGN.md` commits to — a scientific workstation, opaque bone
+break the world `docs/DESKTOP_DESIGN.md` commits to — a scientific workstation, opaque bone
 panels, 1px chiselled bevels, 3–5px radii, indigo as the only accent. A tiled
 RPG look is exactly the thing `CLAUDE.md` calls out: "If an element could be
 guessed from the category alone, it is wrong."
@@ -218,7 +236,7 @@ undiscovered started as `--ink-faint` and `--ink-muted` outlines — 3.98:1 and
 5.5:1, both passing, and indistinguishable side by side. Dashed versus solid is
 the difference that actually reads.
 
-**Indigo marks exactly one thing at a time**, per `DESIGN.md`. The walker and a
+**Indigo marks exactly one thing at a time**, per `docs/DESKTOP_DESIGN.md`. The walker and a
 found storefront are both indigo and end up adjacent the moment you find one, so
 the separation is carried by **shape**: the walker is a disc, every storefront is
 a square.
