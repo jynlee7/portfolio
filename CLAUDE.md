@@ -5,7 +5,7 @@ right one before touching any UI:
 
 | URL | What it is | Contract |
 | --- | --- | --- |
-| `/` | **The portfolio.** An editorial page: hero, work, experience, about, playground, contact. | `DESIGN.md` |
+| `/` | **The portfolio.** An editorial page: hero, work, experience, about, contact. | `DESIGN.md` |
 | `/desktop/` | **Jayden's desktop.** The original OS — lock screen, menubar, windows, dock, two games. | `docs/DESKTOP_DESIGN.md` |
 
 ## What this is
@@ -19,9 +19,12 @@ The desktop is still here, at `/desktop/`, as the playground: a portfolio
 built as a **desktop operating system** in the rendition of a **scientific
 workstation** — opaque bone panels, 1px chiseled bevels, 3–5px radii, indigo
 as the only accent, host monospace on measured values only, over a generated
-contour map of a two-minimum loss surface. It is reached deliberately from the
-portfolio's Playground section (and `/desktop/#spots`, `/desktop/#rift`), and
-its menubar carries a **Portfolio** link home at every width.
+contour map of a two-minimum loss surface. **Nothing on the portfolio links
+to it.** After 20 s on the page, a corner comes apart in bits to show the
+desktop's field underneath, and "Go in" turns the whole screen over into it
+(`src/portfolio/peek.ts`; DESIGN.md, "The computer under the page"). Direct
+URLs (`/desktop/`, `/desktop/#spots`, `/desktop/#rift`) still work, and its
+menubar carries a **Portfolio** link home at every width.
 
 Everything below headed "Conventions that matter" was written for the desktop
 and still governs `/desktop/`. It does not govern `/`.
@@ -76,6 +79,7 @@ scripts/test-portfolio.mjs
                     Playwright acceptance checks for both surfaces (see below)
 src/portfolio/      main.ts (menu, hash→details, Back) · scenes.ts (one shared
                     WebGL context, zero frames at rest) · scene-models.ts ·
+                    peek.ts + peek.css (the desktop showing through) ·
                     style.css · scenes.css
 public/scenes/      the static SVG fallback for every scene
 
@@ -164,7 +168,9 @@ must not start under reduced motion, on a coarse pointer, or on a hidden tab.
 **Storage keys:** `jl.woke` (sessionStorage, lock dismissed) · `jl.win`
 (sessionStorage, open windows and their geometry) · `jl.desk` (wallpaper) ·
 `jl.icons` (icon positions) · `jl.bt` (Berkeley-time toggle) · `jl.spots`
-(found places and walker position).
+(found places and walker position) · `jl.peek` (sessionStorage, portfolio:
+`seen` or `shut`) · `jl.through` (sessionStorage, one-shot: arrived through
+the peek, so the lock keeps its field at rest).
 
 `jl.win` is session-scoped on purpose, unlike `jl.icons` and `jl.desk`. A
 returning visitor wants the desk they arranged; they do not want five windows
@@ -239,7 +245,7 @@ npm run build                                             # includes tsc
 node ~/.claude/skills/impeccable/scripts/detect.mjs index.html desktop/index.html \
   src/style.css src/tokens.css src/portfolio/style.css src/portfolio/scenes.css
 npx vite preview --port 4173 &                            # then:
-node scripts/test-portfolio.mjs                           # 18 checks, both surfaces
+node scripts/test-portfolio.mjs                           # 22 checks, both surfaces
 ```
 
 The detector prints nothing and exits 0 when clean. The acceptance script

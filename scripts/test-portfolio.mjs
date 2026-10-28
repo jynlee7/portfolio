@@ -1,5 +1,5 @@
 /**
- * Browser acceptance checks for the portfolio and its retained playground.
+ * Browser acceptance checks for the portfolio and the desktop under it.
  * Run against a production preview after `npm run build`:
  *   PORTFOLIO_URL=http://127.0.0.1:4173 node scripts/test-portfolio.mjs
  * Uses a separately installed Playwright; no browser tooling ships in the app.
@@ -101,7 +101,7 @@ async function assertFacts(page) {
     assert.ok(text.includes(title), `Missing title: ${title}`);
   }
   assert.ok(!text.includes("Data Labeling Intern"), "Superseded SwingVision title is present");
-  for (const id of ["work", "experience", "about", "playground", "contact", "resume"]) {
+  for (const id of ["work", "experience", "about", "contact", "resume"]) {
     assert.equal(await page.locator(`[id="${id}"]`).count(), 1, `Anchor #${id}`);
   }
   for (const kind of ["tennis", "knowledge", "compute", "stadium", "protein"]) {
@@ -383,6 +383,78 @@ try {
     assert.ok(box.x + box.width <= 390, `Portfolio link overflows the bar: ${JSON.stringify(box)}`);
     await home.tap();
     await page.waitForURL(new URL("/", base).href);
+  }));
+
+  await check("The desktop stays hidden, then shows itself to a visitor who stays", () => withPage({}, async (page, { errors, requests }) => {
+    await page.clock.install();
+    await load(page);
+    assert.equal(await page.locator('a[href^="/desktop"]').count(), 0, "The portfolio links the desktop before it is found");
+    await page.clock.runFor(19_000);
+    assert.equal(await page.locator(".peek").count(), 0, "The desktop showed itself early");
+    await page.clock.runFor(1_500);
+    const peek = page.locator(".peek");
+    await peek.waitFor({ state: "visible" });
+    assert.equal(await peek.locator(".peek__bit").count(), 16 * 8);
+    assert.equal(await page.locator(".peek-status").textContent(), "There's a computer under this page.");
+    await page.clock.runFor(1_000);
+    await page.waitForTimeout(400);
+    assert.equal(await peek.getAttribute("data-state"), "open");
+    const enter = peek.getByRole("link", { name: "Go in" });
+    const box = await enter.boundingBox();
+    assert.ok(box.height >= 44, `Go in is ${box.height}px tall`);
+    assert.ok(box.x + box.width <= 1440 && box.y + box.height <= 1000, "Window runs off screen");
+    await page.screenshot({ path: `${evidence}/peek-open.png`, fullPage: false });
+    assert.ok(!requests.some((url) => /\/(?:src\/os|src\/game)\/|\/assets\/(?:desktop|rift|spots|neighborhood)[-.]/.test(url)), "Finding the desktop loaded its code early");
+    await enter.click();
+    assert.ok(await page.locator(".peek-veil__bit").count() > 100, "The screen did not turn over");
+    await page.waitForTimeout(300);
+    await page.screenshot({ path: `${evidence}/peek-veil.png`, fullPage: false });
+    await page.clock.runFor(1_000);
+    await page.waitForURL(new URL("/desktop/", base).href);
+    await page.locator("#lock").waitFor({ state: "visible" });
+    assert.deepEqual(errors, []);
+  }));
+
+  await check("Closing the desktop keeps it closed; reduced motion opens it plainly", () => withPage({ reducedMotion: "reduce" }, async (page) => {
+    await page.clock.install();
+    await load(page);
+    await page.clock.runFor(20_500);
+    const peek = page.locator(".peek");
+    await peek.waitFor({ state: "visible" });
+    assert.equal(await peek.getAttribute("data-state"), "open", "Reduced motion should open without choreography");
+    await peek.getByRole("button", { name: "Close" }).focus();
+    await page.keyboard.press("Escape");
+    assert.equal(await page.locator(".peek").count(), 0);
+    assert.ok(await page.evaluate(() => document.activeElement?.id === "main"), "Focus fell out of the page");
+    await page.reload({ waitUntil: "networkidle" });
+    await page.clock.runFor(60_000);
+    assert.equal(await page.locator(".peek").count(), 0, "A closed desktop came back in the same visit");
+  }));
+
+  await check("Go in is an ordinary link under reduced motion", () => withPage({ reducedMotion: "reduce" }, async (page) => {
+    await page.clock.install();
+    await load(page);
+    await page.clock.runFor(20_500);
+    await page.locator(".peek").getByRole("link", { name: "Go in" }).click();
+    await page.waitForURL(new URL("/desktop/", base).href);
+    assert.equal(await page.locator(".peek-veil").count(), 0);
+  }));
+
+  await check("On a 320px phone the desktop is a short strip, not a card", () => withPage({
+    viewport: { width: 320, height: 640 }, isMobile: true, hasTouch: true, reducedMotion: "reduce",
+  }, async (page) => {
+    await page.clock.install();
+    await load(page);
+    await page.clock.runFor(20_500);
+    const peek = page.locator(".peek");
+    await peek.waitFor({ state: "visible" });
+    const box = await peek.boundingBox();
+    assert.ok(box.x >= 0 && box.x + box.width <= 320, `Window overflows: ${JSON.stringify(box)}`);
+    assert.ok(box.height <= 200, `The strip takes ${box.height}px of a 640px screen`);
+    assert.equal(await peek.locator(".peek__bit").count(), 16 * 4);
+    await assertNoOverflow(page);
+    await page.screenshot({ path: `${evidence}/peek-320.png`, fullPage: false });
+    await peek.getByRole("button", { name: "Close" }).tap();
   }));
 
   await check("rift.exe direct route begins, pauses with Escape, and closes on second Escape", () => withPage({ reducedMotion: "reduce" }, async (page, { errors }) => {

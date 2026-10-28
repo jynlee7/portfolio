@@ -33,6 +33,15 @@ Much of this file was written when `index.html` *was* the desktop:
       thumb has not tried it.
 - [ ] **Open Graph image** (below) should now be a portfolio composition, not
       the desktop's field.
+- [ ] **Tune the peek's 20 seconds with Jayden.** `DWELL` in
+      `src/portfolio/peek.ts`. It is the only way into the desktop from `/`
+      now — the Playground section and the "Explore the desktop" link came
+      out on 28 Oct 2026 so the desktop is found, not advertised. If he wants
+      an always-there door back, the old section is in git history
+      (`4f8c1f2`, `scripts/portfolio.mjs`).
+- [ ] **Watch the peek on a real phone.** The strip sits at the bottom of the
+      screen; check it never covers the résumé button on a short phone held
+      at the top of the page, and that the bits turn over smoothly.
 - [ ] **The menubar's way home on phones.** Below 400px the brand menu shows
       only its JL mark so that "Portfolio" and the clock fit. Revisit if the
       bar gains another item.

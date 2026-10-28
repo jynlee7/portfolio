@@ -1,6 +1,7 @@
 import "./style.css";
 import "./scenes.css";
 import { initScenes } from "./scenes";
+import { initPeek } from "./peek";
 
 const menuButton = document.querySelector<HTMLButtonElement>("[data-menu-toggle]");
 const navigation = document.getElementById("portfolio-nav");
@@ -137,6 +138,8 @@ window.addEventListener("hashchange", () => {
 
 if (location.hash) reveal(decodeHash(location.hash), false, false);
 history.replaceState(snapshot(), "");
+
+initPeek();
 
 let disposeScenes = initScenes();
 window.addEventListener("pagehide", () => disposeScenes());
