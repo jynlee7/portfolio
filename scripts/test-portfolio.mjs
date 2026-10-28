@@ -331,7 +331,7 @@ try {
     const stats = await page.evaluate(() => window.__portfolioTest);
     assert.equal(stats.contexts, 1, `Expected one shared WebGL context: ${JSON.stringify(stats)}`);
     assert.deepEqual(errors, []);
-    assert.ok(!requests.some((url) => /\/(?:src\/os|src\/game)\/|\/assets\/(?:desktop|rift|spots|neighborhood)[-.]/.test(url)), "Homepage requested desktop/game code");
+    assert.ok(!requests.some((url) => /\/src\/os\/|\/assets\/desktop[-.]/.test(url)), "Homepage requested desktop code");
     const resources = await page.evaluate(() => performance.getEntriesByType("resource").map((entry) => ({ url: entry.name, bytes: entry.decodedBodySize, transfer: entry.transferSize, duration: entry.duration })));
     measurements.interactive = { ...stats, resources };
     return { contexts: stats.contexts, cls: stats.shifts, scriptBytes: resources.filter((r) => /\.js$/.test(r.url)).reduce((sum, r) => sum + r.bytes, 0) };
@@ -347,23 +347,13 @@ try {
     await assertNoOverflow(page);
   }));
 
-  await check("Desktop return link and spots.map direct route preserve navigation", () => withPage({ reducedMotion: "reduce" }, async (page, { errors }) => {
-    await load(page, "/desktop/#spots");
+  await check("A desktop deep link skips the lock, opens its window, and leads home", () => withPage({ reducedMotion: "reduce" }, async (page, { errors }) => {
+    await load(page, "/desktop/#about");
     assert.equal(await page.locator("#lock").count(), 0, "A deep link should not land behind the lock screen");
+    await page.locator('.win[data-win="about"]').waitFor({ state: "visible" });
     const returnLink = page.locator(".menubar__link--home");
     assert.ok(await returnLink.isVisible(), "Desktop needs a visible return to portfolio");
-    await page.locator(".plan__walker").waitFor({ state: "visible" });
-    // The D-pad is coarse-pointer only (GAME.md); a fine pointer walks by keyboard.
-    assert.equal(await page.getByRole("button", { name: "Walk north", exact: true }).isVisible(), false);
-    const walker = page.locator(".plan__walker");
-    const before = await walker.getAttribute("style");
-    await page.locator(".plan__layer").focus();
-    for (const key of ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"]) {
-      await page.keyboard.press(key);
-      if (await walker.getAttribute("style") !== before) break;
-    }
-    assert.notEqual(await walker.getAttribute("style"), before, "Map movement did not update walker");
-    await page.screenshot({ path: `${evidence}/desktop-spots.png`, fullPage: false });
+    await page.screenshot({ path: `${evidence}/desktop-deep-link.png`, fullPage: false });
     assert.deepEqual(errors, []);
     await returnLink.click();
     await page.waitForURL(new URL("/", base).href);
@@ -404,7 +394,7 @@ try {
     assert.ok(box.height >= 44, `Go in is ${box.height}px tall`);
     assert.ok(box.x + box.width <= 1440 && box.y + box.height <= 1000, "Window runs off screen");
     await page.screenshot({ path: `${evidence}/peek-open.png`, fullPage: false });
-    assert.ok(!requests.some((url) => /\/(?:src\/os|src\/game)\/|\/assets\/(?:desktop|rift|spots|neighborhood)[-.]/.test(url)), "Finding the desktop loaded its code early");
+    assert.ok(!requests.some((url) => /\/src\/os\/|\/assets\/desktop[-.]/.test(url)), "Finding the desktop loaded its code early");
     await enter.click();
     assert.ok(await page.locator(".peek-veil__bit").count() > 100, "The screen did not turn over");
     await page.waitForTimeout(300);
@@ -457,27 +447,6 @@ try {
     await peek.getByRole("button", { name: "Close" }).tap();
   }));
 
-  await check("rift.exe direct route begins, pauses with Escape, and closes on second Escape", () => withPage({ reducedMotion: "reduce" }, async (page, { errors }) => {
-    await load(page, "/desktop/#rift");
-    const begin = page.getByRole("button", { name: "Begin run", exact: true });
-    await begin.waitFor({ state: "visible" });
-    assert.equal(await framesDuringRest(page), 0, "Opening rift started an idle loop");
-    await begin.click();
-    await page.waitForTimeout(200);
-    assert.ok(await framesDuringRest(page, 200) > 0, "The running game did not animate");
-    await page.keyboard.press("Escape");
-    const resume = page.getByRole("button", { name: "Resume", exact: true });
-    await resume.waitFor({ state: "visible" });
-    assert.equal(await framesDuringRest(page), 0, "Paused game kept animating");
-    await page.screenshot({ path: `${evidence}/desktop-rift-paused.png`, fullPage: false });
-    await page.keyboard.press("Escape");
-    assert.ok(!(await resume.isVisible()), "Second Escape did not close the game");
-    assert.equal(await framesDuringRest(page), 0, "Closed game kept animating");
-    assert.deepEqual(errors, []);
-  }, async (page) => {
-    await instrument(page);
-    await page.addInitScript(() => sessionStorage.setItem("jl.woke", "1"));
-  }));
 } finally {
   await browser.close();
   const report = { url: base, date: new Date().toISOString(), results, measurements };

@@ -6,7 +6,11 @@ The homepage is now the portfolio (`/`), and the desktop moved to `/desktop/`.
 Much of this file was written when `index.html` *was* the desktop:
 
 - Anything below that says "in `index.html`" about the lock, menubar, dock,
-  folders, windows or games now means **`desktop/index.html`**.
+  folders or windows now means **`desktop/index.html`**.
+- **Both games are deferred to issue #4.** `rift.exe` and `spots.map` are out
+  of the tree; the code, contracts and tests are on branch
+  `archive/desktop-games`. Their open work (rift's touch controls and balance,
+  the places list for spots) lives in the issue, not here.
 - **Item 1 (screenshots) has changed shape.** The striped screenshot wells are
   gone: the desktop's project documents are generated from
   `content/portfolio.mjs` by `scripts/desktop-docs.mjs`, and the portfolio
@@ -131,19 +135,11 @@ Uncomment all three and it is back, in the palette too, since that index is
 read from the DOM. **Do not write his principles for him** — the format guide
 is in the scaffold, and it is a good one.
 
-### 5. The places in `spots.map` — blocking
+### 5. The places in `spots.map` — deferred with the game
 
-**This is the one that stops the game shipping.** `content/spots.md` is in the
-repo with a heading, a draft band, and zero entries, because every place in it
-is a fact about Jayden and nothing on this site invents those. Until he writes
-it, the map draws vacant storefronts and says so.
-
-The format is in `GAME.md` §3. Per place: a `##` line with the name, one short
-line naming the dish, then a sentence or two about it. No coordinates — entries
-fill the storefronts in the order they are written. Twelve or so is the size the
-map is drawn for; fewer is fine.
-
-**Do not write this list for him.**
+The game is deferred to issue #4, and `content/spots.md` went with it. When it
+comes back, the list is still Jayden's to write and still the one thing that
+stops it shipping. **Do not write this list for him.**
 
 ### 6. Any more tools for the list in `about.txt`
 
@@ -188,33 +184,7 @@ headless Chromium reports `pointer: fine` and no motion preference:
 - Touch / coarse pointer — the live field is off, dock magnification is off,
   and icons stay in the fixed grid rather than becoming draggable.
 
-Worth ten minutes on a real phone and with the OS setting toggled. This now also
-covers `spots.map`, where the walker should jump between cells rather than
-sliding, and every storefront must stay tappable at 44px in the mobile sheet.
-
-### `rift.exe` — touch controls and a real-device pass
-
-Added this session at the user's request: a fullscreen skirmish, full contract
-in `RIFT.md`. Playable end to end on keyboard + mouse (both control schemes),
-but two things are intentionally short of shippable:
-
-- **Touch controls (M4 in `RIFT.md` §7).** `(pointer: coarse)` currently shows
-  an honest notice instead of a keyboard, and click-to-move degrades to
-  something playable via tap, but `Q`/`W`/`E`/`R` have no on-screen buttons.
-  Needs an ability D-pad sized like `spots.map`'s, `≥44px`, coarse-pointer only.
-- **A real-device pass.** Same standing limitation as everywhere else on this
-  page: headless Chromium reports `pointer: fine` and cannot force
-  `prefers-reduced-motion`, so calm mode (telegraph opacity held flat instead
-  of ramping) has only been verified by reading the code, not by toggling the
-  OS setting on a real device.
-
-Also worth Jayden's own hands-on pass rather than more scripted testing:
-**balance.** A player who never dodges and never fights back dies to wave 1's
-three rushers in a few seconds — expected, since standing still is not how
-the game is meant to be played — but nobody has played it end to end the way
-a real visitor would (moving, dodging telegraphs, actually casting). The wave
-table, enemy stats, and augment multipliers in `src/game/rift/units.ts`,
-`waves.ts`, and `sim.ts`'s `applyAugment` are a first pass, not a tuned one.
+Worth ten minutes on a real phone and with the OS setting toggled.
 
 ### Confirm the résumé window previews inline
 
@@ -299,10 +269,9 @@ site, and the canonical URL is the apex with no redirect hop.
       crawlable. If it carries a phone number or home address, ship a scrubbed
       public copy and keep the full one for direct sends. It currently carries
       the phone number.
-- [ ] **`spots.map` still ships its draft band**, by decision on 25 Aug 2026: an
-      empty map with vacant storefronts is a working feature that says so,
-      which is not the same failure as template text. It goes away when
-      `content/spots.md` is written.
+- [ ] **`spots.map` still ships its draft band** on production, by decision
+      on 25 Aug 2026. The game is deferred (issue #4) and is gone from the
+      tree, so it leaves production when #2 is deployed.
 
 ---
 
@@ -311,12 +280,6 @@ site, and the canonical URL is the apex with no redirect hop.
 **Analytics.** Still not wanted. Deployment is no longer in this list — see
 "Going live" above.
 
-**A leaderboard or a share string for `spots.map` — or for `rift.exe`.** Same
-reasoning both times: these are toys on a portfolio, not a product, and
-`rift.exe`'s "best" is a personal best saved locally, never submitted or
-compared to anyone else's. Nothing about either game should ask for a second
-visit it has not earned.
-
 **Icon dragging on mobile.** The home-screen grid is fixed on purpose: a layout
 a stray thumb can smear out of alignment is worse than one that cannot move.
 Revisit only if asked.
@@ -324,12 +287,13 @@ Revisit only if asked.
 <!-- handoff:start:state -->
 ## Handoff state — 28 Oct 2026
 
-Committed on `feature/portfolio-homepage` and opened as a PR against `main`:
-rift.exe and the palette/status modules (previously uncommitted on
-`feature/rift-exe`), the portfolio homepage with the desktop moved to
-`/desktop/`, and the docs for the split. `npm run build` passes, the
-Impeccable detector is clean, and `scripts/test-portfolio.mjs` passes 18/18
-against `vite preview`.
+Committed on `feature/portfolio-homepage` as PR #2 against `main`: the
+palette/status modules, the portfolio homepage with the desktop moved to
+`/desktop/`, the peek, and the docs for the split. Both games were deferred
+to issue #4 at the end of the session and removed from the branch; they are
+preserved on `archive/desktop-games`. `npm run build` passes, the Impeccable
+detector is clean, and `scripts/test-portfolio.mjs` passes 21/21 against
+`vite preview`.
 
 Left **uncommitted on purpose**: `content/principles.md`, which carries
 Jayden's own unfinished edit ("I like") to a document that is off the page.

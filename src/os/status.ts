@@ -6,9 +6,7 @@
  * was the only way it was reported. A visitor driving this with a screen
  * reader pressed Return on `resume.pdf` and heard nothing at all.
  *
- * One region, not one per feature. `spots.map` keeps its own (`plan__say`)
- * because it narrates a running game and would otherwise fight the desktop for
- * the same channel; everything OS-shaped shares this one.
+ * One region, not one per feature: everything OS-shaped shares this one.
  *
  * Announcements are debounced to the trailing message. A burst — closing five
  * windows at once — should say one true thing, not read five filenames at

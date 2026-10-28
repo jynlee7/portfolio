@@ -115,32 +115,18 @@ The lock screen's entrance resolves the field level by level (deepest first),
 then hands off to the live canvas so the two never animate the same contours
 at once.
 
-`spots.map` is the one interactive surface besides the field, and it spends no
-part of this budget: it has no animation loop at all. Walking is a discrete grid
-step, the walker is a DOM element moved by a CSS transform transition on the
-compositor, and the map repaints once per step and only when something was
-actually discovered. An idle open window requests zero frames. Its contract is
-`GAME.md`.
-
 The window gestures and the command palette spend no part of the budget either.
 Zoom, resize and minimise are direct manipulation — geometry written once per
 event, nothing tweened by script — and the palette is a single 140ms fade. Both
 were measured at zero `requestAnimationFrame` calls over three idle seconds
-with a document window and the game window open.
+with a document window open.
 
-**Amendment: `rift.exe` runs a second loop, by explicit request.** This
-budget was written when the only interactive surfaces were the field and
-`spots.map`, and it said "no room for a second authored moment" because
-neither of those needed one. `rift.exe` — a real-time skirmish added later,
-at the user's direction — does: dodging a skillshot is not a discrete-step
-action the way walking a block is. The rule that actually mattered was never
-"nothing may ever run a frame," it was **zero frames at rest**, and
-`rift.exe` holds that line the way `flow.ts` does: its loop starts only on an
-explicit "Begin run" press, never on window open, and stops hard on the run
-ending, on pause, on losing focus, on a hidden tab, or on the window closing.
-An idle or paused `rift.exe` window costs the same zero frames as an idle
-`spots.map` window. Full accounting, including why this is a genre that
-needs a loop and `spots.map` genuinely did not, lives in `RIFT.md`.
+**The games are deferred.** `spots.map` (no loop at all) and `rift.exe` (a
+second loop, scoped to a live run, by amendment to this budget) came off the
+desktop on 28 Oct 2026. Their contracts and this section's amendment are on
+branch `archive/desktop-games`; issue #4 is the brief. If either returns, its
+contract returns with it — this budget does not stretch to cover a game on
+its own.
 
 ## Chrome that is not on the desk
 

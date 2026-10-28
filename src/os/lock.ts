@@ -26,7 +26,7 @@ export function initLock(): void {
        over. */
   }
 
-  // A deep link (/desktop/#rift, from the portfolio's playground) is a visitor
+  // A deep link (/desktop/#resume, from an email or an application) is a visitor
   // who already chose a door. Making them wake the machine first would put
   // the window they asked for behind a screen they did not.
   const target = location.hash.slice(1);

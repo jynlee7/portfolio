@@ -55,9 +55,9 @@ Nothing on the page links to `/desktop/`.
   canvases on demand: on first view, on drag, on a rotate button. No frame is
   requested while nothing moves, offscreen, on a hidden tab, or under reduced
   motion — and under reduced motion Three.js is never downloaded.
-- **The homepage never loads desktop or game code.** Two Vite entries
+- **The homepage never loads desktop code.** Two Vite entries
   (`index.html`, `desktop/index.html`); `scripts/test-portfolio.mjs` asserts
-  no `/src/os/` or `/src/game/` request on `/`.
+  no `/src/os/` request on `/`.
 - **Touch targets ≥44px** for every control, including the scene buttons.
 
 ## The computer under the page

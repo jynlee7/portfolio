@@ -78,10 +78,6 @@ const WIDTH: Record<string, string> = {
   experience: "44rem",
   clinical: "46rem",
   chessblitz: "46rem",
-  // Wider than the documents: the plan is 28 cells across with the readout
-  // beside it, and the blocks stop reading as buildings once a cell is under
-  // about 20px.
-  spots: "56rem",
 };
 
 export function openDoc(id: string): void {
@@ -120,24 +116,16 @@ export function openDoc(id: string): void {
   body.className = "win__body";
 
   if (article.classList.contains("doc--pdf")) win.classList.add("win--pdf");
-  if (article.classList.contains("doc--game")) win.classList.add("win--game");
-  // Fullscreen: pinned to the viewport by the stylesheet, the way .desk
-  // itself (also position:fixed, no transform) already lets a fixed child
-  // escape to the viewport below 780px for the bottom sheet.
-  if (article.classList.contains("doc--full")) win.classList.add("win--full");
 
   win.append(bar, body);
   body.append(article);
   desk().append(win);
 
-  const full = win.classList.contains("win--full");
-
   // Below 780px a window is a bottom sheet pinned to all four edges by the
-  // stylesheet, and a full window is pinned the same way at every width —
-  // in both cases there is no cascade to place it in, and writing inline
-  // left/top/maxHeight here would beat that rule the same way it would beat
-  // the bottom-sheet rule below 780px.
-  if (!sheet() && !full) {
+  // stylesheet, and there is no cascade to place it in. Writing inline left/top
+  // here would beat that rule — the sheet would start at the cascade origin,
+  // keep its full width, and hang off the right of the screen.
+  if (!sheet()) {
     const width = win.getBoundingClientRect().width;
     const { x, y } = place(width);
     win.style.left = `${x}px`;
@@ -154,8 +142,7 @@ export function openDoc(id: string): void {
 
   bar.querySelector(".win__close")?.addEventListener("click", () => closeDoc(id));
   win.addEventListener("pointerdown", () => bringToFront(win));
-  // Nothing pinned to the viewport is draggable.
-  if (!full) makeDraggable(win, bar);
+  makeDraggable(win, bar);
 }
 
 export function closeDoc(id: string): void {

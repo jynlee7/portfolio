@@ -98,7 +98,7 @@ export const projects = [
     id: "site", name: "This little corner of the internet", category: "Personal website", scene: "field", theme: "field",
     summary: "A portfolio. A playground. A work in progress.",
     description: "A TypeScript portfolio exploring interactive graphics and coordinated AI development.",
-    paragraphs: ["Built with Vite and TypeScript, with shared content, written specifications, and distinct portfolio and desktop experiences.", "The original desktop still runs underneath the portfolio: a contour field, movable windows, and two browser games. The portfolio's 3D illustrations use Three.js and retain static alternatives."],
+    paragraphs: ["Built with Vite and TypeScript, with shared content, written specifications, and distinct portfolio and desktop experiences.", "The original desktop still runs underneath the portfolio: a contour field and movable windows. The portfolio's 3D illustrations use Three.js and retain static alternatives."],
     stack: ["TypeScript", "Vite", "Three.js", "Claude Code / Codex"],
     proof: "You're looking at it.",
     // No link to /desktop/ on purpose: it shows itself to whoever stays a

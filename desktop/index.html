@@ -7,7 +7,7 @@
     <title>Jayden Lee · Desktop playground</title>
     <meta
       name="description"
-      content="An interactive desktop playground by Jayden Lee. Explore the portfolio, games, and contour field."
+      content="An interactive desktop playground by Jayden Lee. Explore the portfolio and the contour field."
     />
     <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
     <link
@@ -159,38 +159,6 @@
           />
         </symbol>
 
-        <!-- rift.exe: a miniature of what's actually drawn inside the game
-             rather than a generic gamepad or joystick glyph — a hexagon for
-             the boss/arena shape src/os/rift.ts draws enemies and the field
-             in, and the same disc-plus-facing-tick the player is rendered
-             as on the canvas itself. -->
-        <symbol id="i-rift" viewBox="0 0 40 34">
-          <rect
-            x="2"
-            y="3"
-            width="36"
-            height="28"
-            rx="2.5"
-            fill="#fbfaf7"
-            stroke="#8d8a80"
-            stroke-width="1.4"
-          />
-          <path
-            d="M20 8 28 12.5 28 21.5 20 26 12 21.5 12 12.5Z"
-            fill="none"
-            stroke="#8d8a80"
-            stroke-width="1.4"
-            stroke-linejoin="round"
-          />
-          <circle cx="16" cy="15.5" r="2.6" fill="var(--accent-deep)" />
-          <path
-            d="M16 15.5 21 13"
-            stroke="var(--accent-deep)"
-            stroke-width="1.6"
-            stroke-linecap="round"
-          />
-        </symbol>
-
         <!-- Dock tiles: the tools Jayden builds with. Brand marks, so they
              keep their own colours instead of the sprite's indigo grammar.
              Display only — none of them launches anything. Glyph paths for
@@ -301,19 +269,6 @@
         </div>
 
         <div class="menu" data-menu>
-          <button class="menu__trigger" type="button" aria-expanded="false">Play</button>
-          <div class="menu__drop" role="menu">
-            <button type="button" role="menuitem" data-open="spots">spots.map</button>
-            <div class="menu__sep"></div>
-            <button type="button" role="menuitem" data-action="spots-reset">Start the walk over</button>
-            <div class="menu__sep"></div>
-            <button type="button" role="menuitem" data-open="rift">rift.exe</button>
-            <div class="menu__sep"></div>
-            <button type="button" role="menuitem" data-action="rift-reset">Reset the rift</button>
-          </div>
-        </div>
-
-        <div class="menu" data-menu>
           <button class="menu__trigger" type="button" aria-expanded="false">View</button>
           <div class="menu__drop" role="menu">
             <button type="button" role="menuitemradio" data-desk="lab">Lab<span class="menu__key">bone</span></button>
@@ -409,18 +364,9 @@
           <span class="icon__label">about.txt</span>
         </button>
 
-        <!-- The one icon on the desk that isn't a work artifact — placed
-             last, after everything the scan path in PRODUCT.md actually
-             cares about, so it never competes with the résumé for a
-             ninety-second visitor's attention. -->
-        <button class="icon" type="button" role="listitem" data-open="rift">
-          <span class="icon__art"><svg viewBox="0 0 40 34"><use href="#i-rift" /></svg></span>
-          <span class="icon__label">rift.exe</span>
-        </button>
-
         <!-- Written in content/principles.md, not here. Deliberately absent
-             from the dock: the dock's job is the work artifacts, the game and
-             the mail link, and principles.txt is a document you read once.
+             from the dock: the dock's job is the work artifacts and the mail
+             link, and principles.txt is a document you read once.
 
              Hidden 25 Aug 2026 while the prose is still the scaffold — see
              vite.config.mjs. Restore this button with the entry there.
@@ -458,35 +404,6 @@
           <p class="wx__temp num"><span id="wx-temp">—</span>°<span class="wx__unit">F</span></p>
           <p class="wx__cond" id="wx-cond">Loading…</p>
         </div>
-
-        <!-- The game's only launcher, and deliberately the quietest thing on
-             the rail: the plan, two numbers, and no line of explanation. It is
-             the same block plan src/game/neighborhood.ts draws, at 1/20th the
-             size, so the tile is a small picture of the actual place rather
-             than a generic map glyph. Opening it is wired by initLaunchers,
-             which binds every [data-open] that is not a desktop icon. -->
-        <button class="widget widget--spots" type="button" data-open="spots" aria-label="Open spots.map">
-          <span class="widget__title">Spots</span>
-          <svg class="spots__mini" viewBox="0 0 28 18" aria-hidden="true" focusable="false">
-            <g fill="var(--chrome-dim)" stroke="var(--bevel-dark)" stroke-width="0.4">
-              <rect x="2" y="2" width="6" height="4" />
-              <rect x="10" y="2" width="6" height="4" />
-              <rect x="18" y="2" width="8" height="4" />
-              <rect x="2" y="8" width="6" height="4" />
-              <rect x="10" y="8" width="6" height="4" />
-              <rect x="18" y="8" width="8" height="4" />
-              <rect x="2" y="14" width="6" height="2" />
-              <rect x="10" y="14" width="6" height="2" />
-              <rect x="18" y="14" width="8" height="2" />
-            </g>
-            <rect x="10" y="4" width="1" height="1" fill="var(--accent)" />
-          </svg>
-          <span class="spots__tally">
-            <span class="num" id="spots-found">0</span>
-            <span class="spots__of">of</span>
-            <span class="num" id="spots-total">0</span>
-          </span>
-        </button>
       </aside>
     </main>
 
@@ -547,81 +464,6 @@
 
       <!-- ---------------- resume.pdf ---------------- -->
       <!-- @portfolio-doc resume -->
-
-      <!-- ---------------- spots.map ----------------
-           The map is built by src/os/spots.ts into the empty .plan mount, and
-           the list of places is compiled into the @spots marker from
-           content/spots.md at build time. Without JS the mount is hidden and
-           the list is simply a list, which is what it is — the game is a way
-           of reading it one at a time, not a substitute for it. -->
-      <article class="doc doc--game" id="doc-spots" data-title="spots.map" data-meta="one neighborhood">
-        <h2 class="doc__h1">spots.map</h2>
-        <p class="doc__lede">
-          A few blocks of Berkeley, and what I ate on them. Walk it and the
-          places open one at a time.
-        </p>
-
-        <!-- @spots -->
-
-        <div class="plan"></div>
-
-        <p>
-          Every place on this map is somewhere I actually went, written up in
-          one file I edit by hand. Nothing here is generated and there are no
-          filler entries — where I have not written anything, the storefront
-          stands empty and the map says so rather than inventing a restaurant
-          to fill the gap. That constraint is most of why it is worth walking.
-        </p>
-        <p>
-          It is a map rather than a list because a list gets skimmed. Twelve
-          names and twelve one-line reviews are four seconds of scrolling and
-          nothing retained. Making you walk two blocks to the next one buys
-          each place the few seconds it takes to actually read it, which is the
-          only thing I wanted from the format.
-        </p>
-        <p>
-          There is no score, no timer and no way to lose, and it does not ask
-          you to come back tomorrow. Walking is one keypress per block, the map
-          redraws only when you find something, and nothing on this page
-          animates while you are standing still.
-        </p>
-      </article>
-
-      <!-- ---------------- rift.exe ----------------
-           The one other requestAnimationFrame loop on this desktop besides
-           the pointer-driven field, and it runs only while a run is actually
-           being played — see RIFT.md before touching src/os/rift.ts or the
-           cadence anything under src/game/rift/ fires on.
-
-           Opens through the .win--full variant of the window frame (see the
-           doc--full relay in src/os/windows.ts and the "rift.exe" block in
-           src/style.css) instead of the ordinary cascaded window everything
-           else on this desktop uses, which is why it needs its own prose
-           here rather than the .win--game modifier spots.map uses. -->
-      <article class="doc doc--full" id="doc-rift" data-title="rift.exe" data-meta="10 waves + boss">
-        <h2 class="doc__h1">rift.exe</h2>
-        <p class="doc__lede">
-          A fullscreen skirmish on the same loss surface the wallpaper draws.
-          Dodge skillshots, cast your own, and clear ten waves and the boss
-          waiting behind them.
-        </p>
-
-        <div class="rift"></div>
-
-        <p>
-          Everything in it is original: one playable unit with its own kit,
-          an original roster of enemies, and fourteen augments named for the
-          field itself. Nothing here is licensed art, a borrowed name, or a
-          call to Riot's own API — the arena is drawn from the same code that
-          draws this desktop's wallpaper.
-        </p>
-        <p>
-          A run is ten waves and a boss, about three to five minutes, with an
-          ending you can actually reach: win or die, then it is over. Level up
-          on every wave clear, and pick from three augments at levels two,
-          four, six and eight.
-        </p>
-      </article>
 
     </div>
 

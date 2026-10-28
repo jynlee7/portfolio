@@ -6,7 +6,7 @@ right one before touching any UI:
 | URL | What it is | Contract |
 | --- | --- | --- |
 | `/` | **The portfolio.** An editorial page: hero, work, experience, about, contact. | `DESIGN.md` |
-| `/desktop/` | **Jayden's desktop.** The original OS — lock screen, menubar, windows, dock, two games. | `docs/DESKTOP_DESIGN.md` |
+| `/desktop/` | **Jayden's desktop.** The original OS — lock screen, menubar, windows, dock. | `docs/DESKTOP_DESIGN.md` |
 
 ## What this is
 
@@ -23,8 +23,14 @@ contour map of a two-minimum loss surface. **Nothing on the portfolio links
 to it.** After 20 s on the page, a corner comes apart in bits to show the
 desktop's field underneath, and "Go in" turns the whole screen over into it
 (`src/portfolio/peek.ts`; DESIGN.md, "The computer under the page"). Direct
-URLs (`/desktop/`, `/desktop/#spots`, `/desktop/#rift`) still work, and its
-menubar carries a **Portfolio** link home at every width.
+URLs (`/desktop/`, `/desktop/#resume`) still work, and its menubar carries a
+**Portfolio** link home at every width.
+
+**The desktop's two games are deferred** (28 Oct 2026, issue #4): `rift.exe`
+and `spots.map` came out of the tree, with their contracts (`RIFT.md`,
+`GAME.md`), their tests and the `win--full`/`win--game` window variants only
+they used. Everything is on branch `archive/desktop-games` exactly as it ran;
+the issue is the brief for bringing them back. Do not re-add either piecemeal.
 
 Everything below headed "Conventions that matter" was written for the desktop
 and still governs `/desktop/`. It does not govern `/`.
@@ -97,25 +103,12 @@ src/os/palette.ts   initPalette (⌘K; index derived from the DOM, never authore
 src/os/status.ts    initStatus, say (the desktop's one live region)
 src/os/widgets.ts   initWeather (Open-Meteo, Berkeley)
 src/os/flow.ts      initFlow (pointer-driven live wallpaper)
-src/os/spots.ts     initSpots (spots.map — the walk-around game; no loop)
-src/os/rift.ts      initRift (rift.exe — fullscreen skirmish; the one other
-                    requestAnimationFrame loop, scoped to a live run only)
 src/field/core.ts   the scalar field — shared by generator AND runtime
-src/game/neighborhood.ts
-                    spots.map's block plan — pure geometry, no DOM
-src/game/rift/      rift.exe's pure sim — types, units, waves, augments, sim,
-                    validate; no DOM, Node-runnable like neighborhood.ts
-content/spots.md    the places. Jayden's to write.
-scripts/spots.mjs   compiles spots.md into the article at build time
 scripts/field.mjs   writes public/field-{lab,slate,blueprint}.svg
 ```
 
-`GAME.md` is `spots.map`'s contract; `RIFT.md` is `rift.exe`'s. They disagree
-on whether a game may run a loop, on purpose — see `RIFT.md`'s "The
-amendment" section before assuming either file speaks for the other.
-
-`PRODUCT.md` product truth · `DESIGN.md` visual contract · `GAME.md`
-spots.map's contract · `RIFT.md` rift.exe's contract · `TODO.md` what's left.
+`PRODUCT.md` product truth · `DESIGN.md` visual contract ·
+`docs/DESKTOP_DESIGN.md` the desktop's · `TODO.md` what's left.
 
 ## Conventions that matter
 
@@ -167,8 +160,8 @@ must not start under reduced motion, on a coarse pointer, or on a hidden tab.
 
 **Storage keys:** `jl.woke` (sessionStorage, lock dismissed) · `jl.win`
 (sessionStorage, open windows and their geometry) · `jl.desk` (wallpaper) ·
-`jl.icons` (icon positions) · `jl.bt` (Berkeley-time toggle) · `jl.spots`
-(found places and walker position) · `jl.peek` (sessionStorage, portfolio:
+`jl.icons` (icon positions) · `jl.bt` (Berkeley-time toggle) · `jl.peek`
+(sessionStorage, portfolio:
 `seen` or `shut`) · `jl.through` (sessionStorage, one-shot: arrived through
 the peek, so the lock keeps its field at rest).
 
@@ -198,15 +191,6 @@ it (and returns focus to its trigger), and only then does the window manager
 see it and close the frontmost window. A new Escape handler must place itself
 in that order deliberately or it will close a window somebody was not closing.
 
-**The games have their own contracts: read `GAME.md` or `RIFT.md` before
-touching either.** Short version: `spots.map` never touches the wallpaper,
-has no `requestAnimationFrame` loop of any kind, and every place in it is
-real and written by Jayden in `content/spots.md` — changing it never means
-regenerating an SVG. `rift.exe` is the opposite kind of game on purpose: it
-runs the desktop's other loop, but only while a run is actively being
-played, and it draws its arena *from* the wallpaper's own field rather than
-avoiding it. Neither file's rules generalize to the other's game.
-
 ## Verifying work
 
 Headless browser at `~/.claude/skills/gstack/browse/dist/browse`.
@@ -220,7 +204,7 @@ $B js "document.getElementById('lock').click(); 1"
 $B screenshot /tmp/shot.png   # full-page; only /tmp or the repo are writable
 ```
 
-A deep link into the desktop (`/desktop/#rift`, any `#id` with a `doc-id`)
+A deep link into the desktop (`/desktop/#resume`, any `#id` with a `doc-id`)
 skips the lock screen on purpose — the visitor already chose a door.
 
 Hard-won gotchas:
@@ -245,7 +229,7 @@ npm run build                                             # includes tsc
 node ~/.claude/skills/impeccable/scripts/detect.mjs index.html desktop/index.html \
   src/style.css src/tokens.css src/portfolio/style.css src/portfolio/scenes.css
 npx vite preview --port 4173 &                            # then:
-node scripts/test-portfolio.mjs                           # 22 checks, both surfaces
+node scripts/test-portfolio.mjs                           # 21 checks, both surfaces
 ```
 
 The detector prints nothing and exits 0 when clean. The acceptance script
