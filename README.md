@@ -1,60 +1,67 @@
-# portfolio
+# Jayden Lee
 
-Personal site for Jayden Lee — a desktop the visitor operates rather than a page
-they scroll. Lock screen, menu bar, dock, and documents that open as draggable
-windows, over a contour field that deforms under the pointer.
+My personal website: projects, experience, and an interactive desktop.
+Built with TypeScript, CSS, and Vite, with Three.js for interactive illustrations.
 
-Static site. Vite and TypeScript, no framework, no runtime dependencies.
+[Visit the site](https://jaydenelee.com) · [Explore the desktop](https://jaydenelee.com/desktop/) · [Résumé](https://jaydenelee.com/resume.pdf)
 
-## Running it
+## About
+
+The site has two views:
+
+- **`/`** — a portfolio of projects and experience, with interactive 3D illustrations.
+- **`/desktop/`** — a desktop interface with draggable windows, a command palette, and a generated contour wallpaper. Its documents remain readable without JavaScript.
+
+Both views draw their projects, roles, and profile from [`content/portfolio.mjs`](content/portfolio.mjs).
+
+## Run locally
+
+Use Node.js 24 or newer and npm. The build tools import TypeScript directly;
+this repo is currently developed with Node.js 25.3.0.
 
 ```sh
-npm install
-npm run dev      # vite dev server
-npm run build    # tsc, then a production build into dist/
-npm run preview  # serve the built output
+git clone https://github.com/jynlee7/portfolio.git
+cd portfolio
+npm ci
+npm run dev
 ```
 
-Node 20 or newer.
+Open [localhost:5173](http://localhost:5173) for the homepage or
+[localhost:5173/desktop/](http://localhost:5173/desktop/) for the desktop.
 
-## How it fits together
+| Command | Description |
+| --- | --- |
+| `npm run dev` | Start the development server |
+| `npm run build` | Check TypeScript and build both views into `dist/` |
+| `npm run preview` | Serve the production build locally |
+| `node scripts/field.mjs` | Regenerate the static contour wallpapers |
 
+## Project structure
+
+```text
+content/                Shared portfolio data and written documents
+scripts/portfolio.mjs   Homepage markup renderer
+scripts/desktop-docs.mjs Desktop document renderer
+src/portfolio/          Homepage styles, interactions, and 3D scenes
+src/os/                 Desktop interactions and window management
+src/field/core.ts       Shared field for static and animated wallpapers
+public/                 Résumé, fonts, images, and wallpapers
+index.html              Homepage entry
+desktop/index.html      Desktop entry
 ```
-index.html        every document, as plain semantic HTML
-src/main.ts       boots the desktop and handles /#deeplinks
-src/os/           lock screen, menu bar, dock, window manager, widgets
-src/field/core.ts the contour field — one module, two renderers
-src/style.css     all styling; src/tokens.css holds the design tokens
-scripts/field.mjs renders the field to static SVG wallpaper
-public/           résumé PDF, wallpapers, favicon
-```
 
-Two decisions worth knowing before changing anything:
+Desktop windows move the original articles rather than copying them, keeping
+one copy of each document. The static wallpaper and live canvas share the same
+field generator; regenerate the wallpapers after changing `src/field/core.ts`.
 
-**The desktop is an enhancement.** Documents live in `index.html` as ordinary
-articles. A script in the `<head>` adds a `js` class, and only then does the
-stylesheet arrange them into a desktop. If the script fails, the visitor gets a
-plain vertical page with every fact intact — they lose the metaphor, never the
-content.
+## Documentation
 
-**Windows move the article, they don't clone it.** Opening a document relocates
-its `<article>` into the window frame and closing puts it back, so each fact
-exists exactly once in the DOM and the window can't drift from the fallback.
-
-The wallpaper follows the same rule: `scripts/field.mjs` and the live canvas
-both draw from `src/field/core.ts`, so the static SVG that paints before
-JavaScript runs matches the animated one. Regenerate with `node scripts/field.mjs`
-after changing the field — it's deterministic, so identical input gives
-identical bytes.
-
-## Project docs
-
-- [`CHANGELOG.md`](CHANGELOG.md) — version history
-- [`DESIGN.md`](DESIGN.md) — the visual direction and its constraints
-- [`PRODUCT.md`](PRODUCT.md) — audience, principles, and the evidence on record
-- [`REPLACE.md`](REPLACE.md) — what's still placeholder and how to swap it
+- [Homepage design](DESIGN.md) and [desktop design](docs/DESKTOP_DESIGN.md)
+- [Product context](PRODUCT.md)
+- [Planned work](TODO.md)
+- [Changelog](CHANGELOG.md)
 
 ## License
 
-[Apache 2.0](LICENSE). The code is reusable; the résumé, project write-ups, and
-personal details in `index.html` and `public/` are not.
+Code is licensed under [Apache 2.0](LICENSE). The résumé, project write-ups,
+and personal details are not covered by the code license.
