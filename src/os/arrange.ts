@@ -27,6 +27,9 @@ type Point = [number, number];
 let free = false;
 let lastDragEnd = 0;
 
+/** True for the click that a drag's release fires, which must not open anything. */
+export const draggedJustNow = (): boolean => performance.now() - lastDragEnd < 400;
+
 export function initArrange(): void {
   const desk = document.getElementById("desk");
   const shelf = document.getElementById("icons");
