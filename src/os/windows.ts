@@ -15,8 +15,19 @@ const docShelf = () => document.getElementById("docs") as HTMLElement;
 const open = new Map<string, HTMLElement>();
 /** What each window's flip needs undone when it closes. */
 const undo = new Map<string, () => void>();
+/** The control each window was opened from, for focus to go back to. */
+const openers = new Map<string, HTMLElement>();
 let frontmost: HTMLElement | null = null;
 let cascade = 0;
+
+/**
+ * Focus goes to a window's body, not its frame: the body is what scrolls, so
+ * PageDown, Space, Home, End and the arrows work the moment a window opens
+ * from the keyboard. The frame holds no scrollbar to move.
+ */
+function focusWindow(win: HTMLElement): void {
+  (win.querySelector<HTMLElement>(".win__body") ?? win).focus();
+}
 
 /** Listeners for open/close, so Mpa's tour can follow what the visitor does. */
 const listeners = new Set<(ids: string[]) => void>();
@@ -89,12 +100,17 @@ export function openDoc(id: string): void {
   const existing = open.get(id);
   if (existing) {
     bringToFront(existing);
-    existing.focus();
+    focusWindow(existing);
     return;
   }
 
   const article = document.getElementById(`doc-${id}`);
   if (!article) return;
+
+  // Read before the window takes focus. A click may not focus the button it
+  // lands on (Safari never does), and then there is no opener to remember.
+  const from = document.activeElement;
+  if (from instanceof HTMLElement && from !== document.body) openers.set(id, from);
 
   const title = article.dataset.title ?? id;
   const meta = article.dataset.meta ?? "";
@@ -125,6 +141,11 @@ export function openDoc(id: string): void {
 
   const body = document.createElement("div");
   body.className = "win__body";
+  // Focusable by script only (see focusWindow), and named by the window's
+  // title, so a screen reader landing in it hears which document this is.
+  body.tabIndex = -1;
+  body.setAttribute("role", "document");
+  body.setAttribute("aria-labelledby", titleId);
 
   const reading = !article.classList.contains("doc--pdf");
   if (!reading) win.classList.add("win--pdf");
@@ -159,7 +180,7 @@ export function openDoc(id: string): void {
 
   open.set(id, win);
   bringToFront(win);
-  win.focus();
+  focusWindow(win);
   announce();
 
   bar.querySelector(".win__close")?.addEventListener("click", () => closeDoc(id));
@@ -245,17 +266,37 @@ export function closeDoc(id: string): void {
   open.delete(id);
   if (frontmost === win) frontmost = null;
 
-  // Hand focus to whatever window is now on top, or back to the desktop.
+  // Hand focus to whatever window is now on top, or back where the visitor was.
+  const opener = openers.get(id);
+  openers.delete(id);
   const last = [...open.values()].pop();
   if (last) {
     bringToFront(last);
-    last.focus();
+    focusWindow(last);
   } else {
     cascade = 0;
-    document.querySelector<HTMLElement>(`[data-open="${id}"]`)?.focus();
+    giveFocusBack([opener, document.querySelector<HTMLElement>(`.icon[data-open="${id}"]`)]);
   }
 
   announce();
+}
+
+/**
+ * The first of these that can take focus gets it: the control the window was
+ * opened from, then the document's desk icon, then the desk itself. A menu's
+ * items are hidden once it closes and focus() on them does nothing, which is
+ * why each is tried and checked rather than assumed. Without this, focus fell
+ * to <body> and the next Tab started the page over.
+ */
+function giveFocusBack(candidates: (HTMLElement | null | undefined)[]): void {
+  for (const el of candidates) {
+    if (!el?.isConnected) continue;
+    el.focus();
+    if (document.activeElement === el) return;
+  }
+  const ground = desk();
+  ground.tabIndex = -1;
+  ground.focus();
 }
 
 export function closeAll(): void {

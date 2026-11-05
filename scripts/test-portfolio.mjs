@@ -284,6 +284,51 @@ try {
     await page.screenshot({ path: `${evidence}/wall-text-zoom-200.png`, fullPage: true });
   }));
 
+  await check("Keyboard: icons are buttons, an open window scrolls, and closing it gives focus back", () => withPage({ reducedMotion: "reduce" }, async (page, { errors }) => {
+    await load(page, "/desktop/");
+    await page.locator("#lock").click();
+    await page.locator("#lock").waitFor({ state: "detached" });
+    const desk = page.locator("#icons");
+    const icon = desk.getByRole("button", { name: "experience.log", exact: true, pressed: false });
+    assert.equal(await icon.count(), 1, "experience.log should be a button that says it is not selected");
+    assert.equal(await desk.getByRole("button").count(), await page.locator("#icons .icon").count(), "Every icon should be a button");
+
+    // Opened from the keyboard, the window takes keys that scroll it, and the
+    // flip follows them as it follows the wheel.
+    await icon.focus();
+    await page.keyboard.press("Enter");
+    const body = page.locator('.win[data-win="experience"] .win__body');
+    await body.waitFor();
+    assert.ok(await body.evaluate((el) => el.scrollHeight - el.clientHeight > 200), "experience.log should have room to scroll");
+    assert.equal(await body.evaluate((el) => el.dataset.ground), "flavour");
+    const scrolled = async (key, test, why) => {
+      await page.keyboard.press(key);
+      await page.waitForFunction(test, await body.elementHandle(), { timeout: 2_000 }).catch(() => assert.fail(why));
+    };
+    await scrolled("PageDown", (el) => el.scrollTop > 0, "PageDown did not scroll the window");
+    await scrolled("ArrowDown", (el) => el.scrollTop > 0, "ArrowDown moved it back");
+    await scrolled("End", (el) => el.scrollHeight - el.clientHeight - el.scrollTop < 2, "End did not reach the bottom");
+    assert.equal(await body.evaluate((el) => el.dataset.ground), "paper", "The flip did not follow the keyboard");
+    await scrolled("Home", (el) => el.scrollTop === 0, "Home did not return to the top");
+    await scrolled("Space", (el) => el.scrollTop > 0, "Space did not scroll the window");
+
+    // Escape puts it away and hands focus back to the icon it came from.
+    await page.keyboard.press("Escape");
+    await page.locator(".win").waitFor({ state: "detached" });
+    assert.equal(await page.evaluate(() => document.activeElement?.dataset.open), "experience", "Focus should return to experience.log");
+    assert.equal(await desk.getByRole("button", { name: "experience.log", pressed: true }).count(), 1, "The icon should read as selected");
+
+    // From the Work menu, whose item is hidden once the menu closes, focus goes
+    // to the document's icon instead of falling to <body>.
+    await page.locator('[data-menu]:has([data-open="lea"]) > .menu__trigger').click();
+    await page.locator('.menu [data-open="lea"]').click();
+    await page.locator('.win[data-win="lea"]').waitFor();
+    await page.keyboard.press("Escape");
+    await page.locator(".win").waitFor({ state: "detached" });
+    assert.equal(await page.evaluate(() => document.activeElement?.closest(".icon")?.dataset.open ?? document.activeElement?.tagName), "lea");
+    assert.deepEqual(errors, []);
+  }, (page) => page.addInitScript(() => localStorage.setItem("jl.mpa", "1"))));
+
   await check("The desktop's documents carry the 26 Oct résumé", () => withPage({ javaScriptEnabled: false }, async (page) => {
     await load(page, "/desktop/");
     await assertDesktopFacts(page);
