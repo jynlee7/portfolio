@@ -1005,7 +1005,14 @@ html.is-arriving .rail > * {
   }
 }
 .win:focus,
-.win:focus-visible {
+.win:focus-visible,
+.win__body:focus,
+.win__body:focus-visible,
+.desk:focus,
+.desk:focus-visible {
+  /* Focus lands on these by script, never by Tab: on a window's body so the
+     keyboard scrolls it, on the desk when nothing else is left to hold it.
+     The front window's shadow already says where it is. */
   outline: none;
 }
 
