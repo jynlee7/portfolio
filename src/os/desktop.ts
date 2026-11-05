@@ -1,5 +1,5 @@
 /**
- * Desktop items and the dock.
+ * Desktop items.
  *
  * Every launcher is a real <button data-open="…">, so the keyboard path is the
  * same path as the mouse path. Double-click is an addition on top of that, not
@@ -14,7 +14,7 @@ export function initLaunchers(): void {
     const id = el.dataset.open as string;
 
     // Desktop icons follow the OS: one click selects, two opens. Everything
-    // else (dock, menus) opens on a single click.
+    // else (menus) opens on a single click.
     if (el.classList.contains("icon")) {
       el.addEventListener("click", () => select(el));
       el.addEventListener("dblclick", () => openDoc(id));
@@ -48,41 +48,4 @@ function select(icon: HTMLElement): void {
   clearSelection();
   icon.classList.add("is-selected");
   icon.setAttribute("aria-pressed", "true");
-}
-
-/**
- * Dock magnification.
- *
- * The falloff is computed per item from the pointer's horizontal distance, so
- * neighbours swell in a curve instead of each icon snapping on its own hover.
- * Written to a custom property; the actual transform lives in CSS.
- */
-export function initDock(): void {
-  const dock = document.getElementById("dock");
-  if (!dock) return;
-
-  const items = [...dock.querySelectorAll<HTMLElement>(".dockitem")];
-  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
-  const coarse = window.matchMedia("(pointer: coarse)");
-
-  const clear = () => {
-    for (const item of items) item.style.removeProperty("--mag");
-  };
-
-  dock.addEventListener("pointermove", (event) => {
-    if (reduced.matches || coarse.matches) return;
-    for (const item of items) {
-      const rect = item.getBoundingClientRect();
-      const centre = rect.left + rect.width / 2;
-      const distance = Math.abs(event.clientX - centre);
-      const reach = 96;
-      // Cosine falloff: smooth at both ends, no discontinuity at the edge.
-      const mag =
-        distance > reach ? 0 : (Math.cos((distance / reach) * Math.PI) + 1) / 2;
-      item.style.setProperty("--mag", mag.toFixed(3));
-    }
-  });
-
-  dock.addEventListener("pointerleave", clear);
-  reduced.addEventListener("change", clear);
 }

@@ -24,8 +24,9 @@ milled plastic has a small radius and nothing here is a pill. Indigo
 active path. The host's own monospace appears only on measured values.
 
 **STORY.** A hiring manager sees the name, the field, and one line worth being
-curious about before touching anything; wakes the machine; opens `resume.pdf`
-or a project folder; leaves with the PDF.
+curious about before touching anything; wakes the machine; is shown around by
+Mpa on a first visit, or skips it; opens `resume.pdf` or a project folder;
+leaves with the PDF.
 
 **FIRST VIEWPORT.** The lock screen. The hour where Jayden is at the top,
 identity low and small at the bottom, the contour field filling everything
@@ -89,12 +90,13 @@ A raised panel is `--raise`: `inset 1px 1px 0 #fff, inset -1px -1px 0 #b6b2a7`.
 Inset reverses it. **A bevel is 1px and never blurred** — it is a physical
 edge, not a glow.
 
-Only floating things cast a shadow: windows, menus, the dock. Two stops with
+Only floating things cast a shadow: windows, menus, Mpa. Two stops with
 real offset and blur; no zero-offset halos.
 
-Translucency is earned, not decorative. It appears in exactly three places, all
-of which are OS chrome physically floating over the desk: the menubar, the
-dock, and the icon-label veil. Window bodies are opaque.
+Translucency is earned, not decorative. It appears in exactly two places, both
+OS chrome physically floating over the desk: the menubar and the icon-label
+veil. Window bodies are opaque. (The dock was a third; it came off on 29 Oct
+2026, "for now".)
 
 ## Motion
 
@@ -146,12 +148,42 @@ not the three diagonal pips the web draws — and minimise is a click on the doc
 item the window is already represented by. The dock's running dot hollows out
 rather than disappearing, because "put away" and "not open" are different facts.
 
+**This paragraph records intent, not the machine.** As of 29 Oct 2026
+`src/os/windows.ts` has no zoom, resize or minimise, and the dock is gone.
+Windows drag by the bar and close on ✕ or Escape; Mpa says exactly that and no
+more. Whoever restores these gestures restores the minimise target with them.
+
+## Mpa
+
+Jayden's personal assistant, and the desktop's only guide. It is a program on
+the machine rather than a character: a window titled `mpa` — near-black bar,
+one close control, paper body — that says one line at a time. Indigo is
+spent on its leader, a 1.5px line from Mpa to a ring around whatever the line
+is about, the way a figure annotates a contour plot; its own push button is
+milled bone, so the leader stays the one indigo thing. On the dark desks the
+leader and ring invert to white like everything else that sits on the
+wallpaper.
+
+The leader is drawn on the map, under the nameplate, icons, rail and
+windows, with a halo that lifts it off the contours. Where it has to pass
+something, the thing stays readable and the line goes behind it. The ring is
+an outline worn by the subject itself, so it reads over the menubar too.
+
+Mpa walks: each stop it glides (220ms, a window's open) to the nearest patch
+of desk where it covers nothing and its leader crosses nothing, then the
+leader draws out of it (220ms) and the ring arrives (140ms). It is
+non-modal, and two stops are passed by doing the thing — opening a folder,
+putting the window away. No frames at rest; under reduced motion it arrives
+and draws at once. On a phone it is as wide as the screen and moves only up
+and down.
+
 ## Composition
 
-The desktop is not a scroll. The nameplate and desktop items share one flow
-column on the left, so a longer pitch pushes the icons down instead of landing
-on them; widgets occupy a right rail; the dock floats bottom-centre and is the
-only thing down there.
+The desktop is not a scroll. The nameplate (the status line and the name; the
+role line and pitch came off on 29 Oct 2026) and desktop items share one flow
+column on the left, so the nameplate pushes the icons down instead of landing
+on them; widgets occupy a right rail. Nothing lives along the bottom since the
+dock came off; Mpa visits during the tour and leaves.
 
 Windows cascade from a fixed origin clear of both the nameplate and the rail,
 and their max-height accounts for the cascade offset so the last one in a stack
@@ -167,8 +199,8 @@ their file the same way the desktop does. The listing takes the document's
 register — the spec table's hairlines and columns — not the menubar's, and
 hovers to the panel face rather than the accent, because these rows carry icons
 the accent would swallow. The one accent in a listing is the dot saying a file
-is already open on the desk, which is the dock's running-dot claim, restated
-where you can see the file and its window at once.
+is already open on the desk, restated where you can see the file and its
+window at once.
 
 Mobile is an iOS home screen, not a shrunken desktop: a 4-column tile grid,
 widgets stacked, windows become full-height sheets.

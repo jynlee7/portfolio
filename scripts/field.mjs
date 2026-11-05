@@ -1,10 +1,9 @@
 /**
  * Static wallpaper generator.
  *
- * Renders the shared field (src/field/core.ts) as SVG contour maps — the
- * wallpaper that paints before JS runs, and the one that stays under reduced
- * motion. The live canvas draws the same field from the same module, so the
- * two cannot drift.
+ * Renders the shared field (src/field/core.ts) twice: as the desktop's gel
+ * wallpapers, and as the SVG contour maps the preserved wall still names. Every
+ * consumer reads the same module, so the two cannot drift.
  *
  *   node scripts/field.mjs
  *
@@ -18,13 +17,16 @@ import { fileURLToPath } from "node:url";
 import {
   FRAME,
   ASPECT,
+  FLAVOURS,
   LEVELS,
   THEMES,
   depthOf,
+  gelAt,
   levelAt,
   marchingSquares,
   sampleGrid,
   strokeFor,
+  surface,
 } from "../src/field/core.ts";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -156,3 +158,64 @@ for (const name of Object.keys(THEMES)) {
     `${r.file}  ${(r.bytes / 1024).toFixed(0)} kB  ${r.contours} contours`,
   );
 }
+
+/* ------------------------------------------------------------------------
+   The gel wallpapers: public/desk-<flavour>.webp, one per flavour. WebP is the
+   one encoder here that needs a browser, so Playwright (a devDependency) does
+   that part; the pixels themselves come from src/field/core.ts. Seeded dither,
+   so the same surface gives the same bytes on the same Chromium.
+   ------------------------------------------------------------------------ */
+
+const GEL_W = 2240;
+const GEL_H = 1400;
+
+async function writeGel() {
+  const { chromium } = await import("playwright");
+  const toField = (px, py) => [(px / GEL_W) * 2 * ASPECT - ASPECT, (py / GEL_H) * 2 - 1];
+  let min = Infinity;
+  let max = -Infinity;
+  for (let r = 0; r <= 400; r += 1) {
+    for (let c = 0; c <= 640; c += 1) {
+      const v = surface((c / 640) * 2 * ASPECT - ASPECT, (r / 400) * 2 - 1);
+      if (v < min) min = v;
+      if (v > max) max = v;
+    }
+  }
+  const e = (2 * ASPECT) / GEL_W;
+  const browser = await chromium.launch();
+  const page = await browser.newPage();
+  for (const [name, flavour] of Object.entries(FLAVOURS)) {
+    let seed = 7;
+    const noise = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 2 ** 32 - 0.5) * 1.5;
+    const pixels = new Uint8ClampedArray(GEL_W * GEL_H * 4);
+    for (let py = 0; py < GEL_H; py += 1) {
+      for (let px = 0; px < GEL_W; px += 1) {
+        const [x, y] = toField(px, py);
+        const rgb = gelAt(flavour, x, y, min, max, e);
+        const i = (py * GEL_W + px) * 4;
+        const n = noise();
+        pixels[i] = rgb[0] + n;
+        pixels[i + 1] = rgb[1] + n;
+        pixels[i + 2] = rgb[2] + n;
+        pixels[i + 3] = 255;
+      }
+    }
+    const url = await page.evaluate(
+      ({ data, w, h }) => {
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        const bytes = Uint8ClampedArray.from(atob(data), (ch) => ch.charCodeAt(0));
+        canvas.getContext("2d").putImageData(new ImageData(bytes, w, h), 0, 0);
+        return canvas.toDataURL("image/webp", 0.92);
+      },
+      { data: Buffer.from(pixels.buffer).toString("base64"), w: GEL_W, h: GEL_H },
+    );
+    const bytes = Buffer.from(url.split(",")[1], "base64");
+    writeFileSync(resolve(OUT_DIR, `desk-${name}.webp`), bytes);
+    console.log(`desk-${name}.webp  ${(bytes.length / 1024).toFixed(1)} KB`);
+  }
+  await browser.close();
+}
+
+await writeGel();

@@ -15,15 +15,12 @@
  * keyboard path every other launcher here is careful to keep.
  */
 
-const KEY = "jl.icons";
+// New key with the Y2K desk: positions saved on the old layout mean nothing here.
+const KEY = "jl.icons.2";
 
 /** Keyboard nudge, and the coarser step with Shift held. */
 const NUDGE = 8;
 const NUDGE_FAR = 24;
-
-/** Kept clear at the bottom so an icon can never be parked under the dock
- *  where it cannot be grabbed again. */
-const DOCK_SAFE = 78;
 
 type Point = [number, number];
 
@@ -159,9 +156,11 @@ function numeric(value: string): number {
 function moveTo(icon: HTMLElement, x: number, y: number, desk: HTMLElement): void {
   const deskBox = desk.getBoundingClientRect();
   const w = icon.offsetWidth;
-  const h = icon.offsetHeight;
+  // Measured, not offsetHeight: that rounds, and a fraction of a pixel is
+  // enough to leave the last row of the icon under the desk's edge.
+  const h = icon.getBoundingClientRect().height;
   const maxX = Math.max(0, deskBox.width - w);
-  const maxY = Math.max(0, deskBox.height - h - DOCK_SAFE);
+  const maxY = Math.max(0, deskBox.height - h);
   icon.style.left = `${Math.min(Math.max(x, 0), maxX)}px`;
   icon.style.top = `${Math.min(Math.max(y, 0), maxY)}px`;
 }

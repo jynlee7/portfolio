@@ -14,10 +14,10 @@ function since(period) {
 }
 
 /**
- * The desktop's two mentions of the current role — the nameplate's status
- * line and the Now widget — rendered at `<!-- @portfolio-part id -->` markers
- * from the role content/portfolio.mjs marks current, so changing it in
- * content/portfolio.mjs changes them too. With no current role both render
+ * The desktop's small parts, rendered at `<!-- @portfolio-part id -->` markers:
+ * the login's sentence, and the two mentions of the current role (a status line
+ * and the Now widget), from the role content/portfolio.mjs marks current, so
+ * changing it there changes them too. With no current role those render
  * nothing, rather than keep calling a finished one current.
  */
 export function renderDesktopPart(id) {
@@ -39,6 +39,10 @@ export function renderDesktopPart(id) {
           </ul>
           <p class="widget__foot">Since ${esc(since(current.period))}.</p>
         </div>` : "";
+  }
+  if (id === "statement") {
+    const words = profile.statement.split(" ");
+    return `<p class="lock__line" aria-label="${esc(profile.statement)}">${words.map((word, i) => `<span class="lock__word" aria-hidden="true" style="--i:${i}"><span>${esc(word)}</span></span>`).join(" ")}</p>`;
   }
   throw new Error(`Unknown desktop part: ${id}`);
 }

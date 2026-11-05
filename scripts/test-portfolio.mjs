@@ -293,6 +293,8 @@ try {
     await load(page, "/desktop/#lea");
     assert.equal(await page.locator("#lock").count(), 0, "A deep link should not land behind the lock screen");
     await page.locator('.win[data-win="lea"]').waitFor({ state: "visible" });
+    await page.waitForTimeout(700);
+    assert.ok(await page.locator("#mpa").isHidden(), "A deep link chose its door; Mpa should not greet it");
     const returnLink = page.locator(".menubar__link--home");
     assert.ok(await returnLink.isVisible(), "Desktop needs a visible way back out");
     await page.screenshot({ path: `${evidence}/desktop-deep-link.png`, fullPage: false });
@@ -315,6 +317,86 @@ try {
     assert.ok(box.x + box.width <= 390, `Portfolio link overflows the bar: ${JSON.stringify(box)}`);
     await home.tap();
     await page.waitForURL(new URL("/", base).href);
+  }));
+
+  await check("Mpa greets a first visit, walks the tour with the desk, and never twice", () => withPage({ reducedMotion: "reduce" }, async (page, { errors }) => {
+    await instrument(page);
+    await load(page, "/desktop/");
+    const mpa = page.locator("#mpa");
+    const count = page.locator(".mpa__count");
+    const go = page.locator(".mpa__go");
+    assert.ok(await mpa.isHidden(), "Mpa should wait for the visitor to wake the machine");
+
+    // Mpa covers neither its subject nor any furniture on the desk.
+    const clearOfDesk = async (stop) => {
+      const hits = await page.evaluate(() => {
+        const box = document.getElementById("mpa").getBoundingClientRect();
+        return [...document.querySelectorAll(".is-mpa-subject, .nameplate, .icon, .rail > *")].filter((el) => {
+          const r = el.getBoundingClientRect();
+          return r.width > 0 && r.left < box.right && r.right > box.left && r.top < box.bottom && r.bottom > box.top;
+        }).map((el) => el.className);
+      });
+      assert.deepEqual(hits, [], `Mpa covers furniture at ${stop}`);
+    };
+    const subject = () => page.evaluate(() => document.querySelector(".is-mpa-subject")?.className ?? "");
+
+    await page.locator("#lock").click();
+    await mpa.waitFor({ state: "visible" });
+    assert.match(await page.locator("#mpa-say").textContent(), /I'm Mpa, Jayden's personal assistant/);
+    assert.equal(await page.evaluate(() => document.activeElement?.className), "mpa__go", "The greeting should take focus");
+    assert.match(await subject(), /nameplate__name/);
+    await clearOfDesk("1 / 5");
+
+    await go.click();
+    assert.equal(await count.textContent(), "2 / 5");
+    assert.match(await subject(), /icon/);
+    assert.equal(await page.locator('.is-mpa-subject[data-open="resume"]').count(), 1);
+    await clearOfDesk("2 / 5");
+
+    // The folder step is passed by doing it the visitor's own way.
+    await go.click();
+    assert.equal(await page.locator('.is-mpa-subject[data-open="lea"]').count(), 1);
+    await clearOfDesk("3 / 5");
+    await page.locator('.icon[data-open="lea"]').dblclick();
+    await page.locator('.win[data-win="lea"]').waitFor();
+    assert.equal(await count.textContent(), "4 / 5", "Opening lea should move the tour on");
+    assert.match(await subject(), /\bwin\b/);
+
+    // And the window step by putting the window away.
+    await page.keyboard.press("Escape");
+    await page.locator(".win").waitFor({ state: "detached" });
+    assert.equal(await count.textContent(), "5 / 5", "Putting the window away should move the tour on");
+    assert.match(await subject(), /menu__trigger/);
+    await clearOfDesk("5 / 5");
+    assert.equal(await go.textContent(), "Done");
+
+    await go.click();
+    assert.ok(await mpa.isHidden());
+    assert.equal(await page.locator(".is-mpa-subject").count(), 0, "A ring outlived the tour");
+    assert.ok(await page.locator("#mpa-lead").isHidden());
+    assert.equal(await framesDuringRest(page), 0, "Mpa costs frames at rest");
+
+    // Once per browser: a new session wakes the machine to nobody talking.
+    await page.evaluate(() => sessionStorage.clear());
+    await load(page, "/desktop/");
+    await page.locator("#lock").click();
+    await page.locator("#lock").waitFor({ state: "detached" });
+    await page.waitForTimeout(700);
+    assert.ok(await mpa.isHidden(), "Mpa greeted the same browser twice");
+
+    // The JL menu replays it, and Escape inside Mpa ends the tour without
+    // falling through to close the window behind it.
+    await page.locator(".menu__trigger--brand").click();
+    await page.locator('[data-action="tour"]').click();
+    await mpa.waitFor({ state: "visible" });
+    assert.equal(await count.textContent(), "1 / 5");
+    await page.locator('.icon[data-open="lea"]').dblclick();
+    await page.locator('.win[data-win="lea"]').waitFor();
+    await go.focus();
+    await page.keyboard.press("Escape");
+    assert.ok(await mpa.isHidden(), "Escape inside Mpa should end the tour");
+    assert.equal(await page.locator('.win[data-win="lea"]').count(), 1, "Escape inside Mpa closed a window");
+    assert.deepEqual(errors, []);
   }));
 
 } finally {

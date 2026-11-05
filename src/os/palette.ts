@@ -3,8 +3,7 @@
  *
  * PRODUCT.md's visitor has ninety seconds and is looking for one file. Every
  * other way into this machine asks them to find something first: the right
- * icon on the desk, the right item in the dock, the right menu. This asks them
- * to type three letters.
+ * icon on the desk, the right menu. This asks them to type three letters.
  *
  * THE INDEX IS DERIVED, NEVER AUTHORED. Rows are read out of the live DOM
  * every time it opens — the documents from `#docs`, the commands from the
@@ -105,9 +104,9 @@ function collect(): Row[] {
   }
 
   // Mail is a real destination on this machine and it is what a recruiter is
-  // most likely to want after the résumé. Read from the dock's own link, so
-  // the address is never restated here.
-  const mail = document.querySelector<HTMLAnchorElement>('.dockitem[href^="mailto:"]');
+  // most likely to want after the résumé. Read from the menubar's own link,
+  // so the address is never restated here.
+  const mail = document.querySelector<HTMLAnchorElement>('.menubar a[href^="mailto:"]');
   if (mail) {
     out.push({
       label: mail.dataset.label ?? "Send mail",

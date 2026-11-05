@@ -10,6 +10,8 @@
 export const profile = {
   name: "Jayden Lee",
   introduction: "I'm a junior studying Data Science at UC Berkeley, working at the intersection of machine learning, software, and sport.",
+  // The introduction's last clause, in the front page's own voice.
+  statement: "I work where machine learning, software and sport meet.",
   email: "jeyl@berkeley.edu",
   github: "https://github.com/jynlee7",
   linkedin: "https://www.linkedin.com/in/jaydenelee",

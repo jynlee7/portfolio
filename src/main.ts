@@ -1,36 +1,38 @@
 import "./style.css";
 
-import { initLock, mountLockField } from "./os/lock";
+import { booting, initBoot } from "./os/boot";
+import { initGel } from "./os/gel";
+import { initLock, showLock } from "./os/lock";
 import { initMenubar } from "./os/menubar";
-import { initLaunchers, initDock } from "./os/desktop";
+import { initLaunchers } from "./os/desktop";
 import { initArrange } from "./os/arrange";
 import { initWindowKeys, openDoc } from "./os/windows";
 import { initWeather } from "./os/widgets";
-import { initFlow } from "./os/flow";
+import { initMpa } from "./os/mpa";
 
-initLock();
+// The inline script's watchdog stands down: the machine is running.
+document.documentElement.dataset.running = "";
+
 initMenubar();
 initLaunchers();
 initArrange();
-initDock();
 initWindowKeys();
+initMpa();
 void initWeather();
+initLock();
 
-// The pointer deforms the contour field on both surfaces that show it.
-initFlow(document.getElementById("desk"));
+const gel = initGel();
+const cold = booting();
+const ready = gel?.ready
+  .then(() => document.documentElement.classList.add("gel-ready"))
+  .catch(() => undefined);
 
-// On the lock screen the field arrives one contour level at a time first.
-// Handing it to the pointer only once that has played keeps the two moments
-// sequential — otherwise the first mouse move slams the finished field down
-// on top of an entrance that is still running. Somebody who wakes the machine
-// mid-entrance takes the lock out of the document, so check before attaching.
-const lock = document.getElementById("lock");
-if (lock) {
-  void mountLockField(lock).then(() => {
-    if (lock.isConnected) {
-      initFlow(lock, lock.querySelector<HTMLElement>(".lock__field"));
-    }
-  });
+// A cold visit plays the boot, which hands over to the drop itself. Anything
+// else already has its ground, and the drop lands on the name once it is in.
+if (cold) initBoot(gel, showLock);
+else {
+  showLock();
+  void ready?.then(() => gel?.land());
 }
 
 /**

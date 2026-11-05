@@ -3,30 +3,25 @@
 /* ============================================================
    DIRECTION CONTRACT
 
-   THESIS — This is a machine you operate, not a page you
-   scroll. It refuses both the portfolio scroll-stack and the
-   frosted-glass consumer-desktop clone.
+   THESIS: A machine from 2001 that boots, not a portfolio with
+   a retro skin. It refuses pixel-sprite Mac nostalgia, and the
+   frosted consumer desktop every model ships for this genre.
 
-   OWN-WORLD — Scientific workstation. Opaque bone panels with
-   1px chiseled bevels (white top-left, grey bottom-right),
-   near-black title bars, 3-5px fillets, indigo as the only
-   accent, host monospace on measured values only. Wallpaper is
-   a generated contour map of a two-minimum loss surface.
+   OWN-WORLD: Aqua with iMac flavours. Pinstripes, gel buttons,
+   three lights, brushed metal, Quartz shadows, opaque-or-clear
+   and never frosted. Wallpaper is the two-minimum loss surface
+   lit as terraced gel. General Sans alone.
 
-   STORY — A hiring manager is curious enough to wake the
-   machine, then reads the name, role and pitch on the desk,
-   opens resume.pdf or a project folder, and leaves with the
-   PDF.
+   STORY: The visitor watches it boot from real loading work,
+   logs in on the huge name, opens resume.pdf or a folder, reads
+   a window that turns from flavour to paper, and leaves.
 
-   FIRST VIEWPORT — Lock screen: date and an oversized clock at
-   the top, the contour field resolving into itself across the
-   empty middle, and low on the screen the name, the role, and
-   one concrete line about the work. No controls: the whole
-   surface is the door, and any key or click wakes it.
+   FIRST VIEWPORT: Pinstripes, name engraved along the foot, a
+   gel capsule mid-screen. It lets go a drop that floods to the
+   login: same name in clear plastic, one sentence, Enter.
 
-   FORM — Desktop OS, pinned by the user's brief. Rendition is
-   the scientific workstation the work was actually done on,
-   not the consumer Mac.
+   FORM: Desktop OS, pinned by the brief. Rendition pinned by
+   Jayden, 30 Oct 2026: "y2k old apple style classic".
    ============================================================ */
 
 *,
@@ -41,12 +36,27 @@ html {
 
 body {
   margin: 0;
-  font-family: var(--font-body);
+  font-family: var(--font);
   font-size: var(--step-body);
   line-height: var(--leading-body);
   color: var(--ink);
-  background: var(--chrome);
+  background: var(--paper);
   -webkit-font-smoothing: antialiased;
+}
+
+/* Inside the machine the pointer is the machine's: a black arrow with a white
+   edge, and a hand where something can be picked up. */
+html.js {
+  --cursor-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Cpath d='M4 2v16.6l4.3-4 2.8 6.6 3-1.3-2.8-6.5h5.9z' fill='%23000' stroke='%23fff' stroke-width='1.4' stroke-linejoin='round'/%3E%3C/svg%3E") 4 2, default;
+  --cursor-hand: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28'%3E%3Cpath d='M9 3.2c1 0 1.8.8 1.8 1.8v7h.7V10c0-1 2.9-1 2.9 0v2h.7v-1.3c0-1 2.9-1 2.9 0V12h.7v-.6c0-1 2.8-1 2.8.2v6.9c0 3.800-2.300 6.300-6 6.300h-2.200c-2.300 0-3.800-.8-5-2.600L4 16.400c-1-1.700 1.300-3 2.400-1.600L7.200 16V5c0-1 .8-1.800 1.800-1.800z' fill='%23fff' stroke='%23000' stroke-width='1.300' stroke-linejoin='round'/%3E%3C/svg%3E") 9 3, pointer;
+  cursor: var(--cursor-arrow);
+}
+html.js button,
+html.js a,
+html.js .win__bar,
+html.js .icon,
+html.js .lock {
+  cursor: var(--cursor-hand);
 }
 
 h1,
@@ -67,7 +77,7 @@ ol {
 }
 
 a {
-  color: var(--accent-deep);
+  color: var(--doc-link, var(--link));
   text-decoration-thickness: 1px;
   text-underline-offset: 0.18em;
 }
@@ -90,46 +100,29 @@ svg {
   height: 0;
 }
 
-/* Measured values. The only place monospace appears. */
+/* Measured values. General Sans is the only face here; they get its tabular
+   figures, so a clock does not jitter. */
 .num {
-  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
 }
 
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--select-a);
   outline-offset: 2px;
-  border-radius: 2px;
+  border-radius: 3px;
 }
 
-.skip {
-  position: absolute;
-  left: -9999px;
-  top: 0;
-  z-index: 999;
-  padding: 0.6rem 1rem;
-  background: var(--page);
-  box-shadow: var(--shadow-float);
-}
-.skip:focus {
-  left: 0.5rem;
-  top: 0.5rem;
-}
-
-/* The way back to the portfolio. Once the desktop is running the menubar
-   carries it, so here it is a skip link: first in the tab order, out of
-   sight until focused. Without JS there is no menubar, and it is simply the
-   first line of the page. */
+.skip,
 .desktop-return {
   position: absolute;
   left: -9999px;
   top: 0;
   z-index: 999;
   padding: 0.6rem 1rem;
-  background: var(--page);
-  box-shadow: var(--shadow-float);
+  background: var(--paper);
+  box-shadow: var(--shadow-menu);
 }
+.skip:focus,
 .desktop-return:focus {
   left: 0.5rem;
   top: 0.5rem;
@@ -140,9 +133,6 @@ html:not(.js) .desktop-return {
   box-shadow: none;
 }
 
-/* Available to assistive technology, absent from the layout. Used where a
-   control's visible label is a value and the description has to arrive some
-   other way. */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -164,261 +154,367 @@ html:not(.js) .desktop-return {
 html:not(.js) .menubar,
 html:not(.js) .icons,
 html:not(.js) .rail,
-html:not(.js) .dock,
+html:not(.js) .ground,
+html:not(.js) .boot,
 html:not(.js) .lock {
   display: none;
 }
 
-html:not(.js) body {
-  background: var(--page);
-}
-
 html:not(.js) .desk {
-  /* Without the OS the desk is not a viewport-filling surface, it is the top
-     of an ordinary page: no fixed positioning, and no wallpaper to leave a
-     screen-high gap above the first document. */
   position: static;
-  background: none;
-  padding: var(--gap-6) var(--gap-4) var(--gap-4);
+  padding: var(--gap-5) var(--gutter) var(--gap-3);
 }
-
-html:not(.js) .nameplate,
+html:not(.js) .nameplate {
+  position: static;
+}
+html:not(.js) .nameplate__name {
+  color: var(--ink);
+}
 html:not(.js) .docs {
   max-width: 46rem;
   margin-inline: auto;
+  padding-inline: var(--gutter);
 }
-
 html:not(.js) .doc {
   padding: var(--gap-6) 0;
   border-top: 1px solid var(--hairline);
 }
 
 /* ============================================================
-   LOCK SCREEN
+   THE GROUND
+   The wallpaper and the name's canvas, under everything. Before
+   the canvas has drawn this is what shows, so it stands whole:
+   without WebGL it is the page.
+   ============================================================ */
 
-   Two anchors and nothing between them: the time at the top,
-   the identity at the bottom. The empty middle is the point —
-   it leaves the contour field visible, and the field is half of
-   what the screen is saying.
+.ground {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: var(--wallpaper) center / cover no-repeat, var(--fl-body);
+}
+.ground__gel {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  visibility: hidden;
+}
+.ground__gel.is-live {
+  visibility: visible;
+}
 
-   No controls. The whole surface is the door, so the only text
-   about entering is the quiet line at the bottom edge.
+/* ============================================================
+   THE BOOT
+   Pinstripes as a layer on the ground, so the first paint is
+   already whole; gel.ts draws the same stripes in the shader and
+   takes over the moment the flood begins. The inline script in
+   desktop/index.html sets `.is-booting` before anything paints.
+   ============================================================ */
+
+.ground::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: repeating-linear-gradient(to bottom, #f6f6f6 0 2px, #ececec 2px 4px);
+  opacity: 0;
+  pointer-events: none;
+}
+html.is-booting:not(.gl) .ground::before {
+  opacity: 1;
+}
+html.boot-fade .ground::before {
+  opacity: 0;
+  transition: opacity 420ms var(--move);
+}
+
+html.is-booting:not(.gl) .nameplate__name {
+  color: #808085; /* 3.5:1 on the stripes, as large type */
+  text-shadow: 0 1px 0 #fff;
+}
+
+.boot {
+  display: none;
+}
+html.is-booting .boot {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: grid;
+  place-items: center;
+  /* The capsule sits in the middle of what the name leaves free. */
+  padding-bottom: var(--name-block);
+  color: #2b2b2f;
+  cursor: progress;
+}
+
+/* A CRT coming up: one bright line, opening to the picture. The stage underneath
+   is real from the first frame; this is a shutter over it. */
+html.is-booting .boot::before,
+html.is-booting .boot::after {
+  content: "";
+  position: fixed;
+  left: 0;
+  right: 0;
+  height: 50.5%;
+  background: #050505;
+  pointer-events: none;
+  animation: crt-open 300ms var(--enter) 60ms both;
+}
+html.is-booting .boot::before {
+  top: 0;
+  box-shadow: 0 1px 0 1px #fff;
+  --away: -100%;
+}
+html.is-booting .boot::after {
+  bottom: 0;
+  box-shadow: 0 -1px 0 1px #fff;
+  --away: 100%;
+}
+@keyframes crt-open {
+  to {
+    transform: translateY(var(--away));
+    box-shadow: none;
+  }
+}
+
+.boot__stage {
+  display: grid;
+  justify-items: center;
+  gap: 0.85rem;
+  width: min(23rem, 82vw);
+}
+
+.boot__parade {
+  display: flex;
+  justify-content: center;
+  gap: 0.6rem;
+  min-height: 2.6rem;
+}
+.boot__parade .icon__art {
+  width: 2.25rem;
+  height: 2.6rem;
+  display: grid;
+  place-items: end center;
+  animation: parade-in 260ms var(--enter) both;
+}
+@keyframes parade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* The Aqua progress bar, in the flavour it is about to become. */
+.boot__bar {
+  --h: 1.25rem;
+  position: relative;
+  width: 100%;
+  height: var(--h);
+  border-radius: 999px;
+  overflow: hidden;
+  background: linear-gradient(to bottom, #b9b9bd, #e6e6e8 34%, #fbfbfb 88%);
+  box-shadow:
+    inset 0 1px 2px rgb(0 0 0 / 0.42),
+    0 1px 0 #fff,
+    0 0 0 1px rgb(0 0 0 / 0.24);
+  animation: bar-in 480ms var(--enter) 220ms both;
+}
+@keyframes bar-in {
+  from {
+    opacity: 0;
+    transform: scaleX(0.92);
+  }
+}
+.boot__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0;
+  min-width: var(--h);
+  border-radius: inherit;
+  background:
+    linear-gradient(
+      to bottom,
+      rgb(255 255 255 / 0.82) 0%,
+      rgb(255 255 255 / 0.3) 44%,
+      rgb(0 0 0 / 0.08) 50%,
+      rgb(255 255 255 / 0) 62%,
+      rgb(255 255 255 / 0.36) 100%
+    ),
+    repeating-linear-gradient(-45deg, var(--fl-body) 0 12px, var(--fl-lite) 12px 24px);
+  background-size: auto, 200% 100%;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.14);
+  animation: barber 1100ms linear infinite;
+}
+/* Continuous travel, so linear; the one loop on the machine, and it ends with
+   the boot. */
+@keyframes barber {
+  to {
+    background-position: 0 0, 33.94px 0;
+  }
+}
+/* The capsule lets go: it draws in to a bead, which gel.ts then takes over. */
+.boot__bar {
+  clip-path: inset(-2px -2px -2px -2px round 999px);
+}
+.boot__bar.is-bead {
+  clip-path: inset(-2px calc(50% - var(--h) / 2 - 2px) -2px calc(50% - var(--h) / 2 - 2px) round 999px);
+  transition: clip-path var(--bead, 300ms) var(--move);
+  animation: none;
+}
+.boot__bar.is-bead .boot__fill {
+  animation: none;
+}
+
+.boot__status {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  font-size: var(--step-chrome);
+  font-weight: 500;
+  color: #36363b;
+  animation: parade-in 360ms var(--enter) 320ms both;
+}
+
+.boot.is-leaving .boot__parade,
+.boot.is-leaving .boot__status {
+  opacity: 0;
+  transition: opacity 160ms var(--exit);
+}
+
+/* ============================================================
+   THE LOGIN
+   Transparent: the name and the wallpaper under it are the
+   desk's own, and stay where they are when this leaves.
    ============================================================ */
 
 .lock {
   position: fixed;
   inset: 0;
   z-index: 400;
+  padding: var(--gutter);
   display: grid;
-  grid-template-rows: auto 1fr auto;
-  justify-items: center;
-  padding: clamp(1.75rem, 7vh, 4.5rem) var(--gap-4)
-    clamp(1.25rem, 3.5vh, 2.25rem);
-  cursor: pointer;
-  /* The fallback wallpaper. When the inlined field mounts it takes over and
-     `.lock--field` drops this, so the contours are never painted twice. */
-  background: var(--wallpaper) center / cover no-repeat, var(--chrome);
-  transition:
-    opacity var(--dur-wake) var(--ease-out),
-    transform var(--dur-wake) var(--ease-out);
-}
-
-.lock--field {
-  background: var(--chrome);
-}
-
-/* The machine wakes by lifting the lock screen out of the frame, the way a
-   real one does. */
-.lock.is-waking {
-  opacity: 0;
-  transform: translateY(-3vh) scale(1.04);
-  pointer-events: none;
-}
-
-/* --- The field ---------------------------------------------
-   The same SVG the desktop uses, inlined so each of its 26
-   contour levels can arrive on its own beat. It fills deepest
-   first: the two wells appear, then the level sets climb out
-   of them. A loss surface resolving, drawn from the surface
-   this site's wallpaper is actually generated from.          */
-
-/* Three layers, bottom to top: the resolving SVG, the live canvas that
-   deforms it under the pointer, then the scrim. All of them sit below the
-   clock and the identity, which are raised out of the way explicitly rather
-   than relying on source order. */
-.lock__field {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  overflow: hidden;
-}
-
-.lock__field svg,
-.lock__field .desk__flow {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-
-/* The canvas is prepended by the flow module, so DOM order would put it
-   underneath. It is the live state of the same field and belongs on top. */
-.lock__field .desk__flow {
-  z-index: 1;
-}
-
-/* Edge scrim. Settles the field where the two text anchors sit and clears
-   completely across the middle, so the contours stay the subject rather than
-   being dimmed everywhere to make room for six words. */
-.lock::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  background: linear-gradient(
-    to bottom,
-    var(--desk-scrim) 0%,
-    var(--desk-scrim) 20%,
-    transparent 40%,
-    transparent 56%,
-    var(--desk-scrim) 76%,
-    var(--desk-scrim) 100%
-  );
-}
-
-.lock__top,
-.lock__id,
-.lock__hint {
-  position: relative;
-  z-index: 2;
-}
-
-/* Every contour starts down and is raised by the script. Scoped to the
-   mounted state so a half-finished fetch can never leave the field blank. */
-.lock--field .lock__field path {
-  opacity: 0;
-}
-
-.lock--field .lock__field g {
-  transform-origin: 50% 50%;
-  animation: field-settle 1400ms var(--ease-out) both;
-}
-
-@keyframes field-settle {
-  from {
-    transform: scale(1.03);
-  }
-}
-
-/* --- Time --------------------------------------------------
-   The clock reads Berkeley, not the visitor's timezone, so it
-   is a fact about Jayden rather than a widget.               */
-
-.lock__top {
-  text-align: center;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  gap: var(--gap-4);
   color: var(--on-desk);
-  text-shadow: var(--on-desk-shadow);
-  animation: lock-rise 560ms var(--ease-out) 160ms both;
+}
+.lock[hidden] {
+  display: none;
 }
 
-.lock__date {
-  font-size: var(--step-chrome-lg);
+.lock:not(.is-in) > * {
+  visibility: hidden;
+}
+
+.lock__time {
+  order: 2;
+  display: flex;
+  gap: 0.6em;
+  font-size: var(--step-chrome);
   font-weight: 600;
-  letter-spacing: var(--tracking-chrome);
-  color: var(--on-desk-dim);
-}
-
-.lock__clock {
-  margin-top: 0.15em;
-  font-size: var(--step-clock);
-  font-weight: 300;
-  line-height: 0.86;
-  letter-spacing: -0.05em;
-}
-
-/* --- Identity ----------------------------------------------
-   Sits low, small, and says three things: whose machine, what
-   they do, and one line worth being curious about.           */
-
-.lock__id {
-  align-self: end;
-  max-width: 34rem;
-  margin-bottom: clamp(1.75rem, 7vh, 4.5rem);
-  text-align: center;
-  color: var(--on-desk);
   text-shadow: var(--on-desk-shadow);
-  animation: lock-pop 620ms var(--ease-out) 520ms both;
+}
+.lock.is-in .lock__time {
+  animation: rise-in 520ms var(--enter) 120ms both;
 }
 
-.lock__name {
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: var(--step-lock-name);
-  line-height: var(--leading-tight);
-  letter-spacing: var(--tracking-tight);
+/* Top left, where the sheet is calmest; the wells stay in the open. */
+.lock__say {
+  display: grid;
+  justify-items: start;
+  gap: var(--gap-3);
 }
 
-.lock__role {
-  margin-top: 0.4rem;
-  font-size: var(--step-chrome-sm);
+.lock__line {
+  max-width: 17em;
+  font-size: clamp(1.375rem, 0.9rem + 1.7vw, 2.25rem);
   font-weight: 500;
-  letter-spacing: var(--tracking-caps);
-  text-transform: uppercase;
-  color: var(--on-desk-dim);
-}
-
-.lock__idea {
-  margin-top: 1.15rem;
-  font-size: var(--step-body);
-  line-height: 1.45;
+  line-height: 1.16;
+  letter-spacing: -0.02em;
   text-wrap: balance;
-  color: var(--on-desk-dim);
-}
-
-/* --- The way in --------------------------------------------
-   A button that looks like a caption, because the button is
-   not the affordance — the screen is.                        */
-
-.lock__hint {
-  font-size: var(--step-chrome-sm);
-  font-weight: 500;
-  letter-spacing: var(--tracking-caps);
-  text-transform: uppercase;
-  color: var(--on-desk-quiet);
   text-shadow: var(--on-desk-shadow);
-  cursor: pointer;
-  transition: color var(--dur-quick);
-  animation: lock-rise 500ms var(--ease-out) 1150ms both;
 }
-
-.lock__hint:hover,
-.lock__hint:focus-visible {
-  color: var(--on-desk);
+/* The masked rise: each word comes up from behind its own line. */
+.lock__word {
+  display: inline-block;
+  overflow: clip;
+  overflow-clip-margin: 0.15em;
+  vertical-align: top;
+  padding-bottom: 0.1em;
 }
-
-@keyframes lock-rise {
+.lock__word > span {
+  display: inline-block;
+}
+.lock.is-in .lock__word > span {
+  animation: word-rise 760ms var(--enter) calc(120ms + var(--i) * 70ms) both;
+}
+@keyframes word-rise {
+  from {
+    transform: translateY(112%) rotate(2deg);
+  }
+}
+@keyframes rise-in {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(8px);
   }
 }
 
-/* The pop. Small, once, and the only thing on the page that blurs in —
-   the identity resolving out of the field behind it. */
-@keyframes lock-pop {
-  from {
-    opacity: 0;
-    transform: translateY(12px) scale(0.94);
-    filter: blur(7px);
+/* The default button. It pulses, as the default button did; three times, and
+   then it is still, because nothing here moves at rest. */
+.lock__hint {
+  flex: none;
+  height: 1.75rem;
+  padding: 0 1.5rem;
+  border-radius: 999px;
+  font-size: var(--step-chrome);
+  font-weight: 600;
+  color: #fff;
+  text-shadow: 0 1px 1px rgb(0 0 0 / 0.35);
+  background: var(--gel-face);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.6),
+    inset 0 -1px 2px rgb(255 255 255 / 0.4),
+    0 0 0 1px rgb(0 28 92 / 0.62),
+    0 2px 5px rgb(0 0 0 / 0.36);
+}
+.lock.is-in .lock__hint {
+  animation:
+    rise-in 520ms var(--enter) 620ms both,
+    gel-pulse 1400ms var(--move) 1200ms 3;
+}
+@keyframes gel-pulse {
+  50% {
+    filter: brightness(1.16) saturate(0.86);
   }
+}
+.lock__hint:hover {
+  filter: brightness(1.08);
+}
+
+.lock.is-waking > * {
+  opacity: 0;
+  transform: translateY(-6px);
+  transition:
+    opacity 200ms var(--exit),
+    transform 200ms var(--exit);
+  animation: none;
 }
 
 /* ============================================================
    MENUBAR
-   Translucent because it is chrome floating over the desk —
-   the one place blur is doing a job rather than decorating.
+   Pinstripes and no frost: Quartz in 2001 could do translucency
+   and could not do blur.
    ============================================================ */
+
+html.js:not(.awake) .menubar,
+html.js:not(.awake) .icons,
+html.js:not(.awake) .rail {
+  visibility: hidden;
+}
 
 .menubar {
   position: fixed;
@@ -430,81 +526,72 @@ html:not(.js) .doc {
   justify-content: space-between;
   padding: 0 0.5rem;
   font-size: var(--step-chrome);
-  color: var(--on-desk);
-  background: var(--veil);
-  backdrop-filter: blur(18px) saturate(150%);
-  -webkit-backdrop-filter: blur(18px) saturate(150%);
-  box-shadow: inset 0 -1px 0 var(--veil-edge);
+  font-weight: 500;
+  color: var(--ink);
+  background: var(--bar-stripes);
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 1px 0 rgb(0 0 0 / 0.34),
+    0 2px 7px rgb(0 0 0 / 0.26);
+}
+html.is-arriving .menubar {
+  animation: bar-drop 420ms var(--enter) both;
+}
+@keyframes bar-drop {
+  from {
+    transform: translateY(-100%);
+  }
 }
 
 .menubar__left,
 .menubar__right {
   display: flex;
-  align-items: center;
-  gap: 0.15rem;
+  align-items: stretch;
 }
-
 .menubar__right {
+  align-items: center;
   gap: var(--gap-3);
-  padding-right: 0.35rem;
+  padding-right: 0.25rem;
 }
 
 .menubar__link {
   color: inherit;
   text-decoration: none;
-  opacity: 0.8;
 }
 .menubar__link:hover {
-  opacity: 1;
   text-decoration: underline;
 }
 
-/* The clock is a control, not a readout. It looks exactly like the readout it
-   replaced until a pointer lands on it, and then it takes the same indigo the
-   menu triggers take — that hover is the only thing telling anyone there is a
-   second time behind it. */
 .menubar__clock {
   position: relative;
   display: inline-flex;
   white-space: nowrap;
   align-items: center;
   gap: 0.3rem;
-  padding: 3px 0.4rem;
-  border-radius: var(--r-ctl);
+  height: 100%;
+  padding: 0 0.45rem;
   font-size: var(--step-chrome);
-  cursor: pointer;
+  font-weight: 500;
   transition: background var(--dur-snap);
 }
-.menubar__clock > .num {
-  opacity: 0.9;
-}
 .menubar__clock:hover {
-  background: var(--accent);
-  color: var(--accent-ink);
+  background: linear-gradient(to bottom, var(--select-a), var(--select-b));
+  color: var(--select-ink);
 }
 
-/* Unit label, not a measured value, so it stays in the body face beside the
-   monospace digits. It is always in the layout and only fades, so switching
-   times never changes the width of the bar's right end. */
+/* Unit label. It holds its width while hidden, so switching times never moves
+   the right end of the bar. */
 .menubar__bt {
   font-size: var(--step-chrome-sm);
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  color: var(--on-desk-dim);
   opacity: 0;
-  transition: opacity var(--dur-snap) var(--ease-out);
+  transition: opacity var(--dur-snap) var(--enter);
 }
 .menubar__clock[aria-pressed="true"] .menubar__bt {
   opacity: 1;
 }
-.menubar__clock:hover .menubar__bt {
-  color: var(--accent-ink);
-}
 
-/* Tooltip. Floating chrome, so it gets the panel's own material — bone face,
-   1px bevel, hairline, one float shadow — rather than a dark web tooltip.
-   The dwell delay is timed in JS, not here: a delay is not motion, and the
-   reduced-motion block below zeroes every transition-delay in the document. */
+/* Tooltip: Aqua's own pale yellow help tag. The dwell is timed in JS, because
+   the reduced-motion block zeroes every delay in the document. */
 .tip {
   position: absolute;
   top: calc(100% + 6px);
@@ -512,30 +599,22 @@ html:not(.js) .doc {
   z-index: 210;
   width: max-content;
   max-width: min(17rem, calc(100vw - 1.5rem));
-  padding: 0.3rem 0.5rem;
-  border-radius: var(--r-ctl);
-  background: var(--chrome);
+  padding: 0.25rem 0.5rem;
+  background: #ffffc8;
   color: var(--ink);
-  box-shadow:
-    var(--raise),
-    0 0 0 1px var(--hairline),
-    var(--shadow-float);
-  font-size: var(--step-chrome);
+  border: 1px solid #8a8a70;
+  box-shadow: 0 3px 8px rgb(0 0 0 / 0.3);
+  font-size: var(--step-chrome-sm);
   font-weight: 500;
   line-height: 1.35;
-  letter-spacing: normal;
   text-align: left;
   white-space: normal;
   pointer-events: none;
   opacity: 0;
-  transform: translateY(-2px);
-  transition:
-    opacity var(--dur-quick) var(--ease-out),
-    transform var(--dur-quick) var(--ease-out);
+  transition: opacity var(--dur-quick) var(--enter);
 }
 [data-tip] > .tip {
   opacity: 1;
-  transform: none;
 }
 
 .menu {
@@ -547,55 +626,49 @@ html:not(.js) .doc {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  padding: 0 0.55rem;
-  border-radius: var(--r-ctl);
-  cursor: pointer;
+  padding: 0 0.65rem;
   white-space: nowrap;
-  transition: background var(--dur-snap);
 }
 .menu__trigger:hover,
 .menu[data-open] .menu__trigger {
-  background: var(--accent);
-  color: var(--accent-ink);
+  background: linear-gradient(to bottom, var(--select-a), var(--select-b));
+  color: var(--select-ink);
 }
 
 .menu__trigger--brand {
-  font-weight: 600;
+  font-weight: 700;
 }
 
+/* JL, in the place the machine would otherwise put a company's mark. */
 .mark {
   display: inline-grid;
   place-items: center;
-  width: 17px;
-  height: 17px;
-  border-radius: 2px;
-  background: var(--accent);
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
   color: #fff;
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 9px;
+  font-weight: 700;
+  font-size: 0.5625rem;
   letter-spacing: -0.02em;
-}
-.menu__trigger:hover .mark,
-.menu[data-open] .menu__trigger .mark {
-  background: #fff;
-  color: var(--accent);
+  background:
+    radial-gradient(ellipse 70% 42% at 50% 22%, rgb(255 255 255 / 0.85), rgb(255 255 255 / 0) 100%),
+    radial-gradient(circle at 50% 95%, var(--fl-lite), var(--fl-body) 62%, var(--fl-deep));
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.32);
+  text-shadow: 0 1px 1px rgb(0 0 0 / 0.5);
 }
 
+/* Ten per cent see-through, no blur. */
 .menu__drop {
   position: absolute;
-  top: calc(100% + 2px);
+  top: 100%;
   left: 0;
   z-index: 210;
   min-width: 15rem;
-  padding: 3px;
+  padding: 4px 0;
   display: none;
-  background: var(--chrome);
-  border-radius: var(--r-win);
-  box-shadow:
-    var(--raise),
-    0 0 0 1px var(--hairline),
-    var(--shadow-float);
+  background: repeating-linear-gradient(to bottom, rgb(250 250 250 / 0.95) 0 2px, rgb(240 240 240 / 0.95) 2px 4px);
+  border-radius: 0 0 var(--r-menu) var(--r-menu);
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.16), var(--shadow-menu);
   color: var(--ink);
 }
 .menu[data-open] .menu__drop {
@@ -609,188 +682,133 @@ html:not(.js) .doc {
   justify-content: space-between;
   gap: var(--gap-3);
   width: 100%;
-  padding: 0.3rem 0.55rem;
-  border-radius: 2px;
-  font-size: var(--step-chrome-lg);
+  padding: 0.14rem 1.1rem;
+  font-size: var(--step-chrome);
+  font-weight: 500;
   text-align: left;
   text-decoration: none;
   color: inherit;
-  cursor: pointer;
   white-space: nowrap;
 }
 .menu__drop button:hover,
 .menu__drop a:hover {
-  background: var(--accent);
-  color: var(--accent-ink);
+  background: linear-gradient(to bottom, var(--select-a), var(--select-b));
+  color: var(--select-ink);
 }
 
 .menu__key {
-  font-family: var(--font-mono);
   font-size: var(--step-chrome-sm);
-  opacity: 0.55;
+  opacity: 0.7;
 }
 
 .menu__sep {
   height: 1px;
-  margin: 3px 0.4rem;
-  background: var(--hairline);
+  margin: 4px 0;
+  background: rgb(0 0 0 / 0.18);
 }
 
-/* Checkmark on the active wallpaper. */
+.menu__drop [data-desk] {
+  position: relative;
+}
 .menu__drop [data-desk][aria-checked="true"]::before {
   content: "✓";
-  margin-right: -0.3rem;
+  position: absolute;
+  left: 0.35rem;
+}
+/* A swatch of each flavour, because the menu is choosing a colour. */
+.swatch {
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse 70% 44% at 50% 22%, rgb(255 255 255 / 0.8), rgb(255 255 255 / 0) 100%),
+    var(--swatch);
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.3);
 }
 
 /* ============================================================
    DESKTOP
+   The wallpaper and the name sit under the desk, not in it, so a
+   window can go where the login's words were and nothing moves.
    ============================================================ */
+
+:root {
+  /* The name, as wide as the window: General Sans 600 at this tracking sets
+     "Jayden Lee" about 4.86 ems wide. Never so tall it takes the whole desk. */
+  --name-size: min(calc((100vw - 2 * var(--gutter)) / 4.86), 42vh);
+  /* Clear of the screen's edge by the y's descender and a little more. */
+  --name-foot: calc(var(--name-size) * 0.17 + var(--gutter) * 0.25);
+  --name-block: calc(var(--name-size) * 0.92 + var(--name-foot));
+}
 
 .desk {
   position: fixed;
   inset: var(--menubar-h) 0 0 0;
+  z-index: 1;
   overflow: hidden;
-  background: var(--wallpaper) center / cover no-repeat, var(--chrome);
 }
-
-/* The live field. Sits directly on the wallpaper and is transparent whenever
-   the pointer is away, so the crisp SVG is what you see at rest. */
-.desk__flow {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-}
-
-/* Everything else on the desk is positioned and comes later in the DOM, so it
-   paints above the canvas without needing a z-index of its own. */
-
-.deskcol {
-  position: absolute;
-  top: clamp(1.25rem, 3vh, 2rem);
-  left: clamp(1.25rem, 3vw, 2.5rem);
-  display: grid;
-  gap: clamp(2rem, 5vh, 3.25rem);
-  justify-items: start;
+html:not(.js) .desk {
+  overflow: visible;
 }
 
 .nameplate {
-  max-width: 27rem;
-  color: var(--on-desk);
-  text-shadow: var(--on-desk-shadow);
-}
-
-.nameplate__status {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  font-size: var(--step-chrome-sm);
-  font-weight: 600;
-  letter-spacing: var(--tracking-caps);
-  text-transform: uppercase;
-  opacity: 0.85;
-}
-
-/* The availability dot.
-
-   The category default here is a soft blurred halo breathing in and out. This
-   world is drawn entirely in crisp 1px contour lines, so the dot emits level
-   sets instead: two hairline rings leaving it on a stagger, the same idea as
-   the wallpaper at 7px. It also replaces a zero-offset colour halo, which was
-   decoration pretending to be depth.
-
-   Slow and widely spaced on purpose — this says "still open", it is not a
-   notification asking to be dealt with. */
-.dot {
-  position: relative;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #2f9e63;
-}
-
-.dot::before,
-.dot::after {
-  content: "";
   position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  /* An OUTLINE, expanded by its offset — not a scaled border. Scaling would
-     multiply the stroke with the radius, so the "hairline" would arrive 3px
-     thick at full reach, which is the one thing this world's linework is not.
-     Offsetting keeps it exactly 1px the whole way out, and outline is outside
-     layout entirely, so nothing reflows around it. */
-  outline: 1px solid #2f9e63;
-  outline-offset: 0;
-  animation: dot-emit 3.4s var(--ease-out) infinite;
+  left: var(--gutter);
+  right: var(--gutter);
+  bottom: var(--name-foot);
   pointer-events: none;
 }
 
-.dot::after {
-  animation-delay: 1.15s;
-}
-
-@keyframes dot-emit {
-  from {
-    outline-offset: 0;
-    opacity: 0.55;
-  }
-  /* Hold the ring up through the sweep. Decaying from the first frame would
-     make it faintest exactly when it is widest, which is the moment doing the
-     work; the fade belongs at the end of the travel, not the start. */
-  38% {
-    opacity: 0.42;
-  }
-  /* Expansion finishes at 62%, then it holds invisible — that gap is what
-     keeps a repeating loop from reading as a nag.
-
-     4.67px is the ceiling, not a taste call: the label sits 0.45rem (7.2px)
-     from the dot, and the ring's outer extent is this offset plus its own 1px
-     stroke. At the previous 7px it reached 8px and crossed into the letters.
-     Anything above ~6px here will touch the text again. */
-  62%,
-  to {
-    outline-offset: 4.67px;
-    opacity: 0;
-  }
-}
-
 .nameplate__name {
-  margin-top: 0.4rem;
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: clamp(1.75rem, 1.2rem + 1.8vw, 2.5rem);
-  line-height: 1;
-  letter-spacing: -0.03em;
+  font-weight: 600;
+  font-size: var(--name-size);
+  line-height: 0.92;
+  letter-spacing: -0.055em;
+  white-space: nowrap;
+  color: var(--letter);
+  text-shadow: 0 0.015em 0.05em rgb(0 0 0 / 0.26);
+}
+/* The canvas draws the name; the page's own stays for everything that reads it. */
+html.gl.gel-name .nameplate__name {
+  color: transparent;
+  text-shadow: none;
 }
 
-.nameplate__role {
-  margin-top: 0.4rem;
-  font-size: var(--step-body);
-  font-weight: 500;
-  opacity: 0.88;
+.nameplate__word {
+  display: inline-block;
+  overflow: clip;
+  overflow-clip-margin: 0.14em;
+  vertical-align: top;
+}
+.nameplate__word > span {
+  display: inline-block;
+}
+html.is-booting:not(.gl) .nameplate__word > span {
+  animation: word-rise 900ms var(--enter) 240ms both;
+}
+html.is-booting:not(.gl) .nameplate__word + .nameplate__word > span {
+  animation-delay: 330ms;
 }
 
-.nameplate__pitch {
-  margin-top: 0.5rem;
-  font-size: var(--step-body);
-  opacity: 0.74;
-}
+/* ---- Desktop items: down the right edge, the first where the disk would be ---- */
 
-/* ---- Desktop items ---- */
+.deskcol {
+  position: absolute;
+  top: clamp(0.75rem, 2vh, 1.25rem);
+  right: clamp(0.5rem, 1.4vw, 1.25rem);
+}
 
 .icons {
   display: grid;
-  grid-template-columns: repeat(5, 7rem);
-  align-items: start;
-  gap: var(--gap-3) var(--gap-1);
+  grid-auto-flow: column;
+  grid-template-rows: repeat(4, auto);
+  direction: rtl;
+  gap: 0.35rem 0.25rem;
 }
 
 /* Promoted to free positions by src/os/arrange.ts once there is a pointer and
    room to use one. The container spans the desk but never takes a pointer
-   event itself, so clicking bare desktop still clears the selection; only the
-   icons are interactive. z-index 0 keeps it above the field canvas and below
-   the nameplate and rail, so a dragged icon slides under the furniture. */
+   event itself; only the icons are interactive. */
 .icons.is-free {
   position: absolute;
   inset: 0;
@@ -801,246 +819,158 @@ html:not(.js) .doc {
 
 .icons.is-free .icon {
   position: absolute;
-  width: 7rem;
   pointer-events: auto;
-  cursor: grab;
   /* The pointer owns the gesture; without this a drag scrolls the page. */
   touch-action: none;
 }
 
 .icons.is-free .icon.is-dragging {
   z-index: 2;
-  cursor: grabbing;
-  /* Lifted, not enlarged: scaling would blur the 1px icon linework. */
-  filter: drop-shadow(0 6px 10px rgb(20 18 14 / 0.3));
+  filter: drop-shadow(0 8px 10px rgb(0 0 0 / 0.36));
+  opacity: 0.86;
 }
 
 .icon {
+  direction: ltr;
+  width: 7rem;
   display: grid;
   justify-items: center;
-  gap: 0.4rem;
-  padding: 0.45rem 0.25rem 0.35rem;
-  border-radius: var(--r-icon);
-  cursor: pointer;
-  transition: background var(--dur-snap);
+  gap: 0.2rem;
+  padding: 0.3rem 0.2rem;
+  border-radius: 6px;
+}
+html.is-arriving .icon {
+  animation: icon-in 520ms var(--enter) calc(180ms + var(--n, 0) * 60ms) both;
+}
+.icon:nth-child(2) { --n: 1; }
+.icon:nth-child(3) { --n: 2; }
+.icon:nth-child(4) { --n: 3; }
+.icon:nth-child(5) { --n: 4; }
+.icon:nth-child(6) { --n: 5; }
+.icon:nth-child(7) { --n: 6; }
+@keyframes icon-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.9);
+  }
 }
 
 .icon__art {
   display: grid;
   place-items: center;
-  width: 46px;
-  height: 40px;
-  filter: drop-shadow(0 2px 3px rgb(20 18 14 / 0.28));
+  width: 3.5rem;
+  height: 3.5rem;
+  filter: drop-shadow(0 2px 3px rgb(0 0 0 / 0.42));
 }
 .icon__art svg {
   width: 100%;
   height: 100%;
 }
-.icon__art--page {
-  width: 34px;
-  height: 42px;
-}
+.icon[data-open="lea"] { --tint: var(--candy-bondi); }
+.icon[data-open="clinical"] { --tint: var(--candy-strawberry); }
+.icon[data-open="chessblitz"] { --tint: var(--candy-grape); }
+.icon[data-open="site"] { --tint: var(--candy-lime); }
 
 .icon__label {
   font-size: var(--step-chrome);
-  line-height: 1.25;
+  font-weight: 600;
+  line-height: 1.2;
   text-align: center;
   color: var(--on-desk);
+  background: var(--on-desk-plate);
   text-shadow: var(--on-desk-shadow);
-  padding: 1px 5px;
-  border-radius: 3px;
+  padding: 1px 6px;
+  border-radius: 999px;
   max-width: 100%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.icon:hover .icon__label {
-  background: var(--veil);
-}
-
-/* Selection is the OS's own vocabulary: the label fills, not the tile. */
+/* Selection is the OS's own vocabulary: the label fills, the art dims. */
 .icon.is-selected .icon__label {
-  background: var(--accent);
-  color: var(--accent-ink);
+  background: linear-gradient(to bottom, var(--select-a), var(--select-b));
+  color: var(--select-ink);
   text-shadow: none;
 }
-.icon.is-selected {
-  background: var(--veil);
+.icon.is-selected .icon__art {
+  filter: drop-shadow(0 2px 3px rgb(0 0 0 / 0.42)) brightness(0.72);
 }
 
 /* ============================================================
-   WIDGET RAIL
+   THE RAIL
+   Brushed metal and an LCD, from the music player of the day:
+   "Now" is what is playing.
    ============================================================ */
 
 .rail {
   position: absolute;
-  top: clamp(1.25rem, 3vh, 2rem);
-  right: clamp(1.25rem, 3vw, 2.5rem);
-  width: 13rem;
+  top: clamp(0.75rem, 2vh, 1.25rem);
+  left: var(--gutter);
+  width: 14rem;
   display: grid;
   gap: var(--gap-2);
 }
+html.is-arriving .rail > * {
+  animation: icon-in 520ms var(--enter) 620ms both;
+}
 
 .widget {
-  padding: 0.7rem 0.85rem 0.8rem;
-  background: var(--chrome);
-  border-radius: var(--r-win);
+  padding: 0.5rem 0.7rem 0.6rem;
+  border: 7px solid transparent;
+  border-radius: 13px;
+  color: #17190f;
+  background:
+    linear-gradient(to bottom, #eef1dc, #dde2c4) padding-box,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='200'%3E%3Cfilter id='b'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.004 .9' numOctaves='2' seed='4'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .52 0 0 0 .34 0'/%3E%3C/filter%3E%3Crect width='400' height='200' filter='url(%23b)'/%3E%3C/svg%3E") border-box,
+    linear-gradient(to bottom, #d9d9dc, #a9a9ae) border-box;
   box-shadow:
-    var(--raise),
-    0 0 0 1px var(--hairline),
-    var(--shadow-float);
+    inset 0 1px 3px rgb(50 54 30 / 0.5),
+    0 0 0 1px rgb(0 0 0 / 0.34),
+    0 6px 14px rgb(0 0 0 / 0.34);
 }
 
 .widget__title {
   font-size: var(--step-chrome-sm);
-  font-weight: 600;
-  letter-spacing: var(--tracking-caps);
-  text-transform: uppercase;
-  color: var(--ink-faint);
+  font-weight: 700;
+  color: #3e4230; /* 8.1:1 on the LCD */
 }
 
 .nowlist {
-  margin-top: 0.5rem;
   display: grid;
-  gap: 0.4rem;
+  gap: 0.1rem;
+  margin-top: 0.1rem;
 }
 .nowlist li {
   display: grid;
-  gap: 1px;
-  padding-left: 0.55rem;
-  border-left: 1px solid var(--accent);
 }
 .nowlist__what {
-  font-size: var(--step-chrome-lg);
+  font-size: var(--step-chrome);
   font-weight: 600;
-  line-height: 1.2;
+  line-height: 1.25;
 }
 .nowlist__where {
   font-size: var(--step-chrome);
-  color: var(--ink-muted);
+  line-height: 1.25;
 }
 
 .widget__foot {
-  margin-top: 0.6rem;
+  margin-top: 0.15rem;
   font-size: var(--step-chrome-sm);
-  color: var(--ink-faint);
+  color: #3e4230;
 }
 
 .wx__temp {
-  margin-top: 0.15rem;
-  font-size: 2rem;
+  font-size: 1.75rem;
   font-weight: 500;
-  line-height: 1;
-  letter-spacing: -0.04em;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
 }
 .wx__unit {
   font-size: 0.9rem;
-  color: var(--ink-faint);
 }
 .wx__cond {
   font-size: var(--step-chrome);
-  color: var(--ink-muted);
-}
-
-/* ============================================================
-   DOCK
-   ============================================================ */
-
-.dock {
-  position: fixed;
-  left: 50%;
-  bottom: 0.75rem;
-  z-index: 190;
-  transform: translateX(-50%);
-}
-
-.dock__list {
-  display: flex;
-  align-items: flex-end;
-  gap: 0.35rem;
-  padding: 0.4rem 0.5rem;
-  background: var(--veil);
-  backdrop-filter: blur(18px) saturate(150%);
-  -webkit-backdrop-filter: blur(18px) saturate(150%);
-  border-radius: var(--r-win);
-  box-shadow:
-    inset 0 0 0 1px var(--veil-edge),
-    var(--shadow-float);
-}
-
-.dock__sep {
-  width: 1px;
-  align-self: stretch;
-  margin: 0.15rem 0.25rem;
-  background: var(--on-desk);
-  opacity: 0.2;
-}
-
-.dockitem {
-  position: relative;
-  display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  cursor: pointer;
-  transform-origin: bottom center;
-  /* Magnification is set by JS as a custom property so the falloff can be a
-     real curve across neighbours rather than a hover snap. */
-  transform: translateY(calc(var(--mag, 0) * -9px))
-    scale(calc(1 + var(--mag, 0) * 0.42));
-  transition: transform var(--dur-quick) var(--ease-out);
-}
-.dockitem svg {
-  width: 100%;
-  height: 100%;
-  filter: drop-shadow(0 2px 3px rgb(20 18 14 / 0.3));
-}
-
-/* Tooltip. Appears above the magnified icon. */
-.dockitem::after {
-  content: attr(data-label);
-  position: absolute;
-  bottom: calc(100% + 0.55rem);
-  left: 50%;
-  translate: -50% 0;
-  padding: 0.2rem 0.5rem;
-  border-radius: 3px;
-  background: var(--bar);
-  color: var(--bar-ink);
-  font-family: var(--font-mono);
-  font-size: var(--step-chrome-sm);
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity var(--dur-quick);
-}
-.dockitem:hover::after,
-.dockitem:focus-visible::after {
-  opacity: 1;
-}
-
-/* Tool tiles: display only, so no pointer cursor promising an action. They
-   keep magnification and the tooltip — the name is the whole point of them. */
-.dockitem--app {
-  cursor: default;
-}
-.dockitem--app svg {
-  border-radius: 6px;
-  box-shadow: inset 0 0 0 1px rgb(20 18 14 / 0.12);
-}
-
-/* Running indicator — honest: it means a window for this document is open. */
-.dockitem.is-running::before {
-  content: "";
-  position: absolute;
-  bottom: -0.28rem;
-  left: 50%;
-  translate: -50% 0;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: var(--on-desk);
 }
 
 /* ============================================================
@@ -1055,86 +985,139 @@ html:not(.js) .doc {
   width: var(--w, 44rem);
   max-width: calc(100vw - 2rem);
   max-height: calc(100% - 2rem);
-  background: var(--page);
-  border-radius: var(--r-win);
+  background: var(--paper);
+  border-radius: var(--r-win) var(--r-win) 5px 5px;
   box-shadow:
-    0 0 0 1px var(--bevel-dark),
-    var(--shadow-win);
-  animation: win-in var(--dur-win) var(--ease-out);
+    0 0 0 1px var(--edge),
+    var(--shadow-win-back);
+  animation: win-in var(--dur-win) var(--enter);
 }
-
+.win.is-front {
+  z-index: 140;
+  box-shadow:
+    0 0 0 1px var(--edge),
+    var(--shadow-win);
+}
 @keyframes win-in {
   from {
     opacity: 0;
-    transform: translateY(6px) scale(0.985);
+    transform: scale(0.985);
   }
 }
-
-.win.is-front {
-  z-index: 140;
-}
-
-/* The window container is focused programmatically on open so screen readers
-   land inside it. Which window has focus is already stated by the title bar
-   (front is near-black, behind is dimmed), so a ring around the whole frame
-   would be redundant chrome. Interactive children keep theirs. */
 .win:focus,
 .win:focus-visible {
   outline: none;
 }
 
+.zoomrect {
+  position: fixed;
+  z-index: 180;
+  transform-origin: 0 0;
+  border: 2px solid rgb(255 255 255 / 0.9);
+  outline: 1px solid rgb(0 0 0 / 0.5);
+  pointer-events: none;
+}
+
 .win__bar {
+  position: relative;
+  flex: none;
   display: flex;
   align-items: center;
-  gap: var(--gap-2);
-  height: 30px;
-  padding: 0 0.4rem 0 0.35rem;
-  background: var(--bar);
-  color: var(--bar-ink);
+  height: 1.5rem;
+  padding: 0 0.5rem;
+  background: var(--bar-stripes);
   border-radius: var(--r-win) var(--r-win) 0 0;
-  cursor: grab;
+  box-shadow:
+    inset 0 1px 0 #fff,
+    inset 0 -1px 0 #9c9ca2;
   user-select: none;
 }
-.win__bar:active {
-  cursor: grabbing;
-}
-
-/* Inactive windows dim their bar, so "which window is in front" is
-   answerable at a glance. */
+/* Behind, the machine goes pale: no colour in the lights, a dimmer title. */
 .win:not(.is-front) .win__bar {
-  background: #4a4854;
+  background: repeating-linear-gradient(to bottom, #f6f6f6 0 2px, #eeeeee 2px 4px);
 }
 
-.win__close {
+.win__lights {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 0.4rem;
+}
+.win__lights button,
+.mpa__bar .win__close {
+  --light: var(--light-close);
+  position: relative;
   display: grid;
   place-items: center;
-  width: 16px;
-  height: 16px;
+  width: 0.875rem;
+  height: 0.875rem;
   flex: none;
-  border-radius: 2px;
-  background: rgb(255 255 255 / 0.16);
-  color: var(--bar-ink);
-  font-size: 12px;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 700;
   line-height: 1;
-  cursor: pointer;
-  transition: background var(--dur-snap);
+  color: rgb(0 0 0 / 0);
+  background:
+    radial-gradient(ellipse 66% 40% at 50% 20%, rgb(255 255 255 / 0.92), rgb(255 255 255 / 0) 100%),
+    radial-gradient(circle at 50% 88%, color-mix(in srgb, var(--light) 62%, #fff), var(--light) 58%, color-mix(in srgb, var(--light) 74%, #000));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--light) 54%, #000),
+    0 1px 1px rgb(0 0 0 / 0.26);
 }
-.win__close:hover {
-  background: #e0483c;
-  color: #fff;
+.win__lights .win__shade {
+  --light: var(--light-shade);
+}
+.win__lights .win__zoom {
+  --light: var(--light-zoom);
+}
+.win:not(.is-front) .win__lights button {
+  --light: var(--light-off);
+}
+/* The glyphs only appear with the pointer on the lights, as they did. */
+.win__lights:hover button,
+.win__lights button:focus-visible,
+.mpa__bar .win__close:hover,
+.mpa__bar .win__close:focus-visible {
+  color: rgb(0 0 0 / 0.72);
+}
+.win__lights button:active,
+.mpa__bar .win__close:active {
+  filter: brightness(0.8);
+}
+/* A target a thumb or a shaky hand can find, without a bigger light. */
+.win__lights button::before,
+.mpa__bar .win__close::before {
+  content: "";
+  position: absolute;
+  inset: -5px -3px;
 }
 
+/* Centred on the window, whatever is at either end of the bar. */
 .win__title {
-  font-family: var(--font-mono);
-  font-size: var(--step-chrome-lg);
-  font-weight: 500;
+  position: absolute;
+  inset: 0 5.5rem;
+  display: grid;
+  place-items: center;
+  font-size: var(--step-chrome);
+  font-weight: 600;
   letter-spacing: 0;
+  color: var(--ink);
+  text-shadow: 0 1px 0 rgb(255 255 255 / 0.8);
+  white-space: nowrap;
+  overflow: hidden;
+  pointer-events: none;
+}
+.win:not(.is-front) .win__title {
+  color: #5e5e65; /* 5.5:1 on the pale stripes */
 }
 
 .win__meta {
+  position: relative;
   margin-left: auto;
   font-size: var(--step-chrome-sm);
-  color: var(--bar-ink-dim);
+  font-weight: 500;
+  color: var(--ink-faint);
+  white-space: nowrap;
 }
 
 .win__body {
@@ -1142,7 +1125,37 @@ html:not(.js) .doc {
   min-height: 0;
   overflow-y: auto;
   padding: var(--gap-4) var(--gap-4) var(--gap-5);
-  border-radius: 0 0 var(--r-win) var(--r-win);
+  border-radius: 0 0 5px 5px;
+  background: var(--paper);
+  scrollbar-gutter: stable;
+}
+
+.win.is-shaded {
+  height: auto !important;
+  border-radius: var(--r-win);
+}
+.win.is-shaded .win__body {
+  display: none;
+}
+
+/* The gel scrollbar. Where the browser has no way to draw one, the platform's
+   own is left alone rather than half-styled. */
+.win__body::-webkit-scrollbar {
+  width: 15px;
+}
+.win__body::-webkit-scrollbar-track {
+  background: repeating-linear-gradient(to bottom, #f4f4f4 0 2px, #e8e8e8 2px 4px);
+  box-shadow: inset 1px 0 2px rgb(0 0 0 / 0.24);
+}
+.win__body::-webkit-scrollbar-thumb {
+  border: 1px solid rgb(0 28 92 / 0.6);
+  border-radius: 999px;
+  background: linear-gradient(to right, #66b4fa 0%, #1a6de0 24%, #0e57c8 48%, #1b6bdc 54%, #3a8aea 86%, #7cb9f6 100%);
+  box-shadow: inset 1px 0 0 rgb(255 255 255 / 0.55);
+}
+.win:not(.is-front) .win__body::-webkit-scrollbar-thumb {
+  border-color: rgb(0 0 0 / 0.3);
+  background: linear-gradient(to right, #f2f2f2, #cfcfd2 48%, #e2e2e4);
 }
 
 /* The PDF window is a viewer: no padding, the document fills it. */
@@ -1152,22 +1165,239 @@ html:not(.js) .doc {
   flex-direction: column;
 }
 
+/* ---- The flip ----
+   flip.ts writes the two grounds and the ink from the scroll position. Until the
+   ground is paper, quieter inks stand down: only pure black or pure white clears
+   AA on every tone it passes through. */
+
+.win__body {
+  --doc-ink: var(--ink);
+  --doc-muted: var(--ink-muted);
+  --doc-faint: var(--ink-faint);
+  --doc-link: var(--link);
+  --doc-rule: var(--hairline);
+  --doc-tint: #f1f1f3;
+  color: var(--doc-ink);
+}
+.win--flip .win__body {
+  container-type: size;
+  background: linear-gradient(168deg, var(--ground-a, var(--paper)), var(--ground-b, var(--paper)));
+  padding-inline: clamp(1.25rem, 6cqw, 3rem);
+}
+.win--flip .win__body[data-ground="flavour"] {
+  --doc-muted: var(--doc-ink);
+  --doc-faint: var(--doc-ink);
+  --doc-link: var(--doc-ink);
+  --doc-rule: color-mix(in srgb, var(--doc-ink) 32%, transparent);
+  --doc-tint: transparent;
+}
+
+/* The first screen is a cover: the title, huge, low; one line under it. The
+   rest of the document waits below the fold, on paper by the time it is read. */
+.win--flip:not(.win--flat) .doc__h1 {
+  padding-top: max(1rem, 30cqh);
+  font-size: clamp(2.75rem, 11cqw, 5.25rem);
+  line-height: 0.96;
+  letter-spacing: -0.045em;
+}
+.win--flip:not(.win--flat) .doc__lede {
+  margin-top: 1rem;
+  margin-bottom: max(3rem, 24cqh);
+  font-size: clamp(1.125rem, 2.6cqw, 1.375rem);
+  line-height: 1.28;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+/* ============================================================
+   MPA
+   Jayden's personal assistant. A window in every respect but one:
+   nothing manages it. src/os/mpa.ts walks it to a clear patch of
+   desk beside whatever it is talking about; the glide between
+   stops is a window's 220ms.
+   ============================================================ */
+
+.mpa {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 190;
+  width: 19.5rem;
+  translate: var(--mpa-x, 0) var(--mpa-y, 0);
+  transition: translate var(--dur-win) var(--enter);
+  background: var(--stripes);
+  border-radius: var(--r-win) var(--r-win) 5px 5px;
+  box-shadow:
+    0 0 0 1px var(--edge),
+    var(--shadow-win);
+  animation: win-in var(--dur-win) var(--enter);
+}
+.mpa[hidden] {
+  display: none;
+}
+/* The first stop is arrived at, not glided to. */
+.mpa.is-placing {
+  transition: none;
+}
+
+/* Nothing drags it, so its bar does not offer a grab. */
+html.js .mpa__bar {
+  cursor: var(--cursor-arrow);
+}
+
+.mpa__count {
+  font-variant-numeric: tabular-nums;
+}
+
+.mpa__body {
+  padding: var(--gap-3) var(--gap-3) 0.75rem;
+}
+
+.mpa__say {
+  font-size: var(--step-body);
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+.mpa__say.is-new {
+  animation: mpa-say var(--dur-quick) var(--enter);
+}
+@keyframes mpa-say {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+}
+
+.mpa__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-2);
+  margin-top: var(--gap-3);
+}
+
+.mpa__skip,
+.mpa__go {
+  height: 1.375rem;
+  padding: 0 0.9rem;
+  border-radius: 999px;
+  font-size: var(--step-chrome);
+  font-weight: 600;
+}
+.mpa__skip {
+  background: linear-gradient(to bottom, #fff, #e4e4e6 46%, #d2d2d6 52%, #f4f4f6);
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 0 0 1px rgb(0 0 0 / 0.36),
+    0 1px 2px rgb(0 0 0 / 0.2);
+}
+.mpa__skip[hidden] {
+  display: none;
+}
+.mpa__go {
+  margin-left: auto;
+  color: #fff;
+  text-shadow: 0 1px 1px rgb(0 0 0 / 0.35);
+  background: var(--gel-face);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.6),
+    0 0 0 1px rgb(0 28 92 / 0.62),
+    0 1px 3px rgb(0 0 0 / 0.3);
+}
+.mpa__skip:active,
+.mpa__go:active {
+  filter: brightness(0.86);
+}
+
+/* The leader: a line from Mpa to a ring around what it is talking about. It runs
+   under the desk's furniture, so what it passes stays readable. White with a dark
+   casing reads on every flavour and every terrace. */
+.mpa-lead {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  fill: none;
+  pointer-events: none;
+}
+.mpa-lead[hidden] {
+  display: none;
+}
+.mpa-lead__casing {
+  stroke: rgb(0 0 0 / 0.5);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+.mpa-lead__line {
+  stroke: #fff;
+  stroke-width: 1.75;
+}
+.mpa-lead__dot {
+  fill: #fff;
+}
+
+/* Drawn out of Mpa toward its subject; then the ring arrives. */
+.mpa-lead path {
+  stroke-dasharray: 1;
+}
+.mpa-lead.is-drawing path {
+  animation: mpa-draw var(--dur-win) var(--enter) both;
+}
+@keyframes mpa-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* The ring, worn by the subject itself so it reads over the menubar and around a
+   window, above that window's own shadow. */
+.is-mpa-subject {
+  outline: 2px solid #fff;
+  outline-offset: 5px;
+  box-shadow: 0 0 0 7px rgb(0 0 0 / 0.26);
+  border-radius: 6px;
+}
+.menubar .is-mpa-subject,
+.win__bar .is-mpa-subject {
+  outline-color: var(--select-b);
+  outline-offset: 2px;
+  box-shadow: none;
+}
+.is-mpa-new {
+  animation: mpa-ring var(--dur-quick) var(--enter) var(--dur-quick) both;
+}
+@keyframes mpa-ring {
+  from {
+    outline-color: transparent;
+  }
+}
+
 /* ============================================================
    DOCUMENT CONTENT
    ============================================================ */
 
+.doc {
+  color: var(--doc-ink, var(--ink));
+}
+
 .doc__h1 {
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: var(--step-h1);
+  font-weight: 600;
+  font-size: clamp(1.75rem, 1.2rem + 2vw, 2.5rem);
   line-height: var(--leading-tight);
-  letter-spacing: var(--tracking-tight);
+  letter-spacing: -0.035em;
+  text-wrap: balance;
 }
 
 .doc__lede {
   margin-top: 0.5rem;
   font-size: var(--step-lede);
-  color: var(--ink-muted);
+  font-weight: 500;
+  color: var(--doc-muted, var(--ink-muted));
   max-width: var(--measure-text);
 }
 
@@ -1183,13 +1413,11 @@ html:not(.js) .doc {
 .award {
   display: inline-block;
   margin-bottom: 0.6rem;
-  padding: 0.2rem 0.5rem;
-  border-radius: 2px;
-  background: var(--accent-wash);
-  color: var(--accent-deep);
+  padding: 0.1rem 0.6rem;
+  border-radius: 999px;
+  background: var(--doc-tint, #f1f1f3);
   font-size: var(--step-chrome-sm);
   font-weight: 600;
-  letter-spacing: 0.03em;
 }
 
 /* Screenshot wells. Deliberately obvious that something is missing. */
@@ -1199,41 +1427,35 @@ html:not(.js) .doc {
   display: grid;
   place-items: center;
   border-radius: var(--r-ctl);
-  background: repeating-linear-gradient(
-    135deg,
-    var(--chrome) 0 10px,
-    var(--chrome-dim) 10px 20px
-  );
-  box-shadow: var(--inset);
+  background: repeating-linear-gradient(135deg, #f1f1f3 0 10px, #e2e2e6 10px 20px);
+  box-shadow: inset 0 1px 3px rgb(0 0 0 / 0.26);
 }
 .shot--wide {
   aspect-ratio: 16 / 10;
 }
 .shot__label {
-  font-family: var(--font-mono);
   font-size: var(--step-chrome-sm);
   color: var(--ink-faint);
 }
 
-/* Spec tables. The workstation's information-density register. */
+/* Spec tables: the Get Info panel, labels right-aligned to a gutter. */
 .spec {
   margin-top: var(--gap-4);
-  border-top: 1px solid var(--hairline);
+  border-top: 1px solid var(--doc-rule, var(--hairline));
 }
 .spec > div {
   display: grid;
   grid-template-columns: 6.5rem 1fr;
   gap: var(--gap-3);
-  padding: 0.5rem 0;
-  border-bottom: 1px solid var(--hairline);
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--doc-rule, var(--hairline));
 }
 .spec dt {
   font-size: var(--step-chrome);
   font-weight: 600;
-  letter-spacing: var(--tracking-caps);
-  text-transform: uppercase;
-  color: var(--ink-faint);
-  padding-top: 0.14rem;
+  text-align: right;
+  color: var(--doc-faint, var(--ink-faint));
+  padding-top: 0.12rem;
 }
 .spec dd {
   margin: 0;
@@ -1249,7 +1471,7 @@ html:not(.js) .doc {
 
 .role {
   padding: var(--gap-3) 0;
-  border-top: 1px solid var(--hairline);
+  border-top: 1px solid var(--doc-rule, var(--hairline));
 }
 .role:first-child {
   border-top: 0;
@@ -1258,54 +1480,42 @@ html:not(.js) .doc {
 
 .role__when {
   font-size: var(--step-chrome);
-  color: var(--ink-faint);
+  color: var(--doc-faint, var(--ink-faint));
 }
 
 .role__title {
   margin-top: 0.15rem;
-  font-family: var(--font-display);
-  font-weight: 800;
+  font-weight: 600;
   font-size: var(--step-h3);
   letter-spacing: -0.015em;
 }
 
 .role__org {
   margin-bottom: 0.4rem;
-  font-size: var(--step-chrome-lg);
-  color: var(--accent-deep);
+  font-size: var(--step-chrome);
   font-weight: 500;
+  color: var(--doc-muted, var(--ink-muted));
 }
 
-/* The takeaway a role left behind, in Jayden's own words off the résumé.
-   Italic because it is the one line in this list that is opinion rather than
-   record, and the label is inline rather than an eyebrow above it so the
-   sentence still reads as part of the entry. No rule, no tint, no card: it
-   sits inside the role it belongs to and borrows that block's separation. */
 .role__take {
   margin-top: 0.5rem;
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 0.55rem;
   align-items: baseline;
-  font-size: var(--step-chrome-lg);
+  font-size: var(--step-chrome);
   font-style: italic;
-  color: var(--ink-muted);
+  color: var(--doc-muted, var(--ink-muted));
   max-width: var(--measure-text);
 }
 .role__take-k {
   font-size: var(--step-chrome-sm);
   font-style: normal;
   font-weight: 600;
-  letter-spacing: var(--tracking-caps);
-  text-transform: uppercase;
-  color: var(--ink-faint);
+  color: var(--doc-faint, var(--ink-faint));
 }
 
-/* ---- Principles ----
-   Deliberately the same grammar as the roles list above: hairline-separated
-   blocks, display face on the title, accent on the line underneath. A page of
-   principles has to look like it belongs to the same machine as the work
-   history, or it reads as a different site that wandered in. */
+/* ---- Principles ---- */
 
 .tenets {
   margin-top: var(--gap-4);
@@ -1314,7 +1524,7 @@ html:not(.js) .doc {
 
 .tenet {
   padding: var(--gap-4) 0;
-  border-top: 1px solid var(--hairline);
+  border-top: 1px solid var(--doc-rule, var(--hairline));
 }
 .tenet:first-child {
   border-top: 0;
@@ -1322,39 +1532,28 @@ html:not(.js) .doc {
 }
 
 .tenet__title {
-  font-family: var(--font-display);
-  font-weight: 800;
+  font-weight: 600;
   font-size: var(--step-h3);
   line-height: var(--leading-tight);
   letter-spacing: -0.015em;
   max-width: var(--measure-text);
 }
 
-/* The evidence line, in the slot where a job's employer sits. The dash is set
-   here rather than kept in the prose so the file reads as prose. */
 .tenet__anchor {
   margin-bottom: 0.5rem;
-  font-size: var(--step-chrome-lg);
+  font-size: var(--step-chrome);
   font-weight: 500;
-  color: var(--accent-deep);
+  color: var(--doc-muted, var(--ink-muted));
 }
 .tenet__anchor::before {
   content: "— ";
 }
 
-/* A principle with nothing behind it leaves a hole, on the same argument as
-   the screenshot wells: the absence is the honest thing to render. */
 .tenet__anchor--missing {
   display: inline-block;
   padding: 0.1rem 0.45rem;
-  border-radius: 2px;
-  background: repeating-linear-gradient(
-    135deg,
-    var(--chrome) 0 8px,
-    var(--chrome-dim) 8px 16px
-  );
-  box-shadow: var(--inset);
-  font-family: var(--font-mono);
+  border-radius: 3px;
+  background: repeating-linear-gradient(135deg, #f1f1f3 0 8px, #e2e2e6 8px 16px);
   font-size: var(--step-chrome-sm);
   color: var(--ink-faint);
 }
@@ -1377,11 +1576,7 @@ html:not(.js) .doc {
   list-style: decimal;
 }
 .bullets li::marker {
-  color: var(--ink-faint);
-}
-.bullets--num li::marker {
-  font-family: var(--font-mono);
-  font-size: 0.9em;
+  color: var(--doc-faint, var(--ink-faint));
 }
 .bullets li + li {
   margin-top: 0.2rem;
@@ -1394,27 +1589,19 @@ html:not(.js) .doc {
   margin: var(--gap-4) 0;
   max-width: var(--measure-text);
   border: 0;
-  border-top: 1px solid var(--hairline);
+  border-top: 1px solid var(--doc-rule, var(--hairline));
 }
 
 .doc code {
   font-size: 0.9em;
-  color: var(--ink-muted);
+  color: var(--doc-muted, var(--ink-muted));
 }
 
-/* Unfinished work says so, on the machine, in the window. Same striping as the
-   screenshot wells for the same reason. */
 .draftbar {
   margin-bottom: var(--gap-3);
   padding: 0.35rem 0.6rem;
   border-radius: var(--r-ctl);
-  background: repeating-linear-gradient(
-    135deg,
-    var(--chrome) 0 10px,
-    var(--chrome-dim) 10px 20px
-  );
-  box-shadow: var(--inset);
-  font-family: var(--font-mono);
+  background: repeating-linear-gradient(135deg, #f1f1f3 0 10px, #e2e2e6 10px 20px);
   font-size: var(--step-chrome-sm);
   color: var(--ink-faint);
 }
@@ -1423,21 +1610,21 @@ html:not(.js) .doc {
   margin-top: var(--gap-4);
   padding: var(--gap-3);
   border-radius: var(--r-ctl);
-  background: var(--chrome);
-  box-shadow: var(--raise);
+  background: var(--doc-tint, #f1f1f3);
+}
+.edu p + p {
+  margin-top: 0.3rem;
 }
 .edu__note {
   margin-top: 0.2rem;
-  font-size: var(--step-chrome-lg);
-  color: var(--ink-muted);
+  font-size: var(--step-chrome);
+  color: var(--doc-muted, var(--ink-muted));
 }
-/* Coursework. One step quieter than the note above it, because it is the
-   line a reader scans for a keyword rather than reads. */
 .edu__course {
   margin-top: 0.45rem;
   font-size: var(--step-chrome);
   line-height: 1.5;
-  color: var(--ink-faint);
+  color: var(--doc-faint, var(--ink-faint));
 }
 
 /* ---- PDF viewer ---- */
@@ -1445,8 +1632,8 @@ html:not(.js) .doc {
 .pdf {
   flex: 1;
   min-height: 24rem;
-  background: var(--chrome-dim);
-  box-shadow: var(--inset);
+  background: #8d8d92;
+  box-shadow: inset 0 1px 3px rgb(0 0 0 / 0.4);
 }
 .pdf__view {
   width: 100%;
@@ -1462,15 +1649,16 @@ html:not(.js) .doc {
   height: 100%;
   padding: var(--gap-5);
   text-align: center;
+  color: #000;
 }
 
 .pdf__bar {
   display: flex;
   align-items: center;
   gap: var(--gap-4);
-  padding: 0.6rem 0.9rem;
-  background: var(--chrome);
-  box-shadow: inset 0 1px 0 var(--bevel-light);
+  padding: 0.5rem 0.9rem;
+  background: var(--stripes);
+  box-shadow: inset 0 1px 0 #b4b4b8;
 }
 .pdf__meta {
   display: flex;
@@ -1483,34 +1671,37 @@ html:not(.js) .doc {
 }
 .pdf__meta dt {
   font-size: var(--step-chrome-sm);
-  letter-spacing: var(--tracking-caps);
-  text-transform: uppercase;
   color: var(--ink-faint);
 }
 .pdf__meta dd {
   margin: 0;
-  font-size: var(--step-chrome-lg);
+  font-size: var(--step-chrome);
+  font-weight: 500;
 }
 
 .btn {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  padding: 0.45rem 0.9rem;
-  border-radius: var(--r-ctl);
-  font-size: var(--step-chrome-lg);
+  height: 1.5rem;
+  padding: 0 1.1rem;
+  border-radius: 999px;
+  font-size: var(--step-chrome);
   font-weight: 600;
   text-decoration: none;
-  cursor: pointer;
-  transition: background var(--dur-quick);
 }
 .btn--primary {
   margin-left: auto;
-  background: var(--accent);
-  color: var(--accent-ink);
+  color: #fff;
+  text-shadow: 0 1px 1px rgb(0 0 0 / 0.35);
+  background: var(--gel-face);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.6),
+    0 0 0 1px rgb(0 28 92 / 0.62),
+    0 1px 3px rgb(0 0 0 / 0.3);
 }
 .btn--primary:hover {
-  background: var(--accent-deep);
+  filter: brightness(1.08);
 }
 
 /* Documents are invisible until promoted into a window (JS mode only). */
@@ -1519,30 +1710,34 @@ html.js .docs {
 }
 
 /* ============================================================
-   MOBILE — an iOS home screen, not a shrunken desktop.
-   Windows become full-height sheets.
+   MOBILE
+   The same desk, closer. Windows become full-height sheets with
+   the one light that means anything on a phone.
    ============================================================ */
 
 @media (max-width: 780px) {
+  :root {
+    --menubar-h: 2rem;
+    /* Two lines, "Jayden" and "Lee", each as wide as the screen would allow. */
+    --name-size: min(calc((100vw - 2 * var(--gutter)) / 3.14), 24vh);
+    --name-foot: var(--gutter);
+    --name-block: calc(var(--name-size) * 1.84 + var(--name-foot));
+  }
+
+  .nameplate__word {
+    display: block;
+  }
+
   /* GitHub and LinkedIn are in about.txt. The way back to the portfolio is
      not anywhere else, so it stays. */
   .menubar__link:not(.menubar__link--home) {
     display: none;
   }
   .menubar {
-    padding-inline: 0.35rem;
+    padding-inline: 0.2rem;
   }
   .menu__trigger {
-    padding-inline: 0.4rem;
-  }
-  /* The bar is 30px tall, so the clock cannot grow to a thumb-sized target.
-     Extend its hit area past its face instead. The Portfolio link is the
-     only thing beside it here, a 16px gap away, so 10px of reach cannot
-     land on it. */
-  .menubar__clock::before {
-    content: "";
-    position: absolute;
-    inset: -6px -10px;
+    padding-inline: 0.5rem;
   }
 
   /* Below 400px the bar cannot hold the name, three menus, the way home and
@@ -1560,57 +1755,72 @@ html.js .docs {
   }
 
   .desk {
-    position: static;
-    min-height: calc(100dvh - var(--menubar-h));
-    margin-top: var(--menubar-h);
-    padding: var(--gap-4) var(--gap-3) 7rem;
-    overflow: visible;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-3);
+    padding: var(--gap-3) var(--gutter) calc(var(--name-block) + var(--gap-2));
+  }
+  /* Tall enough screens keep the name on the ground; a short one lets the desk
+     scroll, and gel.ts gives the name back to the page's own text. */
+  .nameplate {
+    position: absolute;
   }
 
   .deskcol,
   .rail {
     position: static;
-    display: block;
-    max-width: none;
-  }
-  .nameplate {
-    max-width: none;
   }
 
   .icons {
-    display: grid;
-    margin-top: var(--gap-5);
-    /* minmax(0, …): a bare 1fr will not shrink below "experience.log", which
-       pushed the grid 30px past a 320px screen. */
+    direction: ltr;
+    grid-auto-flow: row;
+    grid-template-rows: none;
+    /* minmax(0, ...): a bare 1fr will not shrink below "experience.log". */
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: var(--gap-4) var(--gap-1);
+    gap: var(--gap-2) var(--gap-1);
   }
-  /* Narrow columns: let a long filename take two lines rather than truncate. */
+  .icon {
+    width: auto;
+  }
+  .icon__art {
+    width: 3rem;
+    height: 3rem;
+  }
+  /* Narrow columns: a long filename takes two lines rather than truncate, at the
+     extension where it can. */
   .icon__label {
+    padding-inline: 4px;
+    font-size: var(--step-chrome-sm);
     white-space: normal;
     overflow: visible;
     overflow-wrap: anywhere;
+    border-radius: 7px;
   }
 
   .rail {
     width: auto;
-    margin-top: var(--gap-5);
     grid-template-columns: 1fr 1fr;
-    align-items: start;
+    align-items: stretch;
+  }
+  .widget {
+    border-width: 5px;
   }
 
-  .dock {
-    bottom: max(0.6rem, env(safe-area-inset-bottom));
+  .lock__hint {
+    height: 2.25rem;
+    padding-inline: 2rem;
   }
-  .dockitem {
-    width: 34px;
-    height: 34px;
-    /* Magnification is a pointer affordance; on touch it just gets in the
-       way, so the transform is neutralised rather than restyled. */
-    transform: none;
+  .lock {
+    grid-template-columns: 1fr;
   }
-  .dockitem::after {
-    display: none;
+  .lock__time {
+    order: 0;
+  }
+
+  /* As wide as the screen; mpa.ts moves it up and down only. */
+  .mpa {
+    width: calc(100vw - 1.5rem);
   }
 
   .win {
@@ -1621,7 +1831,7 @@ html.js .docs {
     height: calc(100dvh - var(--menubar-h));
     max-height: none;
     border-radius: var(--r-win) var(--r-win) 0 0;
-    animation: sheet-in var(--dur-win) var(--ease-out);
+    animation: sheet-in var(--dur-win) var(--enter);
   }
   @keyframes sheet-in {
     from {
@@ -1630,13 +1840,23 @@ html.js .docs {
     }
   }
   .win__bar {
-    height: 42px;
-    cursor: default;
+    height: 2.25rem;
   }
-  .win__close {
-    width: 22px;
-    height: 22px;
-    font-size: 15px;
+  /* A sheet cannot be rolled up or zoomed; it already fills the screen. */
+  .win__lights .win__shade,
+  .win__lights .win__zoom {
+    display: none;
+  }
+  .win__lights button,
+  .mpa__bar .win__close {
+    width: 1.25rem;
+    height: 1.25rem;
+    color: rgb(0 0 0 / 0.72);
+    font-size: 1rem;
+  }
+  .win__lights button::before,
+  .mpa__bar .win__close::before {
+    inset: -8px;
   }
   .win__body {
     padding: var(--gap-4) var(--gap-3) var(--gap-6);
@@ -1646,19 +1866,24 @@ html.js .docs {
     grid-template-columns: 1fr;
     gap: 0.1rem;
   }
+  .spec dt {
+    text-align: left;
+  }
   .pdf__bar {
     flex-wrap: wrap;
     gap: var(--gap-2);
   }
   .btn--primary {
     width: 100%;
+    height: 2.25rem;
     justify-content: center;
   }
 }
 
 /* ============================================================
    REDUCED MOTION
-   The wake still happens — it is the navigation — but instantly.
+   Nothing on this page arrives from elsewhere. The login is the
+   first thing there, and waking it is the navigation, at once.
    ============================================================ */
 
 @media (prefers-reduced-motion: reduce) {
@@ -1673,21 +1898,5 @@ html.js .docs {
        start invisible and only pop in later. */
     animation-delay: 0ms !important;
     transition-delay: 0ms !important;
-  }
-  .lock.is-waking {
-    transform: none;
-  }
-  /* The emitted rings are the whole point of the dot's animation; with motion
-     off they are not worth keeping as a static artefact. The solid core still
-     carries the status. */
-  .dot::before,
-  .dot::after {
-    display: none;
-  }
-  .lock__id {
-    filter: none;
-  }
-  .dockitem {
-    transform: none !important;
   }
 }

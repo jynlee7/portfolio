@@ -7,6 +7,7 @@
 
 import { closeAll } from "./windows";
 import { relock } from "./lock";
+import { restart } from "./boot";
 import { tidy } from "./arrange";
 
 const DESK_KEY = "jl.desk";
@@ -63,12 +64,14 @@ export function initMenubar(): void {
     .querySelector('[data-action="tidy"]')
     ?.addEventListener("click", () => tidy());
   document.querySelector('[data-action="lock"]')?.addEventListener("click", relock);
+  document.querySelector('[data-action="restart"]')?.addEventListener("click", restart);
 
   initWallpaper();
   startBarClock();
 }
 
-/** Wallpaper switch. The choice sticks across visits. */
+/** Wallpaper switch. The choice sticks across visits. A name left over from an
+ *  older desk matches no button, and the default takes its place. */
 function initWallpaper(): void {
   const buttons = [...document.querySelectorAll<HTMLButtonElement>("[data-desk]")].filter(
     (el) => el.tagName === "BUTTON",
@@ -93,7 +96,7 @@ function initWallpaper(): void {
     /* ignore */
   }
 
-  apply(saved && buttons.some((b) => b.dataset.desk === saved) ? saved : "lab");
+  apply(saved && buttons.some((b) => b.dataset.desk === saved) ? saved : "tangerine");
 
   for (const button of buttons) {
     button.addEventListener("click", () => apply(button.dataset.desk as string));

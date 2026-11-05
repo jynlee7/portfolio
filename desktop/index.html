@@ -1,24 +1,45 @@
 <!doctype html>
-<html lang="en" data-desk="lab">
+<html lang="en" data-desk="tangerine">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <title>Jayden Lee · Desktop playground</title>
+    <title>Jayden Lee · Desktop</title>
     <meta
       name="description"
-      content="An interactive desktop playground by Jayden Lee. Explore the portfolio and the contour field."
+      content="Jayden Lee's desktop: a working machine from about 2001, with his résumé, projects and experience as files on it."
     />
-    <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
-    <link
-      rel="stylesheet"
-      href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@800,500&f[]=switzer@400,500,600&display=swap"
-    />
-    <!-- The desktop is an enhancement. Without this class the stylesheet
+    <link rel="preload" href="/fonts/GeneralSans-Variable.woff2" as="font" type="font/woff2" crossorigin />
+    <!-- The desktop is an enhancement. Without the `js` class the stylesheet
          renders every document as a plain vertical page, so a script failure
-         costs the visitor the metaphor, never the content. -->
+         costs the visitor the metaphor, never the content.
+
+         Everything here has to be decided before the first paint: the flavour,
+         so the wrong wallpaper never flashes; `is-booting`, so a cold visit's first
+         frame is already the boot; and `awake`, so a return visit's is the desk.
+         If the module never starts, the watchdog falls back to the plain page. -->
     <script>
-      document.documentElement.classList.add("js");
+      (function () {
+        var root = document.documentElement;
+        root.classList.add("js");
+        function read(store, key) {
+          try {
+            return window[store].getItem(key);
+          } catch (e) {
+            return null;
+          }
+        }
+        var desk = read("localStorage", "jl.desk");
+        if (desk && /^(tangerine|bondi|grape|lime|strawberry|graphite)$/.test(desk)) root.dataset.desk = desk;
+        var deep = location.hash.length > 1;
+        var woke = read("sessionStorage", "jl.woke") === "1";
+        if (woke || deep) root.classList.add("awake");
+        else if (read("sessionStorage", "jl.booted") !== "1" && !matchMedia("(prefers-reduced-motion: reduce)").matches) root.classList.add("is-booting");
+        setTimeout(function () {
+          if ("running" in root.dataset) return;
+          root.classList.remove("js", "is-booting", "awake");
+        }, 8000);
+      })();
     </script>
   </head>
 
@@ -28,208 +49,136 @@
 
     <!-- ============================================================
          ICON SPRITE
-         One grammar: 2px strokes on a 32-unit grid, flat geometric
-         fills, indigo reserved for the one part of each object that
-         identifies it. Drawn here rather than pulled from a set so
-         the folder, the page and the plot look like the same machine.
+         Drawn in the period's own grammar: an object, lit from above, with a
+         hard highlight across its top and a soft glow in its base. Colour comes
+         in through --tint, so each folder can be its own flavour.
          ============================================================ -->
     <svg class="sprite" aria-hidden="true" focusable="false">
       <defs>
-        <symbol id="i-folder" viewBox="0 0 40 34">
-          <path
-            d="M1.5 5.5A2 2 0 0 1 3.5 3.5h10.2a2 2 0 0 1 1.6.8l2.1 2.8h21.1"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="0"
-          />
-          <path
-            d="M2 6a2 2 0 0 1 2-2h10.4l3 4H36a2 2 0 0 1 2 2v3H2z"
-            fill="var(--accent-deep)"
-          />
-          <path
-            d="M2 10h36a2 2 0 0 1 2 2v18a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2z"
-            fill="var(--accent)"
-          />
-          <path d="M2 13h36" stroke="rgb(255 255 255 / .28)" stroke-width="1" />
+        <linearGradient id="g-gloss" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#fff" stop-opacity=".85" />
+          <stop offset="1" stop-color="#fff" stop-opacity=".12" />
+        </linearGradient>
+        <linearGradient id="g-glow" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#fff" stop-opacity="0" />
+          <stop offset="1" stop-color="#fff" stop-opacity=".5" />
+        </linearGradient>
+        <linearGradient id="g-shade" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#000" stop-opacity="0" />
+          <stop offset="1" stop-color="#000" stop-opacity=".3" />
+        </linearGradient>
+        <linearGradient id="g-sheet" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#fff" />
+          <stop offset="1" stop-color="#e4e6ea" />
+        </linearGradient>
+        <linearGradient id="g-screen" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#22303a" />
+          <stop offset="1" stop-color="#0a1218" />
+        </linearGradient>
+
+        <symbol id="i-folder" viewBox="0 0 64 64">
+          <path d="M6 16a4 4 0 0 1 4-4h14l5 6h25a4 4 0 0 1 4 4v28a4 4 0 0 1-4 4H10a4 4 0 0 1-4-4z" fill="var(--tint)" />
+          <path d="M6 16a4 4 0 0 1 4-4h14l5 6h25a4 4 0 0 1 4 4v28a4 4 0 0 1-4 4H10a4 4 0 0 1-4-4z" fill="url(#g-shade)" />
+          <path d="M6 26a4 4 0 0 1 4-4h44a4 4 0 0 1 4 4v24a4 4 0 0 1-4 4H10a4 4 0 0 1-4-4z" fill="var(--tint)" />
+          <path d="M6 26a4 4 0 0 1 4-4h44a4 4 0 0 1 4 4v24a4 4 0 0 1-4 4H10a4 4 0 0 1-4-4z" fill="url(#g-glow)" />
+          <path d="M8.500 26a2.500 2.500 0 0 1 2.500-2.500h42a2.500 2.500 0 0 1 2.500 2.500v8c-14 4-33 4-47 0z" fill="url(#g-gloss)" />
+          <path d="M6 16a4 4 0 0 1 4-4h14l5 6h25a4 4 0 0 1 4 4v28a4 4 0 0 1-4 4H10a4 4 0 0 1-4-4z" fill="none" stroke="#000" stroke-opacity=".38" />
         </symbol>
 
-        <!-- this-site: a window, because the project is the window manager
-             you are looking at. One pale control at the left of the bar,
-             which is exactly how many controls the real frames carry — the
-             glyph is a scale model, not a stock browser mark. It exists so
-             the dock does not run three identical folders in a row. -->
-        <symbol id="i-win" viewBox="0 0 40 34">
-          <rect
-            x="2"
-            y="3"
-            width="36"
-            height="28"
-            rx="2.5"
-            fill="#fbfaf7"
-            stroke="#8d8a80"
-            stroke-width="1.4"
-          />
-          <path
-            d="M2.7 5.5a2 2 0 0 1 2-2h30.6a2 2 0 0 1 2 2V12H2.7z"
-            fill="var(--accent)"
-          />
-          <rect x="6" y="6.6" width="2.8" height="2.8" rx="0.6" fill="rgb(255 255 255 / .72)" />
-          <g stroke="#9a978d" stroke-width="1.6" stroke-linecap="round">
-            <path d="M7 19h26" />
-            <path d="M7 24h17" />
-          </g>
+        <!-- this-site: a candy-coloured monitor with this desk's window on it,
+             because the project is the machine you are looking at. -->
+        <symbol id="i-win" viewBox="0 0 64 64">
+          <path d="M12 8h40a8 8 0 0 1 8 8v28a10 10 0 0 1-10 10H14A10 10 0 0 1 4 44V16a8 8 0 0 1 8-8z" fill="var(--tint)" />
+          <path d="M12 8h40a8 8 0 0 1 8 8v28a10 10 0 0 1-10 10H14A10 10 0 0 1 4 44V16a8 8 0 0 1 8-8z" fill="url(#g-glow)" />
+          <rect x="11" y="13" width="42" height="31" rx="4" fill="url(#g-screen)" />
+          <rect x="16" y="18" width="24" height="18" rx="1.500" fill="#f6f6f6" />
+          <rect x="16" y="18" width="24" height="4" rx="1.500" fill="#d6d6da" />
+          <circle cx="18.500" cy="20" r="1" fill="#f4493e" />
+          <circle cx="21.500" cy="20" r="1" fill="#f6b52c" />
+          <circle cx="24.500" cy="20" r="1" fill="#35b94a" />
+          <path d="M11 17a4 4 0 0 1 4-4h34a4 4 0 0 1 4 4v3c-13 6-29 7-42 3z" fill="#fff" fill-opacity=".14" />
+          <path d="M12 9h40a7 7 0 0 1 7 6c-12-3-42-3-54 0a7 7 0 0 1 7-6z" fill="url(#g-gloss)" />
+          <path d="M26 54h12l3 5H23z" fill="var(--tint)" />
+          <path d="M12 8h40a8 8 0 0 1 8 8v28a10 10 0 0 1-10 10H14A10 10 0 0 1 4 44V16a8 8 0 0 1 8-8z" fill="none" stroke="#000" stroke-opacity=".38" />
         </symbol>
 
         <!-- Page silhouette shared by every document icon. -->
-        <symbol id="i-page" viewBox="0 0 32 40">
-          <path
-            d="M2 3a2 2 0 0 1 2-2h15l11 11v25a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2z"
-            fill="#fbfaf7"
-            stroke="#8d8a80"
-            stroke-width="1.4"
-          />
-          <path
-            d="M19 1v9a2 2 0 0 0 2 2h9"
-            fill="none"
-            stroke="#8d8a80"
-            stroke-width="1.4"
-          />
+        <symbol id="i-page" viewBox="0 0 64 64">
+          <path d="M14 4h26l14 14v40a2 2 0 0 1-2 2H14a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" fill="url(#g-sheet)" stroke="#000" stroke-opacity=".42" />
+          <path d="M40 4v12a2 2 0 0 0 2 2h12z" fill="#cdd2d9" stroke="#000" stroke-opacity=".36" stroke-linejoin="round" />
         </symbol>
 
-        <symbol id="i-pdf" viewBox="0 0 32 40">
+        <symbol id="i-pdf" viewBox="0 0 64 64">
           <use href="#i-page" />
-          <rect x="2" y="21" width="24" height="10" rx="1.5" fill="var(--accent)" />
-          <text
-            x="14"
-            y="28.4"
-            text-anchor="middle"
-            font-family="ui-monospace, Menlo, monospace"
-            font-size="7"
-            font-weight="700"
-            fill="#fff"
-            letter-spacing="0.4"
-          >
-            PDF
-          </text>
+          <rect x="6" y="32" width="40" height="17" rx="3" fill="#d42a22" />
+          <rect x="6" y="32" width="40" height="8" rx="3" fill="url(#g-gloss)" />
+          <text x="26" y="45" text-anchor="middle" font-family="General Sans, Arial, sans-serif" font-size="12" font-weight="700" fill="#fff">PDF</text>
         </symbol>
 
-        <!-- experience.log: a page carrying a step plot, because the file is
-             a record of things that happened in sequence. -->
-        <symbol id="i-log" viewBox="0 0 32 40">
+        <!-- experience.log: a page carrying a step plot, because the file is a
+             record of things that happened in sequence. -->
+        <symbol id="i-log" viewBox="0 0 64 64">
           <use href="#i-page" />
-          <path
-            d="M7 30h4v-5h4v-7h4v-4h5"
-            fill="none"
-            stroke="var(--accent)"
-            stroke-width="2"
-            stroke-linejoin="round"
-            stroke-linecap="round"
-          />
-          <circle cx="24" cy="14" r="2" fill="var(--accent)" />
+          <path d="M18 50h7v-9h8v-11h8v-7h9" fill="none" stroke="#1464d8" stroke-width="3.500" stroke-linejoin="round" stroke-linecap="round" />
+          <circle cx="50" cy="23" r="3.200" fill="#1464d8" />
         </symbol>
 
-        <symbol id="i-txt" viewBox="0 0 32 40">
+        <symbol id="i-txt" viewBox="0 0 64 64">
           <use href="#i-page" />
-          <g stroke="#9a978d" stroke-width="1.6" stroke-linecap="round">
-            <path d="M7 20h18" />
-            <path d="M7 25h18" />
-            <path d="M7 30h11" />
+          <g stroke="#8a8f98" stroke-width="2.600" stroke-linecap="round">
+            <path d="M19 30h28" />
+            <path d="M19 37h28" />
+            <path d="M19 44h28" />
+            <path d="M19 51h16" />
           </g>
-          <path d="M7 15h7" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round" />
-        </symbol>
-
-
-        <symbol id="i-mail" viewBox="0 0 40 32">
-          <rect
-            x="2"
-            y="3"
-            width="36"
-            height="26"
-            rx="2.5"
-            fill="#fbfaf7"
-            stroke="#8d8a80"
-            stroke-width="1.4"
-          />
-          <path
-            d="M3.5 5.5 20 18 36.5 5.5"
-            fill="none"
-            stroke="var(--accent)"
-            stroke-width="2.2"
-            stroke-linejoin="round"
-          />
-        </symbol>
-
-        <!-- Dock tiles: the tools Jayden builds with. Brand marks, so they
-             keep their own colours instead of the sprite's indigo grammar.
-             Display only — none of them launches anything. Glyph paths for
-             Claude and OpenAI are Simple Icons' (CC0); the Lovable heart is
-             drawn here. -->
-        <linearGradient id="g-lovable" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="#ff8a1f" />
-          <stop offset=".5" stop-color="#ff3d8b" />
-          <stop offset="1" stop-color="#5a6cff" />
-        </linearGradient>
-        <symbol id="i-app-lovable" viewBox="0 0 40 40">
-          <rect width="40" height="40" rx="6" fill="#fbfaf7" />
-          <path d="M20 32.5C9.5 25.4 6 19.6 7.6 14.6 9.2 9.6 15.6 8.3 20 13.4 24.4 8.3 30.8 9.6 32.4 14.6 34 19.6 30.5 25.4 20 32.5Z" fill="url(#g-lovable)" />
-        </symbol>
-        <symbol id="i-app-codex" viewBox="0 0 40 40">
-          <rect width="40" height="40" rx="6" fill="#141414" />
-          <path transform="translate(9 9) scale(.9167)" d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.872zm16.5963 3.8558L13.1038 8.364 15.1192 7.2a.0757.0757 0 0 1 .071 0l4.8303 2.7913a4.4944 4.4944 0 0 1-.6765 8.1042v-5.6772a.79.79 0 0 0-.407-.667zm2.0107-3.0231l-.142-.0852-4.7735-2.7818a.7759.7759 0 0 0-.7854 0L9.409 9.2297V6.8974a.0662.0662 0 0 1 .0284-.0615l4.8303-2.7866a4.4992 4.4992 0 0 1 6.6802 4.66zM8.3065 12.863l-2.02-1.1638a.0804.0804 0 0 1-.038-.0567V6.0742a4.4992 4.4992 0 0 1 7.3757-3.4537l-.142.0805L8.704 5.459a.7948.7948 0 0 0-.3927.6813zm1.0976-2.3654l2.602-1.4998 2.6069 1.4998v2.9994l-2.5974 1.4997-2.6067-1.4997Z" fill="#fff" />
-        </symbol>
-        <symbol id="i-app-claude" viewBox="0 0 40 40">
-          <rect width="40" height="40" rx="6" fill="#d97757" />
-          <path transform="translate(9 9) scale(.9167)" d="m4.7144 15.9555 4.7174-2.6471.079-.2307-.079-.1275h-.2307l-.7893-.0486-2.6956-.0729-2.3375-.0971-2.2646-.1214-.5707-.1215-.5343-.7042.0546-.3522.4797-.3218.686.0608 1.5179.1032 2.2767.1578 1.6514.0972 2.4468.255h.3886l.0546-.1579-.1336-.0971-.1032-.0972L6.973 9.8356l-2.55-1.6879-1.3356-.9714-.7225-.4918-.3643-.4614-.1578-1.0078.6557-.7225.8803.0607.2246.0607.8925.686 1.9064 1.4754 2.4893 1.8336.3643.3035.1457-.1032.0182-.0728-.164-.2733-1.3539-2.4467-1.445-2.4893-.6435-1.032-.17-.6194c-.0607-.255-.1032-.4674-.1032-.7285L6.287.1335 6.6997 0l.9957.1336.419.3642.6192 1.4147 1.0018 2.2282 1.5543 3.0296.4553.8985.2429.8318.091.255h.1579v-.1457l.1275-1.706.2368-2.0947.2307-2.6957.0789-.7589.3764-.9107.7468-.4918.5828.2793.4797.686-.0668.4433-.2853 1.8517-.5586 2.9021-.3643 1.9429h.2125l.2429-.2429.9835-1.3053 1.6514-2.0643.7286-.8196.85-.9046.5464-.4311h1.0321l.759 1.1293-.34 1.1657-1.0625 1.3478-.8804 1.1414-1.2628 1.7-.7893 1.36.0729.1093.1882-.0183 2.8535-.607 1.5421-.2794 1.8396-.3157.8318.3886.091.3946-.3278.8075-1.967.4857-2.3072.4614-3.4364.8136-.0425.0304.0486.0607 1.5482.1457.6618.0364h1.621l3.0175.2247.7892.522.4736.6376-.079.4857-1.2142.6193-1.6393-.3886-3.825-.9107-1.3113-.3279h-.1822v.1093l1.0929 1.0686 2.0035 1.8092 2.5075 2.3314.1275.5768-.3218.4554-.34-.0486-2.2039-1.6575-.85-.7468-1.9246-1.621h-.1275v.17l.4432.6496 2.3436 3.5214.1214 1.0807-.17.3521-.6071.2125-.6679-.1214-1.3721-1.9246L14.38 17.959l-1.1414-1.9428-.1397.079-.674 7.2552-.3156.3703-.7286.2793-.6071-.4614-.3218-.7468.3218-1.4753.3886-1.9246.3157-1.53.2853-1.9004.17-.6314-.0121-.0425-.1397.0182-1.4328 1.9672-2.1796 2.9446-1.7243 1.8456-.4128.164-.7164-.3704.0667-.6618.4008-.5889 2.386-3.0357 1.4389-1.882.929-1.0868-.0062-.1579h-.0546l-6.3385 4.1164-1.1293.1457-.4857-.4554.0608-.7467.2307-.2429 1.9064-1.3114Z" fill="#faf9f5" />
+          <path d="M19 22h14" stroke="#1464d8" stroke-width="3.400" stroke-linecap="round" />
         </symbol>
       </defs>
     </svg>
 
     <!-- ============================================================
-         LOCK SCREEN
-         The whole first viewport, and the whole thing is the door —
-         no buttons on it, because a machine you have to be told how
-         to open is not one you want to use.
+         THE GROUND
+         The wallpaper and, once it has drawn, the gel canvas (src/os/gel.ts):
+         the name moulded in clear plastic and the drop that bends it.
+         ============================================================ -->
+    <div class="ground" id="ground" aria-hidden="true">
+      <canvas class="ground__gel" id="gel"></canvas>
+    </div>
 
-         It carries only what a stranger needs to know before they
-         decide to look: the time this machine keeps, whose it is,
-         and one line that is worth being curious about. Everything
-         else — résumé, projects, mail — is one wake away in the
-         dock, the menubar and on the desk itself.
+    <!-- ============================================================
+         THE BOOT
+         What a first visit sees for about two seconds (src/os/boot.ts). The
+         bar fills from real work and the row is read off the desk. Hidden from
+         assistive technology: the login behind it is the first real thing here.
+         ============================================================ -->
+    <div class="boot" id="boot" aria-hidden="true">
+      <div class="boot__stage">
+        <div class="boot__parade" id="boot-parade"></div>
+        <div class="boot__bar" id="boot-bar"><div class="boot__fill" id="boot-fill"></div></div>
+        <p class="boot__status"><span id="boot-status">Starting up</span><span class="num" id="boot-pct">0%</span></p>
+      </div>
+    </div>
 
-         `hidden` by default: only the script that can dismiss it is
-         allowed to show it.
+    <!-- ============================================================
+         THE LOGIN
+         The first thing that stays. The name is the desk's own, under this; here
+         is only what a stranger needs before deciding to look: the time this
+         machine keeps, one sentence, and the default button.
+
+         `hidden` by default: only the script that can dismiss it may show it.
          ============================================================ -->
     <div class="lock" id="lock" hidden>
-      <!-- The wallpaper, inlined so its contours can arrive one level at a
-           time. Falls back to the CSS background if the fetch never lands. -->
-      <div class="lock__field" id="lock-field" aria-hidden="true"></div>
-
-      <div class="lock__top">
+      <div class="lock__time">
         <p class="lock__date" id="lock-date" aria-hidden="true"></p>
         <p class="lock__clock num" id="lock-clock" aria-hidden="true">--:--</p>
       </div>
 
-      <!-- No avatar or monogram here. The field behind this block is already
-           a plot of concentric wells; a second ring glyph on top of it read
-           as a smudge and said nothing the field was not saying better. -->
-      <div class="lock__id">
-        <p class="lock__name">Jayden Lee</p>
-        <p class="lock__role">Machine learning · UC Berkeley</p>
-        <!-- True, and from the PNNL work. It carries the field it came from
-             without naming it, which the previous line did not: that one
-             asked the reader to already know what a local minimum is, and a
-             first screen that needs a footnote is a puzzle, not a hook. -->
-        <p class="lock__idea">
-          Most of it starts as three hundred thousand files nobody has opened.
-        </p>
+      <div class="lock__say">
+        <!-- @portfolio-part statement -->
+        <!-- A real button: clicking the screen anywhere works, but keyboard and
+             screen-reader visitors need something they can land on and press. -->
+        <button class="lock__hint" type="button" id="lock-enter">Enter</button>
       </div>
-
-      <!-- A real button, styled as the quiet line it looks like: clicking the
-           screen anywhere works, but keyboard and screen-reader visitors need
-           something they can land on and press. -->
-      <button class="lock__hint" type="button" id="lock-enter">
-        Click anywhere to enter
-      </button>
     </div>
 
     <!-- ============================================================
@@ -252,7 +201,9 @@
             <div class="menu__sep"></div>
             <a role="menuitem" href="mailto:jeyl@berkeley.edu">Send mail<span class="menu__key">↗</span></a>
             <div class="menu__sep"></div>
-            <button type="button" role="menuitem" data-action="lock">Lock screen</button>
+            <button type="button" role="menuitem" data-action="tour">Tour with Mpa</button>
+            <button type="button" role="menuitem" data-action="lock">Log out</button>
+            <button type="button" role="menuitem" data-action="restart">Restart</button>
           </div>
         </div>
 
@@ -272,9 +223,12 @@
         <div class="menu" data-menu>
           <button class="menu__trigger" type="button" aria-expanded="false">View</button>
           <div class="menu__drop" role="menu">
-            <button type="button" role="menuitemradio" data-desk="lab">Lab<span class="menu__key">bone</span></button>
-            <button type="button" role="menuitemradio" data-desk="slate">Slate<span class="menu__key">grey</span></button>
-            <button type="button" role="menuitemradio" data-desk="blueprint">Blueprint<span class="menu__key">indigo</span></button>
+            <button type="button" role="menuitemradio" data-desk="tangerine">Tangerine<span class="swatch" style="--swatch:#f07010"></span></button>
+            <button type="button" role="menuitemradio" data-desk="bondi">Bondi<span class="swatch" style="--swatch:#0088ad"></span></button>
+            <button type="button" role="menuitemradio" data-desk="grape">Grape<span class="swatch" style="--swatch:#6a2eae"></span></button>
+            <button type="button" role="menuitemradio" data-desk="lime">Lime<span class="swatch" style="--swatch:#6cbc2a"></span></button>
+            <button type="button" role="menuitemradio" data-desk="strawberry">Strawberry<span class="swatch" style="--swatch:#d41e5a"></span></button>
+            <button type="button" role="menuitemradio" data-desk="graphite">Graphite<span class="swatch" style="--swatch:#4e5462"></span></button>
             <div class="menu__sep"></div>
             <button type="button" role="menuitem" data-action="tidy">Tidy desktop</button>
             <button type="button" role="menuitem" data-action="close-all">Close all windows</button>
@@ -312,73 +266,69 @@
          DESKTOP
          ============================================================ -->
     <main class="desk" id="desk">
-      <!-- The nameplate and the desktop items share one flow column, so a
-           longer pitch pushes the icons down instead of landing on top of
-           them. -->
-      <div class="deskcol">
+      <!-- Mpa's leader (src/os/mpa.ts). Drawn on the map: first on the desk
+           after the field canvas, so the nameplate, icons, rail and windows
+           all sit on top of it the way a label sits over a plotted line. -->
+      <svg class="mpa-lead" id="mpa-lead" aria-hidden="true" focusable="false" hidden>
+        <path class="mpa-lead__casing" pathLength="1" />
+        <path class="mpa-lead__line" pathLength="1" />
+        <circle class="mpa-lead__dot" r="2.5" />
+      </svg>
+      <!-- The name, at the foot of the desk at full width. Drawn by the gel canvas
+           when there is one; this text stays for everything that reads it, and
+           is what shows when there is not. Windows and icons sit over it. -->
       <div class="nameplate">
-        <!-- @portfolio-part status -->
-        <h1 class="nameplate__name">Jayden Lee</h1>
-        <p class="nameplate__role">
-          Junior · UC Berkeley, Data Science
-        </p>
-        <p class="nameplate__pitch">
-          ML systems for messy, real-world data: fan behavior at Cal Athletics,
-          LLM benchmarks at MatX, proteomics at a national lab.
-        </p>
+        <h1 class="nameplate__name"><span class="nameplate__word"><span>Jayden</span></span> <span class="nameplate__word"><span>Lee</span></span></h1>
       </div>
 
-      <!-- Desktop items. Buttons, so they are focusable and openable with the
-           keyboard; the double-click affordance is an addition, not the only
-           way in. -->
+      <!-- Desktop items, the résumé first, where the disk would be. Buttons, so
+           they are focusable and openable with the keyboard; the double-click
+           affordance is an addition, not the only way in. -->
+      <div class="deskcol">
       <div class="icons" id="icons" role="list">
+        <button class="icon" type="button" role="listitem" data-open="resume">
+          <span class="icon__art"><svg viewBox="0 0 64 64"><use href="#i-pdf" /></svg></span>
+          <span class="icon__label">resume<wbr />.pdf</span>
+        </button>
+
+        <button class="icon" type="button" role="listitem" data-open="about">
+          <span class="icon__art"><svg viewBox="0 0 64 64"><use href="#i-txt" /></svg></span>
+          <span class="icon__label">about<wbr />.txt</span>
+        </button>
+
+        <button class="icon" type="button" role="listitem" data-open="experience">
+          <span class="icon__art"><svg viewBox="0 0 64 64"><use href="#i-log" /></svg></span>
+          <span class="icon__label">experience<wbr />.log</span>
+        </button>
+
         <button class="icon" type="button" role="listitem" data-open="lea">
-          <span class="icon__art"><svg viewBox="0 0 40 34"><use href="#i-folder" /></svg></span>
+          <span class="icon__art"><svg viewBox="0 0 64 64"><use href="#i-folder" /></svg></span>
           <span class="icon__label">lea</span>
         </button>
 
         <button class="icon" type="button" role="listitem" data-open="clinical">
-          <span class="icon__art"><svg viewBox="0 0 40 34"><use href="#i-folder" /></svg></span>
+          <span class="icon__art"><svg viewBox="0 0 64 64"><use href="#i-folder" /></svg></span>
           <span class="icon__label">clinical-sim</span>
         </button>
 
         <button class="icon" type="button" role="listitem" data-open="chessblitz">
-          <span class="icon__art"><svg viewBox="0 0 40 34"><use href="#i-folder" /></svg></span>
+          <span class="icon__art"><svg viewBox="0 0 64 64"><use href="#i-folder" /></svg></span>
           <span class="icon__label">chessblitz</span>
         </button>
 
         <button class="icon" type="button" role="listitem" data-open="site">
-          <span class="icon__art"><svg viewBox="0 0 40 34"><use href="#i-win" /></svg></span>
+          <span class="icon__art"><svg viewBox="0 0 64 64"><use href="#i-win" /></svg></span>
           <span class="icon__label">this-site</span>
         </button>
 
-        <button class="icon" type="button" role="listitem" data-open="experience">
-          <span class="icon__art icon__art--page"><svg viewBox="0 0 32 40"><use href="#i-log" /></svg></span>
-          <span class="icon__label">experience.log</span>
-        </button>
-
-        <button class="icon" type="button" role="listitem" data-open="resume">
-          <span class="icon__art icon__art--page"><svg viewBox="0 0 32 40"><use href="#i-pdf" /></svg></span>
-          <span class="icon__label">resume.pdf</span>
-        </button>
-
-        <button class="icon" type="button" role="listitem" data-open="about">
-          <span class="icon__art icon__art--page"><svg viewBox="0 0 32 40"><use href="#i-txt" /></svg></span>
-          <span class="icon__label">about.txt</span>
-        </button>
-
-        <!-- Written in content/principles.md, not here. Deliberately absent
-             from the dock: the dock's job is the work artifacts and the mail
-             link, and principles.txt is a document you read once.
-
-             Hidden 25 Aug 2026 while the prose is still the scaffold — see
-             vite.config.mjs. Restore this button with the entry there.
+        <!-- Written in content/principles.md, not here. Hidden 25 Aug 2026 while
+             the prose is still the scaffold; see vite.config.mjs. Restore this
+             button with the entry there.
         <button class="icon" type="button" role="listitem" data-open="principles">
-          <span class="icon__art icon__art--page"><svg viewBox="0 0 32 40"><use href="#i-txt" /></svg></span>
+          <span class="icon__art"><svg viewBox="0 0 64 64"><use href="#i-txt" /></svg></span>
           <span class="icon__label">principles.txt</span>
         </button>
         -->
-
       </div>
       </div>
 
@@ -404,22 +354,28 @@
     </main>
 
     <!-- ============================================================
-         DOCK
+         MPA
+         Jayden's personal assistant: a short tour for a first visit,
+         driven by src/os/mpa.ts. A window in the machine's own
+         material that talks one line at a time; its leader, on the
+         desk, points at whatever the line is about. Non-modal, so the
+         desk stays live under it. `hidden` until the script that
+         can run it shows it — without JS there is nothing to tour.
          ============================================================ -->
-    <!-- The dock is the tool stack, not a launcher: documents open from the
-         desk and the menubar. The tiles are role="img" rather than
-         buttons because they do nothing, and a control that does nothing is
-         a lie to a keyboard user. Mail stays past the separator — it is the
-         one dock item that acts. -->
-    <aside class="dock" id="dock" aria-label="Tools I build with">
-      <ul class="dock__list">
-        <li><span class="dockitem dockitem--app" role="img" aria-label="Lovable" data-label="Lovable"><svg viewBox="0 0 40 40"><use href="#i-app-lovable" /></svg></span></li>
-        <li><span class="dockitem dockitem--app" role="img" aria-label="Codex" data-label="Codex"><svg viewBox="0 0 40 40"><use href="#i-app-codex" /></svg></span></li>
-        <li><span class="dockitem dockitem--app" role="img" aria-label="Claude Code" data-label="Claude Code"><svg viewBox="0 0 40 40"><use href="#i-app-claude" /></svg></span></li>
-        <li class="dock__sep" aria-hidden="true"></li>
-        <li><a class="dockitem" href="mailto:jeyl@berkeley.edu" data-label="jeyl@berkeley.edu"><svg viewBox="0 0 40 32"><use href="#i-mail" /></svg></a></li>
-      </ul>
-    </aside>
+    <section class="mpa" id="mpa" role="dialog" aria-labelledby="mpa-title" aria-describedby="mpa-say" hidden>
+      <header class="win__bar mpa__bar">
+        <button class="win__close" type="button" aria-label="Close Mpa"><span aria-hidden="true">×</span></button>
+        <h2 class="win__title" id="mpa-title">mpa</h2>
+        <span class="win__meta mpa__count" aria-hidden="true"></span>
+      </header>
+      <div class="mpa__body">
+        <p class="mpa__say" id="mpa-say" aria-live="polite"></p>
+        <div class="mpa__actions">
+          <button class="mpa__skip" type="button">Skip tour</button>
+          <button class="mpa__go" type="button">Next</button>
+        </div>
+      </div>
+    </section>
 
     <!-- ============================================================
          DOCUMENTS

@@ -264,3 +264,78 @@ export function marchingSquares(
     }
   }
 }
+
+/* ------------------------------------------------------------------------
+   The gel wallpaper. The same surface, lit instead of contoured: a sheet of
+   candy plastic pressed into terraces at the field's own level spacing, each
+   riser catching the light with a little colour split across it. The generator
+   renders it once per flavour (scripts/field.mjs); nothing computes it live.
+   ------------------------------------------------------------------------ */
+
+type RGB = [number, number, number];
+
+export type Flavour = {
+  /** Bottom of the wells, the open sheet, and the shallow edge of the sheet. */
+  deep: RGB;
+  body: RGB;
+  lite: RGB;
+};
+
+export const FLAVOURS: Record<string, Flavour> = {
+  tangerine: { deep: [166, 40, 0], body: [240, 104, 6], lite: [255, 150, 36] },
+  bondi: { deep: [2, 58, 88], body: [0, 118, 152], lite: [10, 150, 178] },
+  grape: { deep: [46, 12, 98], body: [98, 40, 160], lite: [128, 70, 192] },
+  lime: { deep: [24, 104, 28], body: [104, 182, 40], lite: [160, 214, 66] },
+  strawberry: { deep: [120, 4, 52], body: [206, 26, 84], lite: [232, 60, 116] },
+  graphite: { deep: [30, 34, 42], body: [70, 76, 88], lite: [96, 102, 116] },
+};
+
+/** Terraces on the sheet, fewer than the contour levels: gel is read from across
+ *  a room, and it would read as noise at every level. */
+export const TERRACES = 11;
+/** Fraction of each terrace that is riser rather than tread. */
+const RISER = 0.42;
+/** How far each colour channel's terrace is offset, in terraces. */
+const SPLIT = 0.055;
+
+const smoothstep = (a: number, b: number, t: number): number => {
+  const u = Math.max(0, Math.min(1, (t - a) / (b - a)));
+  return u * u * (3 - 2 * u);
+};
+const terrace = (k: number): number => {
+  const f = Math.floor(k);
+  return f + smoothstep(1 - RISER, 1, k - f);
+};
+const normal3 = (x: number, y: number, z: number): RGB => {
+  const l = Math.hypot(x, y, z) || 1;
+  return [x / l, y / l, z / l];
+};
+const LIGHT = normal3(-0.45, -0.72, 0.52);
+const HALF = normal3(LIGHT[0], LIGHT[1], LIGHT[2] + 1);
+
+/** One pixel of the wallpaper. `min` and `max` bound the surface over the frame;
+ *  `e` is one output pixel in field units. Returns 0-255 channels, unclamped. */
+export function gelAt(flavour: Flavour, x: number, y: number, min: number, max: number, e: number): RGB {
+  const k = (px: number, py: number) =>
+    TERRACES * Math.pow(Math.max(0, (surface(px, py) - min) / (max - min)), 1 / 1.45);
+  const k0 = k(x, y);
+  const dx = k(x + e, y) - k(x - e, y);
+  const dy = k(x, y + e) - k(x, y - e);
+  // Slopes below are per field unit, so the surface reads the same at any size.
+  const relief = 0.0252;
+  const t = k0 / TERRACES;
+  const out: RGB = [0, 0, 0];
+  for (let c = 0; c < 3; c++) {
+    const h = (kk: number) => terrace(kk + (c - 1) * SPLIT);
+    const a = (h(k0 + dx / 2) - h(k0 - dx / 2)) / (2 * e);
+    const b = (h(k0 + dy / 2) - h(k0 - dy / 2)) / (2 * e);
+    const n = normal3(-a * relief, -b * relief, 1);
+    const diffuse = Math.max(0, n[0] * LIGHT[0] + n[1] * LIGHT[1] + n[2] * LIGHT[2]);
+    const spec = Math.pow(Math.max(0, n[0] * HALF[0] + n[1] * HALF[1] + n[2] * HALF[2]), 90);
+    const from = t < 0.5 ? flavour.deep[c] : flavour.body[c];
+    const to = t < 0.5 ? flavour.body[c] : flavour.lite[c];
+    const base = from + (to - from) * (t < 0.5 ? t * 2 : (t - 0.5) * 2);
+    out[c] = base * (0.56 + 0.72 * diffuse) + 255 * spec * 0.85;
+  }
+  return out;
+}

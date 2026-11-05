@@ -7,14 +7,18 @@
  * the fallback page drifting apart. Closing puts it back.
  */
 
+import { attachFlip, weighWheel } from "./flip";
+
 const desk = () => document.getElementById("desk") as HTMLElement;
 const docShelf = () => document.getElementById("docs") as HTMLElement;
 
 const open = new Map<string, HTMLElement>();
+/** What each window's flip needs undone when it closes. */
+const undo = new Map<string, () => void>();
 let frontmost: HTMLElement | null = null;
 let cascade = 0;
 
-/** Listeners for open/close, so the dock can show running indicators. */
+/** Listeners for open/close, so Mpa's tour can follow what the visitor does. */
 const listeners = new Set<(ids: string[]) => void>();
 
 export function onWindowsChange(fn: (ids: string[]) => void): void {
@@ -61,8 +65,8 @@ function place(width: number): { x: number; y: number } {
   const slot = cascade % maxSteps;
   cascade += 1;
 
-  // Origin sits clear of the nameplate on the left and the rail on the right.
-  const originX = Math.max(24, bounds.width * 0.26);
+  // Origin sits clear of the rail on the left and the icons on the right.
+  const originX = Math.max(24, bounds.width * 0.2);
   const originY = 40;
 
   const x = Math.min(originX + slot * step, Math.max(16, bounds.width - width - 24));
@@ -108,15 +112,22 @@ export function openDoc(id: string): void {
 
   const bar = document.createElement("header");
   bar.className = "win__bar";
+  // All three lights do what they say. A control that lit up and did nothing
+  // would be a promise this machine cannot honour.
   bar.innerHTML =
-    `<button class="win__close" type="button" aria-label="Close ${title}">✕</button>` +
+    `<div class="win__lights">` +
+    `<button class="win__close" type="button" aria-label="Close ${title}"><span aria-hidden="true">×</span></button>` +
+    `<button class="win__shade" type="button" aria-label="Roll up ${title}" aria-pressed="false"><span aria-hidden="true">−</span></button>` +
+    `<button class="win__zoom" type="button" aria-label="Zoom ${title}" aria-pressed="false"><span aria-hidden="true">+</span></button>` +
+    `</div>` +
     `<h2 class="win__title" id="${titleId}">${title}</h2>` +
     (meta ? `<span class="win__meta">${meta}</span>` : "");
 
   const body = document.createElement("div");
   body.className = "win__body";
 
-  if (article.classList.contains("doc--pdf")) win.classList.add("win--pdf");
+  const reading = !article.classList.contains("doc--pdf");
+  if (!reading) win.classList.add("win--pdf");
 
   win.append(bar, body);
   body.append(article);
@@ -133,8 +144,18 @@ export function openDoc(id: string): void {
     win.style.top = `${y}px`;
     // A cascaded window starts lower down, so its ceiling has to account for
     // the offset or the last one in the stack runs off the bottom of the desk.
-    win.style.maxHeight = `${desk().getBoundingClientRect().height - y - 16}px`;
+    const room = desk().getBoundingClientRect().height - y - 16;
+    win.style.maxHeight = `${room}px`;
+    // A reading window has a height of its own, because its flip is measured
+    // against it and its cover is sized from it.
+    if (reading) win.style.height = `${Math.min(room, 640)}px`;
   }
+  if (reading) {
+    undo.set(id, attachFlip(win, body));
+    weighWheel(body);
+  }
+
+  zoomRects(id, win);
 
   open.set(id, win);
   bringToFront(win);
@@ -142,8 +163,72 @@ export function openDoc(id: string): void {
   announce();
 
   bar.querySelector(".win__close")?.addEventListener("click", () => closeDoc(id));
+  bar.querySelector(".win__shade")?.addEventListener("click", () => shade(win));
+  bar.querySelector(".win__zoom")?.addEventListener("click", () => zoom(win));
+  bar.addEventListener("dblclick", (event) => {
+    if (!(event.target as HTMLElement).closest(".win__lights") && !sheet()) shade(win);
+  });
   win.addEventListener("pointerdown", () => bringToFront(win));
   makeDraggable(win, bar);
+}
+
+/**
+ * The window rolls up into its title bar, the old Mac's windowshade. It is what
+ * the yellow light does on a desk with no dock to minimise into.
+ */
+function shade(win: HTMLElement): void {
+  const rolled = win.classList.toggle("is-shaded");
+  win.querySelector(".win__shade")?.setAttribute("aria-pressed", String(rolled));
+}
+
+/** The green light: as large as the desk, and back. Geometry written once. */
+const zoomed = new WeakMap<HTMLElement, string>();
+function zoom(win: HTMLElement): void {
+  const from = zoomed.get(win);
+  const button = win.querySelector(".win__zoom");
+  if (from !== undefined) {
+    win.style.cssText = from;
+    zoomed.delete(win);
+    button?.setAttribute("aria-pressed", "false");
+    return;
+  }
+  zoomed.set(win, win.style.cssText);
+  const bounds = desk().getBoundingClientRect();
+  win.style.left = "12px";
+  win.style.top = "12px";
+  win.style.width = `${bounds.width - 24}px`;
+  win.style.maxWidth = "none";
+  win.style.height = `${bounds.height - 24}px`;
+  win.style.maxHeight = "none";
+  button?.setAttribute("aria-pressed", "true");
+}
+
+/**
+ * The old Finder's zoom rectangles: four outlines thrown from the icon to where
+ * the window lands, so a window comes from somewhere. 220ms, a window's open,
+ * and only from a launcher that is on the desk to be thrown from.
+ */
+function zoomRects(id: string, win: HTMLElement): void {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const icon = document.querySelector<HTMLElement>(`.icon[data-open="${id}"]`);
+  const from = icon?.getBoundingClientRect();
+  if (!from || from.width === 0) return;
+  const to = win.getBoundingClientRect();
+  for (let i = 0; i < 4; i += 1) {
+    const rect = document.createElement("div");
+    rect.className = "zoomrect";
+    rect.style.cssText = `left:${to.left}px;top:${to.top}px;width:${to.width}px;height:${to.height}px`;
+    document.body.append(rect);
+    const scale = `${from.width / to.width}, ${from.height / to.height}`;
+    const shift = `${from.left - to.left}px, ${from.top - to.top}px`;
+    rect.animate(
+      [
+        { transform: `translate(${shift}) scale(${scale})`, opacity: 0.9 },
+        { transform: "none", opacity: 0.25 },
+      ],
+      { duration: 180, delay: i * 14, easing: "cubic-bezier(.16,1,.3,1)", fill: "backwards" },
+    ).onfinish = () => rect.remove();
+  }
 }
 
 export function closeDoc(id: string): void {
@@ -154,6 +239,8 @@ export function closeDoc(id: string): void {
   const article = win.querySelector(".doc");
   if (article) docShelf().append(article);
 
+  undo.get(id)?.();
+  undo.delete(id);
   win.remove();
   open.delete(id);
   if (frontmost === win) frontmost = null;
@@ -182,8 +269,8 @@ export function closeAll(): void {
  */
 function makeDraggable(win: HTMLElement, handle: HTMLElement): void {
   handle.addEventListener("pointerdown", (event) => {
-    // Let the close button do its own job.
-    if ((event.target as HTMLElement).closest(".win__close")) return;
+    // Let the lights do their own jobs.
+    if ((event.target as HTMLElement).closest(".win__lights")) return;
     if (event.button !== 0) return;
     if (sheet()) return;
 
