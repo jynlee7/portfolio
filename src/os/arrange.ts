@@ -97,9 +97,27 @@ export function initArrange(): void {
     free = false;
   };
 
-  if (roomy.matches) promote();
+  // Promote only once the desk's own face is in. Under the fallback face the
+  // labels of experience.log and this-site lay out one line (15.6px) taller,
+  // which pushes lea, below them in the grid, 15.6px down, and promoting then
+  // kept it there for good (#37). Asking for the label's font starts the load
+  // rather than trusting document.fonts.ready, which resolves at once if the
+  // load has not begun yet. The grid is on screen meanwhile, so the wait does
+  // not show. The cap is for a face that never arrives: then the fallback is
+  // what the visitor keeps, and measuring under it is right.
+  const label = icons[0].querySelector(".icon__label") ?? icons[0];
+  const typed = Promise.race([
+    document.fonts.load(getComputedStyle(label).font).catch(() => []),
+    new Promise((resolve) => window.setTimeout(resolve, 2500)),
+  ]);
+  const promoteWhenTyped = () =>
+    void typed.then(() => {
+      if (roomy.matches) promote();
+    });
+
+  if (roomy.matches) promoteWhenTyped();
   roomy.addEventListener("change", (event) => {
-    if (event.matches) promote();
+    if (event.matches) promoteWhenTyped();
     else revert();
   });
 

@@ -169,6 +169,28 @@ try {
     assert.equal(failures.length, 0, failures.slice(0, 8).join("; "));
     return lowest;
   });
+
+  await check("Twenty fresh loads put every icon in the same place, the face early or late", async () => {
+    const layouts = new Map();
+    for (let i = 0; i < 20; i++) {
+      const { context, page } = await open();
+      // Every other load gets General Sans 150ms late. That is when the grid
+      // was measured under the fallback face and lea kept a 15.6px drop (#37).
+      if (i % 2) {
+        await page.route("**/fonts/GeneralSans-Variable.woff2", async (route) => {
+          await new Promise((resolve) => setTimeout(resolve, 150));
+          await route.continue();
+        });
+      }
+      await page.goto(`${base}/desktop/?load=${i}`);
+      await page.waitForFunction(() => document.getElementById("icons")?.classList.contains("is-free"), null, { timeout: 8000 });
+      const at = await page.evaluate(() => [...document.querySelectorAll(".icon")].map((el) => `${el.dataset.open} ${el.style.left} ${el.style.top}`).join(", "));
+      layouts.set(at, (layouts.get(at) ?? 0) + 1);
+      await context.close();
+    }
+    assert.equal(layouts.size, 1, [...layouts].map(([at, n]) => `${n}× ${at}`).join(" | "));
+    return [...layouts.keys()][0];
+  });
 } finally {
   await browser.close();
   await writeFile(`${out}/report.json`, JSON.stringify({ url: base, date: new Date().toISOString(), results }, null, 2));
