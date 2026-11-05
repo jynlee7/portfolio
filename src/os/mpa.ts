@@ -58,8 +58,10 @@ function frontWindow(): HTMLElement | null {
 const STEPS: Step[] = [
   {
     target: () => document.querySelector(".nameplate__name"),
+    // The greeting is a stop too, so it counts itself: the number it says and
+    // the counter beside it come from the same place and cannot drift.
     line: () =>
-      "Hi, I'm Mpa, Jayden's personal assistant. This is his desktop; I'll show you around in four stops.",
+      `Hi, I'm Mpa, Jayden's personal assistant. This is his desktop; I'll show you around in ${NUMBER[stops()] ?? stops()} stops.`,
     go: "Show me",
   },
   {
@@ -93,6 +95,19 @@ const STEPS: Step[] = [
     go: "Done",
   },
 ];
+
+const NUMBER = ["no", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
+
+/**
+ * Stops passed over in this tour. A step whose `when()` is false is skipped,
+ * and the counter counts what is shown, not where a step sits in STEPS, so it
+ * never jumps a number; the total drops by the stops passed instead. The
+ * greeting is said before any stop can be passed, and the one conditional
+ * stop (the window) follows the step that opens one, so in practice the
+ * greeting's number is the total the counter ends on.
+ */
+let passed = 0;
+const stops = () => STEPS.length - passed;
 
 /** The ring stands this far off its target, so it never touches a label.
  *  Inside a 30px bar it has to sit closer or it runs off the bar; the
@@ -199,6 +214,7 @@ function start(): void {
   // Arrive at the first stop rather than gliding to it from wherever the last
   // tour ended.
   pos = null;
+  passed = 0;
   panel.hidden = false;
   show(0);
   go.focus();
@@ -217,6 +233,7 @@ function forward(): void {
 function show(index: number): void {
   let i = index;
   while (i < STEPS.length && STEPS[i].when?.() === false) i += 1;
+  passed += i - index;
   if (i >= STEPS.length) {
     finish();
     return;
@@ -225,7 +242,7 @@ function show(index: number): void {
   at = i;
   const step = STEPS[i];
   say.textContent = step.line();
-  count.textContent = `${i + 1} / ${STEPS.length}`;
+  count.textContent = `${i + 1 - passed} / ${stops()}`;
   go.textContent = step.go ?? "Next";
   skip.hidden = i === STEPS.length - 1;
   replay(say, "is-new");

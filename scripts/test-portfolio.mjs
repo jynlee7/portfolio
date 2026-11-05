@@ -343,6 +343,8 @@ try {
     await page.locator("#lock").click();
     await mpa.waitFor({ state: "visible" });
     assert.match(await page.locator("#mpa-say").textContent(), /I'm Mpa, Jayden's personal assistant/);
+    assert.match(await page.locator("#mpa-say").textContent(), /in five stops/, "The greeting should name the stops the counter counts");
+    assert.equal(await count.textContent(), "1 / 5");
     assert.equal(await page.evaluate(() => document.activeElement?.className), "mpa__go", "The greeting should take focus");
     assert.match(await subject(), /nameplate__name/);
     await clearOfDesk("1 / 5");
@@ -396,6 +398,25 @@ try {
     await page.keyboard.press("Escape");
     assert.ok(await mpa.isHidden(), "Escape inside Mpa should end the tour");
     assert.equal(await page.locator('.win[data-win="lea"]').count(), 1, "Escape inside Mpa closed a window");
+    assert.deepEqual(errors, []);
+  }));
+
+  await check("Mpa's counter never skips a number, even when a stop is passed", () => withPage({ reducedMotion: "reduce" }, async (page, { errors }) => {
+    await load(page, "/desktop/");
+    await page.locator("#lock").click();
+    const count = page.locator(".mpa__count");
+    const go = page.locator(".mpa__go");
+    await page.locator("#mpa").waitFor({ state: "visible" });
+    await go.click();
+    await go.click();
+    assert.equal(await count.textContent(), "3 / 5");
+    // With lea's document gone, "Open lea" opens nothing, so the window stop
+    // has no window to talk about and is passed over.
+    await page.evaluate(() => document.getElementById("doc-lea")?.remove());
+    await go.click();
+    assert.equal(await page.locator(".win").count(), 0);
+    assert.equal(await count.textContent(), "4 / 4", "The counter jumped past the passed stop");
+    assert.equal(await go.textContent(), "Done");
     assert.deepEqual(errors, []);
   }));
 
