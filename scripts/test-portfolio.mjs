@@ -319,6 +319,35 @@ try {
     await page.waitForURL(new URL("/", base).href);
   }));
 
+  await check("One tap opens a desk icon on a touch screen; one mouse click only selects it", async () => {
+    await withPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: "reduce" }, async (page, { errors }) => {
+      await load(page, "/desktop/");
+      await page.locator("#lock").tap();
+      // Mpa names the gesture before anybody needs it.
+      const go = page.locator(".mpa__go");
+      await page.locator("#mpa").waitFor({ state: "visible" });
+      await go.tap();
+      await go.tap();
+      assert.match(await page.locator("#mpa-say").textContent(), /\bTap lea to open it\./);
+      await page.locator('.icon[data-open="lea"]').tap();
+      await page.locator('.win[data-win="lea"]').waitFor({ timeout: 2_000 });
+      assert.equal(await page.locator(".mpa__count").textContent(), "4 / 5", "One tap should open lea and move the tour on");
+      assert.deepEqual(errors, []);
+    });
+    await withPage({ reducedMotion: "reduce" }, async (page) => {
+      await load(page, "/desktop/");
+      await page.locator("#lock").click();
+      await page.locator("#lock").waitFor({ state: "detached" });
+      const icon = page.locator('.icon[data-open="resume"]');
+      await icon.click();
+      await page.waitForTimeout(300);
+      assert.equal(await page.locator(".win").count(), 0, "One mouse click opened a window");
+      assert.equal(await icon.getAttribute("aria-pressed"), "true", "One mouse click should select the icon");
+      await icon.dblclick();
+      await page.locator('.win[data-win="resume"]').waitFor({ timeout: 2_000 });
+    }, (page) => page.addInitScript(() => localStorage.setItem("jl.mpa", "1")));
+  });
+
   await check("Mpa greets a first visit, walks the tour with the desk, and never twice", () => withPage({ reducedMotion: "reduce" }, async (page, { errors }) => {
     await instrument(page);
     await load(page, "/desktop/");

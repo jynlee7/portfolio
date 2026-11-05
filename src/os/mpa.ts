@@ -69,7 +69,7 @@ const STEPS: Step[] = [
   {
     target: () => document.querySelector('.icon[data-open="lea"]'),
     line: () =>
-      `Each folder is one of his projects. ${coarse() ? "Double\u2011tap" : "Double\u2011click"} lea to open it.`,
+      `Each folder is one of his projects. ${coarse() ? "Tap" : "Double\u2011click"} lea to open it.`,
     go: "Open lea",
     act: () => openDoc("lea"),
     until: "open",

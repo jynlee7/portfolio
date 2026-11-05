@@ -838,6 +838,9 @@ html.is-booting:not(.gl) .nameplate__word + .nameplate__word > span {
   gap: 0.2rem;
   padding: 0.3rem 0.2rem;
   border-radius: 6px;
+  /* One tap opens (src/os/desktop.ts), so a double tap must not zoom the page
+     instead, nor hold the tap back while the browser waits to see if it will. */
+  touch-action: manipulation;
 }
 html.is-arriving .icon {
   animation: icon-in 520ms var(--enter) calc(180ms + var(--n, 0) * 60ms) both;
