@@ -12,6 +12,7 @@ import { createHash } from "node:crypto";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { chromium } from "playwright";
+import { projects, archiveProjects } from "../content/portfolio.mjs";
 
 const base = process.env.PORTFOLIO_URL ?? "http://127.0.0.1:4173";
 const evidence = process.env.PORTFOLIO_EVIDENCE ?? "/tmp/pw-portfolio-evidence";
@@ -287,6 +288,27 @@ try {
   await check("The desktop's documents carry the 26 Oct résumé", () => withPage({ javaScriptEnabled: false }, async (page) => {
     await load(page, "/desktop/");
     await assertDesktopFacts(page);
+  }));
+
+  await check("Each project link row says where it goes, then what the link does", () => withPage({ javaScriptEnabled: false }, async (page) => {
+    await load(page, "/desktop/");
+    const rows = await page.locator("article.doc .spec > div:has(a)").evaluateAll((els) => els.map((el) => ({
+      doc: el.closest("article").id,
+      term: el.querySelector("dt").textContent.trim(),
+      text: el.querySelector("a").textContent.trim(),
+      href: el.querySelector("a").getAttribute("href"),
+    })));
+    for (const row of rows) assert.notEqual(row.term, row.text, `${row.doc} prints "${row.text}" twice`);
+    const where = { lea: "devpost.com", clinical: "deepnote.com", chessblitz: "gitlab.com" };
+    for (const project of [...projects, ...archiveProjects]) {
+      for (const link of project.links) {
+        const row = rows.find((r) => r.doc === `doc-${project.id}` && r.href === link.href);
+        assert.ok(row, `doc-${project.id} lost its link to ${link.href}`);
+        assert.equal(row.text, link.label);
+        assert.equal(row.term, where[project.id], `doc-${project.id}'s link row names the wrong place`);
+      }
+    }
+    return rows.filter((r) => r.doc !== "doc-about").map((r) => `${r.doc}: ${r.term} · ${r.text}`);
   }));
 
   await check("A desktop deep link skips the lock, opens its window, and leads home", () => withPage({ reducedMotion: "reduce" }, async (page, { errors }) => {

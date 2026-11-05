@@ -84,5 +84,14 @@ export function renderDesktopDoc(id) {
   return `<article class="doc" id="doc-${esc(id)}" data-title="${esc(title)}" data-meta="project">
     <h2 class="doc__h1">${esc(project.name)}</h2><p class="doc__lede">${esc(project.description || project.summary)}</p>
     ${project.paragraphs.map(paragraph).join("")}<dl class="spec">${row("Stack", project.stack.join(" · "))}
-    ${project.links.map((link) => `<div><dt>${esc(link.label)}</dt><dd><a href="${esc(link.href)}">${esc(link.label)}</a></dd></div>`).join("")}</dl></article>`;
+    ${project.links.map((link) => `<div><dt>${esc(site(link.href))}</dt><dd><a href="${esc(link.href)}">${esc(link.label)}</a></dd></div>`).join("")}</dl></article>`;
+}
+
+/**
+ * A link row's term: where the link goes, read off its own URL ("devpost.com"),
+ * so the row can never disagree with its href. The label already says what the
+ * link does; using it for both printed "View on Devpost · View on Devpost".
+ */
+function site(href) {
+  return new URL(href).hostname.replace(/^www\./, "");
 }
